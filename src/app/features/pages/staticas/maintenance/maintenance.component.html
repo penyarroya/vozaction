@@ -1,0 +1,81 @@
+<!-- maintenance.component.html -->
+<div 
+  class="maintenance-container" 
+  [class.light]="currentTheme === 'light'" 
+  [class.dark]="currentTheme === 'dark'"
+>
+  <div class="error-card">
+    
+    <!-- 🔥 PANTALLA 1: Servidor caído -->
+    @if (showServerDown) {
+      <mat-icon class="error-icon">cloud_off</mat-icon>
+      <h1>Conexión interrumpida</h1>
+      <p>Estamos teniendo problemas para conectar con nuestros servidores en este momento.</p>
+      
+      <div class="status-box">
+        <span class="dot" [class.pulse]="!isRetrying"></span>
+        <span class="status-text">{{ statusMessage }}</span>
+      </div>
+
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="retry()" 
+        [disabled]="isRetrying">
+        <mat-icon>{{ isRetrying ? 'hourglass_empty' : 'refresh' }}</mat-icon>
+        {{ isRetrying ? 'Reintentando...' : 'Reintentar ahora' }}
+      </button>
+    }
+
+    <!-- 🔥 PANTALLA 2: Eureka iniciando -->
+    @if (showEurekaTimer) {
+      <mat-icon class="timer-icon">cloud_upload</mat-icon>
+      <h1>Servidor disponible</h1>
+      <p>El servidor ya está funcionando. Estamos preparando todos los servicios...</p>
+      
+      <div class="timer-container">
+        <div class="timer-circle">
+          <svg class="progress-ring" width="120" height="120">
+            <circle
+              class="progress-ring-circle-bg"
+              stroke="#e0e0e0"
+              stroke-width="4"
+              fill="transparent"
+              r="54"
+              cx="60"
+              cy="60"
+            />
+            <circle
+              class="progress-ring-circle"
+              stroke="#4caf50"
+              stroke-width="4"
+              fill="transparent"
+              r="54"
+              cx="60"
+              cy="60"
+              [style.strokeDasharray]="2 * Math.PI * 54"
+              [style.strokeDashoffset]="2 * Math.PI * 54 * (1 - progressPercent / 100)"
+            />
+          </svg>
+          <div class="timer-text">
+            <span class="seconds">{{ remainingSeconds }}</span>
+            <span class="label">segundos</span>
+          </div>
+        </div>
+        <div class="timer-message">
+          <!-- <mat-icon>euro_symbol</mat-icon> -->
+          <!-- <span>Registrando servicios en Eureka...</span> -->
+        </div>
+        <div class="timer-submessage">
+          Esto puede tomar hasta {{ EUREKA_WAIT_SECONDS }} segundos
+        </div>
+      </div>
+      
+      <button mat-raised-button disabled class="disabled-button">
+        <mat-icon>schedule</mat-icon>
+        Finalizando configuración...
+      </button>
+    }
+    
+  </div>
+</div>

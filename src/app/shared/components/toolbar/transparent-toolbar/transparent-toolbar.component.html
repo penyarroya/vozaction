@@ -1,0 +1,119 @@
+<!-- src/app/shared/components/transparent-toolbar/transparent-toolbar.component.html -->
+<mat-toolbar 
+  class="toolbar" 
+  [class]="toolbarClasses"
+  [style.background]="backgroundColorStyle"
+  [style.position]="position"
+  role="navigation"
+  aria-label="Barra de navegación principal">
+
+  <!-- SECCIÓN IZQUIERDA -->
+  <div class="toolbar-left">
+    <!-- Botón Volver -->
+    @if (showBackButton) {
+      <button mat-icon-button 
+              class="nav-btn back-btn" 
+              (click)="onBack()"
+              aria-label="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+    }
+
+    <!-- Logo -->
+    @if (showLogo) {
+      <a routerLink="/home" class="logo-link" aria-label="Ir a inicio">
+        <span class="logo-text">Voz<span>Acción</span></span>
+      </a>
+    }
+
+    <!-- Título (si no hay logo) -->
+    @if (!showLogo && title) {
+      <span class="toolbar-title">{{ title }}</span>
+    }
+
+    <!-- Enlaces de navegación -->
+    @if (navLinks.length > 0) {
+      <nav class="nav-links" aria-label="Navegación principal">
+        @for (link of navLinks; track link.route) {
+          <a [routerLink]="link.route" 
+             routerLinkActive="active" 
+             class="nav-link">
+            @if (link.icon) {
+              <mat-icon>{{ link.icon }}</mat-icon>
+            }
+            {{ link.label }}
+          </a>
+        }
+      </nav>
+    }
+  </div>
+
+  <!-- SECCIÓN DERECHA -->
+  <div class="toolbar-right">
+    <!-- Botón Ayuda -->
+    @if (showHelp) {
+      <button mat-icon-button 
+              class="nav-btn help-btn" 
+              (click)="onHelp()"
+              aria-label="Ayuda">
+        <mat-icon>help_outline</mat-icon>
+      </button>
+    }
+
+    <!-- Botón Micrófono -->
+    @if (showMicToggle) {
+      <button mat-icon-button 
+              class="nav-btn mic-btn" 
+              (click)="toggleMic()"
+              [class.active]="isMicActive()"
+              aria-label="Alternar micrófono">
+        <mat-icon>{{ isMicActive() ? 'mic_off' : 'mic' }}</mat-icon>
+      </button>
+    }
+
+    <!-- Botón Tema -->
+    @if (showThemeToggle) {
+      <button mat-icon-button 
+              class="nav-btn theme-btn" 
+              (click)="toggleTheme()"
+              aria-label="Cambiar tema">
+        <mat-icon>{{ isDarkTheme() ? 'dark_mode' : 'light_mode' }}</mat-icon>
+      </button>
+    }
+
+    <!-- Avatar de Usuario -->
+    @if (showUserAvatar) {
+      @if (isAuthenticated()) {
+        <button mat-icon-button 
+                class="nav-btn user-btn" 
+                [matMenuTriggerFor]="userMenu"
+                aria-label="Menú de usuario">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item disabled>
+            <mat-icon>account_circle</mat-icon>
+            <span>{{ userName() || 'Usuario' }}</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="onLogout()">
+            <mat-icon>logout</mat-icon>
+            <span>Cerrar sesión</span>
+          </button>
+        </mat-menu>
+      } @else {
+        <button mat-flat-button 
+                class="login-btn" 
+                (click)="onLogin()">
+          <mat-icon>login</mat-icon>
+          INICIAR SESIÓN
+        </button>
+      }
+    }
+  </div>
+</mat-toolbar>
+
+<!-- Espaciador para contenido (cuando la toolbar es fixed) -->
+@if (position === 'fixed') {
+  <div class="toolbar-spacer"></div>
+}

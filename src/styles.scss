@@ -1,0 +1,31 @@
+/* =========================================================================
+   ESTILOS GENERALES DE VOZACCTION (Sass / Material 3)
+   ========================================================================= */
+
+// 1. IMPORTACIÓN DE TEMAS Y COMPONENTES GLOBALES
+// Subimos un nivel (../) porque tu carpeta 'styles' está en la raíz de VozAcction, no dentro de 'src'
+@use '../src/styles/themes.scss';
+@use '../src/styles/components/tooltips' as *;
+@use '../src/styles/components/field-clean' as *;
+@use '../src/styles/components/menus' as *;
+
+// 2. CONFIGURACIÓN GLOBAL DEL BODY
+body {
+  // Indica al navegador que use el esquema de color claro por defecto.
+  // El tema oscuro se activará dinámicamente con la clase .dark-theme en <html>
+  color-scheme: light;
+
+  // Fondo y color de texto usando las variables de Material 3 definidas en tu themes.scss
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset de márgenes y tipografía base
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+// Asegurar que el layout ocupe el 100% de la pantalla
+html, body {
+  height: 100%;
+}

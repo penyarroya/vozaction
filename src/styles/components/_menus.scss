@@ -1,0 +1,95 @@
+// src/styles/_menus.scss
+
+/* ============================================================
+   🔥 ESTILOS GLOBALES PARA MENÚS DESPLEGABLES
+   ============================================================ */
+
+.mat-menu-panel {
+  background: rgba(10, 14, 26, 0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  min-width: 200px !important;
+  margin-top: 8px !important;
+}
+
+.mat-menu-item {
+  color: #ffffff !important;
+  font-size: 0.9rem !important;
+  padding: 12px 24px !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+
+  &:hover {
+    background: rgba(56, 189, 248, 0.2) !important;
+    color: #ffffff !important;
+  }
+
+  mat-icon {
+    color: rgba(255, 255, 255, 0.8) !important;
+    margin-right: 8px !important;
+  }
+
+  &:hover mat-icon {
+    color: #38bdf8 !important;
+  }
+
+  // 🔥 Estilo especial para "Cerrar sesión"
+  &.logout-item {
+    color: #f87171 !important;
+
+    &:hover {
+      background: rgba(248, 113, 113, 0.15) !important;
+      color: #ef4444 !important;
+    }
+
+    mat-icon {
+      color: #f87171 !important;
+    }
+
+    &:hover mat-icon {
+      color: #ef4444 !important;
+    }
+  }
+}
+
+.mat-menu-divider {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  margin: 4px 16px !important;
+}
+
+.cdk-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ============================================================
+   🔥 RESPONSIVE MENÚ
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .mat-menu-panel {
+    min-width: 160px !important;
+    margin-top: 4px !important;
+  }
+
+  .mat-menu-item {
+    font-size: 0.8rem !important;
+    padding: 10px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mat-menu-panel {
+    min-width: 140px !important;
+  }
+
+  .mat-menu-item {
+    font-size: 0.75rem !important;
+    padding: 8px 12px !important;
+  }
+}

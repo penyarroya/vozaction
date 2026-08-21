@@ -1,0 +1,33 @@
+// // src/styles/components/_tooltips.scss
+
+// .mat-mdc-tooltip.custom-mic-tooltip {
+//   // Sobrescribimos las variables internas de Material 3 para el Tooltip
+//   --mdc-plain-tooltip-container-shape: 6px;
+  
+//   .mdc-tooltip__surface {
+//     background-color: rgb(30, 41, 59) !important; // Fondo oscuro Slate
+//     color: #ffffff !important;                   // Texto blanco brillante
+//     border: 1px solid #f59e0b !important;         // Borde naranja de tu temática
+//     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+//     padding: 6px 12px !important;                 // Margen interno cómodo para leer
+//   }
+// }
+
+
+
+
+
+// src/styles/components/_tooltips.scss
+
+.mat-mdc-tooltip.custom-mic-tooltip {
+  --mdc-plain-tooltip-container-shape: 6px;
+  
+  .mdc-tooltip__surface {
+    // Usa tus variables CSS existentes
+    background-color: var(--bg-secondary, rgb(30, 41, 59)) !important;
+    color: var(--text-primary, #ffffff) !important;
+    border: 1px solid var(--accent, #f59e0b) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    padding: 6px 12px !important;
+  }
+}

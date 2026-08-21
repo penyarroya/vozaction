@@ -1,0 +1,468 @@
+/* ============================================================ */
+/* NOT FOUND - UNIFICADO CON LOGIN/REGISTER                     */
+/* ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- CONTENEDOR PRINCIPAL (igual que Login) --- */
+.not-found-container {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  padding: clamp(12px, 3vh, 30px);
+  box-sizing: border-box;
+  background: url('/img/pages/not-found/FondoNotFound.webp') no-repeat center center;
+  background-size: cover;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+  }
+
+  /* --- TEMA OSCURO (igual que tus otros componentes) --- */
+  &.dark {
+    &::before {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .content-card {
+      background: rgba(30, 30, 46, 0.92) !important;
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .badge {
+      background: rgba(2, 132, 199, 0.15);
+      border-color: rgba(2, 132, 199, 0.20);
+      color: #38bdf8;
+    }
+
+    .icon-wrapper {
+      background: rgba(2, 132, 199, 0.10);
+      border-color: rgba(255, 255, 255, 0.06);
+      
+      mat-icon {
+        color: #38bdf8;
+      }
+    }
+
+    .title {
+      color: #ffffff;
+      
+      span {
+        color: #38bdf8;
+      }
+    }
+
+    .body p {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .main-cta {
+      border-color: #38bdf8 !important;
+      color: #38bdf8 !important;
+
+      &:hover {
+        background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
+        color: #ffffff !important;
+        border-color: #38bdf8 !important;
+        box-shadow: 0 8px 30px rgba(56, 189, 248, 0.3) !important;
+      }
+    }
+
+    .aux-nav a {
+      color: rgba(255, 255, 255, 0.4);
+      
+      &:hover {
+        color: #38bdf8;
+      }
+    }
+
+    .aux-nav .dot {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .simple-footer p {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .big-404 {
+      color: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+/* --- ELEMENTOS DECORATIVOS (igual que Login) --- */
+.bg-blur-circle,
+.bg-blur-circle-secondary {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+  opacity: 0.6;
+}
+
+.bg-blur-circle {
+  width: min(600px, 80vw);
+  height: min(600px, 80vw);
+  top: -20%;
+  left: -20%;
+  background: rgba(56, 189, 248, 0.3);
+  filter: blur(100px);
+}
+
+.bg-blur-circle-secondary {
+  width: min(400px, 60vw);
+  height: min(400px, 60vw);
+  right: -15%;
+  bottom: -25%;
+  background: rgba(255, 255, 255, 0.15);
+  filter: blur(80px);
+}
+
+/* --- CAPA DECORATIVA (404) --- */
+.decor-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.big-404 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(12rem, 30vw, 25rem);
+  font-weight: 900;
+  color: #0c4a6e;
+  letter-spacing: -0.05em;
+  user-select: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: color 0.3s ease;
+}
+
+/* --- TARJETA PRINCIPAL (igual que Login) --- */
+.content-card {
+  width: min(100%, 500px);
+  padding: clamp(28px, 5vh, 45px) clamp(24px, 4vw, 40px);
+  border-radius: clamp(24px, 4vw, 32px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+  z-index: 2;
+  text-align: center;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- HEADER (igual que Login) --- */
+header {
+  margin-bottom: clamp(16px, 4vh, 35px);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 1rem;
+  border-radius: 100px;
+  background: rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.12);
+  color: #0284c7;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  background: rgba(2, 132, 199, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: #0284c7;
+    transition: color 0.3s ease;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 900;
+  color: #0c4a6e;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  transition: color 0.3s ease;
+
+  span {
+    color: #0284c7;
+    transition: color 0.3s ease;
+  }
+}
+
+/* --- BODY (igual que Login) --- */
+.body {
+  margin-bottom: clamp(16px, 4vh, 35px);
+}
+
+.body p {
+  margin: 0;
+  color: #334155;
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  line-height: 1.6;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+/* --- FOOTER CARD --- */
+footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* --- BOTÓN PRINCIPAL (igual que btn-submit-primary) --- */
+.main-cta {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 2.5rem !important;
+  border-radius: clamp(16px, 2vw, 22px) !important;
+  border: 2px solid #0c4a6e !important;
+  background: transparent !important;
+  color: #0c4a6e !important;
+  font-weight: 800 !important;
+  font-size: clamp(0.8rem, 1.8vw, 1rem) !important;
+  letter-spacing: 0.5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    border-color: #0284c7 !important;
+    background: linear-gradient(135deg, #0284c7 0%, #0c4a6e 100%) !important;
+    color: white !important;
+    box-shadow: 0 8px 30px rgba(2, 132, 199, 0.4) !important;
+    transform: translateY(-3px) scale(1.01);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+/* --- ENLACES AUXILIARES (igual que Login) --- */
+.aux-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  a {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #0284c7;
+      text-decoration: underline;
+    }
+  }
+
+  .dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    display: inline-block;
+  }
+}
+
+/* --- PIE DE PÁGINA --- */
+.simple-footer {
+  position: absolute;
+  bottom: clamp(12px, 2vh, 24px);
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+  padding: 0 1.5rem;
+}
+
+.simple-footer p {
+  margin: 0;
+  color: #02ebf4;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  transition: color 0.3s ease;
+}
+
+/* ============================================================ */
+/* RESPONSIVE (igual que Login)                                 */
+/* ============================================================ */
+
+@media (max-height: 700px) {
+  .content-card {
+    padding: 18px 20px !important;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  header {
+    margin-bottom: 12px;
+  }
+  
+  .body {
+    margin-bottom: 12px;
+  }
+  
+  .body p {
+    font-size: 0.8rem;
+  }
+  
+  .main-cta {
+    height: 42px;
+    font-size: 0.75rem !important;
+    padding: 0.6rem 1.5rem !important;
+  }
+  
+  .icon-wrapper {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 0.8rem;
+    
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+  }
+  
+  .badge {
+    font-size: 0.6rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .simple-footer {
+    bottom: 10px;
+    
+    p {
+      font-size: 0.6rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .content-card {
+    padding: 20px 16px !important;
+    border-radius: 24px !important;
+  }
+  
+  .title {
+    font-size: 1.6rem;
+  }
+  
+  .main-cta {
+    height: 46px;
+    font-size: 0.75rem !important;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .aux-nav {
+    gap: 0.5rem;
+    
+    a {
+      font-size: 0.7rem;
+    }
+  }
+  
+  .big-404 {
+    font-size: clamp(8rem, 25vw, 15rem);
+  }
+}
+
+@media (max-width: 380px) {
+  .content-card {
+    padding: 14px 12px !important;
+  }
+  
+  .title {
+    font-size: 1.3rem;
+  }
+  
+  .main-cta {
+    height: 38px;
+    font-size: 0.65rem !important;
+    padding: 0 6px !important;
+    white-space: normal;
+  }
+  
+  .icon-wrapper {
+    width: 44px;
+    height: 44px;
+    
+    mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+  }
+}

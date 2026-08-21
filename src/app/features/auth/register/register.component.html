@@ -1,0 +1,368 @@
+<!-- <div class="auth-page-wrapper">
+  <div class="bg-blur-circle"></div>
+  <div class="bg-blur-circle-secondary"></div>
+
+  <div class="auth-card-container" [class.is-flipped]="isVerifying()">
+    
+    <mat-card class="auth-card">
+      <mat-card-header>
+        <div class="auth-header-content">
+          <h1 class="auth-main-title">Voz<span>Acción</span></h1>
+          <p class="auth-welcome-text">Crea tu cuenta para empezar</p>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="auth-form-layout">
+          
+          <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+            <mat-label>Nombre de Usuario</mat-label>
+            <input matInput formControlName="fullName" placeholder="Ej: usuario123" appAutoFocus disableAutofill #userInput (blur)="registerForm.get('fullName')?.markAsTouched()">
+            <mat-icon matSuffix>account_circle</mat-icon>
+            <mat-hint align="end">{{ userInput.value.length }} / 20</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+            <mat-label>Correo Electrónico</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="ejemplo@correo.com" disableAutofill #emailInput (blur)="registerForm.get('email')?.markAsTouched()">
+            <mat-icon matSuffix>alternate_email</mat-icon>
+            <mat-hint>Enviaremos un código de verificación</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+            <mat-label>Contraseña</mat-label>
+            <input 
+              matInput 
+              #passwordInput 
+              formControlName="password" 
+              type="text"                               
+              placeholder="Mínimo 9 caracteres" 
+              disableAutofill 
+              (blur)="registerForm.get('password')?.markAsTouched()"
+            >
+            <button mat-icon-button matSuffix (click)="togglePassword()" type="button" tabindex="-1">
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-hint align="end">{{ passwordInput.value.length }} / 9 mín.</mat-hint>
+          </mat-form-field>
+
+          @if (registerForm.get('password'); as passwordCtrl) {
+            @if (passwordCtrl.dirty && passwordCtrl.invalid) {
+              <div class="password-hints-box fade-in">
+                <div class="hint-item" [class.met]="(passwordCtrl.value?.length ?? 0) >= 9">
+                  <mat-icon>{{ (passwordCtrl.value?.length ?? 0) >= 9 ? 'check_circle' : 'cancel' }}</mat-icon>
+                  <span>Mínimo 9 caracteres</span>
+                </div>
+                <div class="hint-item" [class.met]="!passwordCtrl.hasError('missingUppercase') && !passwordCtrl.hasError('missingLowercase') && !passwordCtrl.hasError('missingNumber') && !passwordCtrl.hasError('missingSpecialChar')">
+                  <mat-icon>{{ !passwordCtrl.hasError('missingUppercase') && !passwordCtrl.hasError('missingLowercase') && !passwordCtrl.hasError('missingNumber') && !passwordCtrl.hasError('missingSpecialChar') ? 'check_circle' : 'cancel' }}</mat-icon>
+                  <span>Mayúscula, minúscula, número y símbolo</span>
+                </div>
+              </div>
+            }
+          }
+
+          <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+            <mat-label>Confirmar Contraseña</mat-label>
+            <input 
+              matInput 
+              #confirmPasswordInput 
+              formControlName="confirmPassword" 
+              type="text"                               
+              placeholder="Repite tu contraseña" 
+              disableAutofill 
+              (blur)="registerForm.get('confirmPassword')?.markAsTouched()"
+            >
+            <button mat-icon-button matSuffix (click)="toggleConfirmPassword()" type="button" tabindex="-1">
+              <mat-icon>{{ hideConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <div class="name-row-layout">
+            <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="firstName" placeholder="Tu nombre" disableAutofill #nameInput (blur)="registerForm.get('firstName')?.markAsTouched()">
+              <mat-icon matSuffix>face</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+              <mat-label>Apellidos</mat-label>
+               <input matInput formControlName="lastName" placeholder="Tus apellidos" disableAutofill #lastNameInput (blur)="registerForm.get('lastName')?.markAsTouched()">
+              <mat-icon matSuffix>badge</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="auth-footer-actions">
+            @if (errorMessage()) {
+              <div class="error-banner fade-in">
+                <mat-icon>error</mat-icon>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+            @if (hasVisibleErrors) {
+              <div class="error-banner fade-in">
+                <mat-icon>error</mat-icon>
+                <span>{{ generalErrorMessage }}</span>
+              </div>
+            }
+            <div class="auth-action-row">
+              <button mat-flat-button type="button" routerLink="/login" class="btn-back-secondary">VOLVER</button>
+              <button mat-flat-button type="submit" class="btn-submit-primary" [disabled]="registerForm.invalid || isLoading()">
+                {{ isLoading() ? 'REGISTRANDO...' : 'REGISTRAR' }}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="auth-footer-area">
+          <div class="auth-divider"></div>
+          <p class="auth-register-info">
+            ¿Ya tienes cuenta? <a routerLink="/login" class="auth-link-highlight">Inicia sesión aquí</a>
+          </p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="auth-card auth-card-back">
+      <mat-card-header>
+        <div class="auth-header-content">
+          <h1 class="auth-main-title">Verifica tu <span>Cuenta</span></h1>
+          <p class="auth-welcome-text">Código enviado a tu email</p>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="verification-container">
+          <div class="timer-display" [class.low-time]="timerSeconds() < 30">
+            <mat-icon>timer</mat-icon>
+            {{ formattedTime() }}
+          </div>
+          <mat-form-field appearance="outline" class="custom-field otp-input" floatLabel="always">
+            <mat-label>Código de 6 dígitos</mat-label>
+            <input matInput 
+            #otpInput type="text" 
+            inputmode="numeric" 
+            maxlength="6" 
+            placeholder="000000" 
+            disableAutofill
+            [value]="verificationCode()"  
+            (input)="onOtpChange($event)">
+            <mat-icon matSuffix>lock_reset</mat-icon>
+            <mat-hint align="end">{{ otpInput.value.length }} / 6</mat-hint>
+          </mat-form-field>
+          <p class="otp-info-text">El código expirará pronto. Revisa tu bandeja de entrada.</p>
+          <div class="auth-action-row">
+            <button mat-flat-button type="button" (click)="resetVerification()" class="btn-back-secondary">ATRÁS</button>
+            <button mat-flat-button class="btn-submit-primary" [disabled]="verificationCode().length < 6 || timerSeconds() === 0 || isLoading()" (click)="verifyCode()">
+              {{ isLoading() ? 'VALIDANDO...' : 'VERIFICAR' }}
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div> 
+</div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="auth-page-wrapper">
+  <div class="bg-blur-circle"></div>
+  <div class="bg-blur-circle-secondary"></div>
+
+  <div class="auth-card-container" [class.is-flipped]="isVerifying()">
+    
+    <!-- Tarjeta de Registro -->
+    <mat-card class="auth-card">
+      <mat-card-header>
+        <div class="auth-header-content">
+          <h1 class="auth-main-title">Voz<span>Acción</span></h1>
+          <p class="auth-welcome-text">Crea tu cuenta para empezar</p>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="auth-form-layout">
+          
+          <!-- Nombre de Usuario -->
+          <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+            <mat-label>Nombre de Usuario</mat-label>
+            <input matInput formControlName="fullName" placeholder="Ej: usuario123" appAutoFocus disableAutofill #userInput (blur)="registerForm.get('fullName')?.markAsTouched()">
+            <mat-icon matSuffix>account_circle</mat-icon>
+            <mat-hint align="end">{{ userInput.value.length }} / 20</mat-hint>
+          </mat-form-field>
+
+          <!-- Correo Electrónico -->
+          <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+            <mat-label>Correo Electrónico</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="ejemplo@correo.com" disableAutofill #emailInput (blur)="registerForm.get('email')?.markAsTouched()">
+            <mat-icon matSuffix>alternate_email</mat-icon>
+            <mat-hint>Enviaremos un código de verificación</mat-hint>
+          </mat-form-field>
+
+          <!-- Contraseña -->
+          <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+            <mat-label>Contraseña</mat-label>
+            <input 
+              matInput 
+              #passwordInput 
+              formControlName="password" 
+              type="text"                               
+              placeholder="Mínimo 9 caracteres" 
+              disableAutofill 
+              (blur)="registerForm.get('password')?.markAsTouched()"
+            >
+            <button mat-icon-button matSuffix (click)="togglePassword()" type="button" tabindex="-1">
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-hint align="end">{{ passwordInput.value.length }} / 9 mín.</mat-hint>
+          </mat-form-field>
+
+          <!-- Bloque de pistas de la contraseña -->
+          @if (registerForm.get('password'); as passwordCtrl) {
+            @if (passwordCtrl.dirty && passwordCtrl.invalid) {
+              <div class="password-hints-box fade-in">
+                <div class="hint-item" [class.met]="(passwordCtrl.value?.length ?? 0) >= 9">
+                  <mat-icon>{{ (passwordCtrl.value?.length ?? 0) >= 9 ? 'check_circle' : 'cancel' }}</mat-icon>
+                  <span>Mínimo 9 caracteres</span>
+                </div>
+                <div class="hint-item" [class.met]="!passwordCtrl.hasError('missingUppercase') && !passwordCtrl.hasError('missingLowercase') && !passwordCtrl.hasError('missingNumber') && !passwordCtrl.hasError('missingSpecialChar')">
+                  <mat-icon>{{ !passwordCtrl.hasError('missingUppercase') && !passwordCtrl.hasError('missingLowercase') && !passwordCtrl.hasError('missingNumber') && !passwordCtrl.hasError('missingSpecialChar') ? 'check_circle' : 'cancel' }}</mat-icon>
+                  <span>Mayúscula, minúscula, número y símbolo</span>
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Confirmar Contraseña -->
+          <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+            <mat-label>Confirmar Contraseña</mat-label>
+            <input 
+              matInput 
+              #confirmPasswordInput 
+              formControlName="confirmPassword" 
+              type="text"                               
+              placeholder="Repite tu contraseña" 
+              disableAutofill 
+              (blur)="registerForm.get('confirmPassword')?.markAsTouched()"
+            >
+            <button mat-icon-button matSuffix (click)="toggleConfirmPassword()" type="button" tabindex="-1">
+              <mat-icon>{{ hideConfirmPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field>
+
+          <!-- Nombre y Apellidos en fila -->
+          <div class="name-row-layout">
+            <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="firstName" placeholder="Tu nombre" disableAutofill #nameInput (blur)="registerForm.get('firstName')?.markAsTouched()">
+              <mat-icon matSuffix>face</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="custom-field" floatLabel="always">
+              <mat-label>Apellidos</mat-label>
+              <input matInput formControlName="lastName" placeholder="Tus apellidos" disableAutofill #lastNameInput (blur)="registerForm.get('lastName')?.markAsTouched()">
+              <mat-icon matSuffix>badge</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <!-- Acciones del formulario -->
+          <div class="auth-footer-actions">
+            @if (errorMessage()) {
+              <div class="error-banner fade-in">
+                <mat-icon>error</mat-icon>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+            @if (hasVisibleErrors) {
+              <div class="error-banner fade-in">
+                <mat-icon>error</mat-icon>
+                <span>{{ generalErrorMessage }}</span>
+              </div>
+            }
+            <div class="auth-action-row">
+              <button mat-flat-button type="button" routerLink="/login" class="btn-back-secondary">VOLVER</button>
+              <button mat-flat-button type="submit" class="btn-submit-primary" [disabled]="registerForm.invalid || isLoading()">
+                {{ isLoading() ? 'REGISTRANDO...' : 'REGISTRAR' }}
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="auth-footer-area">
+          <div class="auth-divider"></div>
+          <p class="auth-register-info">
+            ¿Ya tienes cuenta? <a routerLink="/login" class="auth-link-highlight">Inicia sesión aquí</a>
+          </p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tarjeta de verificación (OTP) -->
+    <mat-card class="auth-card auth-card-back">
+      <mat-card-header>
+        <div class="auth-header-content">
+          <h1 class="auth-main-title">Verifica tu <span>Cuenta</span></h1>
+          <p class="auth-welcome-text">Código enviado a tu email</p>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="verification-container">
+          
+          <!-- Temporizador -->
+          <div class="timer-display" [class.low-time]="timerSeconds() < 30">
+            <mat-icon>timer</mat-icon>
+            {{ formattedTime() }}
+          </div>
+
+          <!-- Campo OTP -->
+          <mat-form-field appearance="outline" class="custom-field otp-input" floatLabel="always">
+            <mat-label>Código de 6 dígitos</mat-label>
+            <input matInput 
+              #otpInput type="text" 
+              inputmode="numeric" 
+              maxlength="6" 
+              placeholder="000000" 
+              disableAutofill
+              [value]="verificationCode()"  
+              (input)="onOtpChange($event)">
+            <mat-icon matSuffix>lock_reset</mat-icon>
+            <mat-hint align="end">{{ otpInput.value.length }} / 6</mat-hint>
+          </mat-form-field>
+
+          <p class="otp-info-text">El código expirará pronto. Revisa tu bandeja de entrada.</p>
+
+          <!-- ✅ BOTONES DE COPIAR Y PEGAR (solo si micrófono activo y hay código recibido) -->
+          @if (isMicActive() && receivedOtpCode()) {
+            <div class="otp-actions-row">
+              <button mat-flat-button type="button" 
+                      (click)="pasteOtpCode()" 
+                      class="btn-otp-secondary">
+                <mat-icon>content_paste</mat-icon>
+                PEGAR CÓDIGO
+              </button>
+            </div>
+          }
+
+          <div class="auth-action-row">
+            <button mat-flat-button type="button" (click)="resetVerification()" class="btn-back-secondary">ATRÁS</button>
+            <button mat-flat-button class="btn-submit-primary" [disabled]="verificationCode().length < 6 || timerSeconds() === 0 || isLoading()" (click)="verifyCode()">
+              {{ isLoading() ? 'VALIDANDO...' : 'VERIFICAR' }}
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div> 
+</div>

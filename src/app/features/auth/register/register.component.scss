@@ -1,0 +1,730 @@
+/* ============================================================ */
+/* ESTILOS DE LAYOUT (REGISTER) – BOTONES MÁS ALTOS            */
+/* ============================================================ */
+
+/* --- CONTENEDOR PRINCIPAL --- */
+.auth-page-wrapper {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  background: url('/img/pages/login/Faro_3.jpg') no-repeat center center;
+  background-size: cover;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+  }
+}
+
+/* --- ELEMENTOS DECORATIVOS --- */
+.bg-blur-circle,
+.bg-blur-circle-secondary {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+  opacity: 0.5;
+}
+
+.bg-blur-circle {
+  width: min(400px, 60vw);
+  height: min(400px, 60vw);
+  top: -15%;
+  left: -15%;
+  background: var(--accent-bg, rgba(56, 189, 248, 0.3));
+  filter: blur(80px);
+}
+
+.bg-blur-circle-secondary {
+  width: min(300px, 50vw);
+  height: min(300px, 50vw);
+  right: -10%;
+  bottom: -15%;
+  background: var(--border-light, rgba(255, 255, 255, 0.15));
+  filter: blur(60px);
+}
+
+/* --- LÓGICA DE GIRO --- */
+.auth-card-container {
+  width: min(100%, 500px);
+  position: relative;
+  z-index: 1;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+
+  &.is-flipped {
+    transform: rotateY(180deg);
+  }
+}
+
+/* --- TARJETAS (FRONTAL Y TRASERA) --- */
+.auth-card,
+.auth-card-back {
+  width: 100%;
+  padding: clamp(12px, 2vh, 20px) clamp(14px, 2vw, 24px) !important;
+  border-radius: clamp(20px, 3vw, 28px) !important;
+  border: 1px solid var(--border-light, rgba(255, 255, 255, 0.5));
+  background: var(--blur-bg, rgba(255, 255, 255, 0.85)) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-card, 0 20px 40px -10px rgba(0, 0, 0, 0.4)) !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.3s ease;
+}
+
+.auth-card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  transform: rotateY(180deg);
+}
+
+/* --- HEADER --- */
+.auth-card-header {
+  justify-content: center;
+  padding: 0;
+}
+
+.auth-header-content {
+  width: 100%;
+  margin-bottom: clamp(4px, 1vh, 12px);
+  text-align: center;
+}
+
+.auth-main-title {
+  margin: 0;
+  color: var(--text-primary, #0c4a6e);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 900;
+  line-height: 1.1;
+
+  span {
+    color: var(--accent, #0284c7);
+  }
+}
+
+.auth-welcome-text {
+  margin: 2px 0 0;
+  color: var(--text-secondary, #334155);
+  font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+  font-weight: 600;
+}
+
+/* --- FORMULARIOS Y VALIDACIONES --- */
+.auth-form-layout,
+.verification-container {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1px, 0.3vh, 4px);
+}
+
+/* --- FILAS ESPECIALES (REGISTER) --- */
+.name-row-layout {
+  display: flex;
+  gap: clamp(4px, 1vw, 10px);
+  width: 100%;
+  align-items: flex-start;
+
+  .custom-field {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* --- HINTS DE CONTRASEÑA (MODIFICADO) --- */
+.password-hints-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  background: var(--bg-card, rgba(255, 255, 255, 0.9));
+  border-radius: 6px;
+  padding: 2px 8px;
+  margin: 2px 0;
+  border: 1px solid var(--border-color, rgba(2, 132, 199, 0.15));
+  box-shadow: var(--shadow-btn, 0 1px 3px rgba(0, 0, 0, 0.05));
+
+  .hint-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: clamp(0.5rem, 1.2vw, 0.65rem);
+    color: var(--text-muted, #64748b);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+
+    mat-icon {
+      font-size: clamp(9px, 1.2vw, 12px);
+      width: clamp(9px, 1.2vw, 12px);
+      height: clamp(9px, 1.2vw, 12px);
+    }
+
+    &.met {
+      color: #059669;
+      font-weight: 700;
+      mat-icon {
+        transform: scale(1.1);
+      }
+    }
+
+    /* Cuando no se cumple, se muestra en rojo */
+    &:not(.met) {
+      color: #dc2626;
+      mat-icon {
+        color: #dc2626;
+      }
+    }
+  }
+}
+
+/* --- ERROR GENERAL --- */
+.auth-error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: clamp(1px, 0.3vh, 4px);
+  padding: clamp(3px, 0.6vh, 8px) clamp(6px, 1.2vw, 12px);
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  font-size: clamp(0.55rem, 1.2vw, 0.75rem);
+  font-weight: 700;
+  text-align: center;
+
+  mat-icon {
+    width: clamp(12px, 1.5vw, 16px);
+    height: clamp(12px, 1.5vw, 16px);
+    font-size: clamp(12px, 1.5vw, 16px);
+    color: currentColor;
+  }
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: clamp(3px, 0.6vh, 8px) clamp(6px, 1.2vw, 12px);
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid #ef4444 !important;
+  border-radius: 8px;
+  color: #ef4444 !important;
+  font-weight: 700;
+  font-size: clamp(0.55rem, 1.2vw, 0.75rem);
+  box-sizing: border-box;
+  animation: fadeInError 0.4s ease-out;
+
+  mat-icon {
+    font-size: clamp(12px, 1.5vw, 16px);
+    width: clamp(12px, 1.5vw, 16px);
+    height: clamp(12px, 1.5vw, 16px);
+    flex-shrink: 0;
+  }
+}
+
+/* ============================================================ */
+/* ✅ BOTONES – MÁS ALTOS (pero sin llegar a 56px)             */
+/* ============================================================ */
+.auth-action-row {
+  display: flex;
+  gap: clamp(8px, 1.5vw, 14px);
+  width: 100%;
+  margin-top: clamp(4px, 1vh, 10px);
+
+  button {
+    flex: 1;
+    height: clamp(40px, 5.5vh, 48px);
+    border-radius: clamp(12px, 1.8vw, 18px);
+    font-size: clamp(0.7rem, 1.6vw, 0.9rem);
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    transition:
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      filter 0.3s ease;
+    cursor: pointer;
+    border: none;
+    outline: none;
+  }
+}
+
+.btn-back-secondary {
+  background-color: var(--btn-secondary-bg, #0c4a6e) !important;
+  color: var(--btn-secondary-color, white) !important;
+  box-shadow: var(--shadow-btn, 0 2px 8px rgba(0, 0, 0, 0.1));
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-btn-hover, 0 6px 16px rgba(12, 74, 110, 0.25));
+    filter: brightness(1.15);
+  }
+}
+
+.btn-submit-primary {
+  border: 2px solid var(--btn-primary-border, #0c4a6e) !important;
+  background: transparent !important;
+  color: var(--btn-primary-color, #0c4a6e) !important;
+
+  &:not(:disabled) {
+    border-color: var(--btn-primary-bg, #0284c7) !important;
+    background-color: var(--btn-primary-bg, #0284c7) !important;
+    color: var(--btn-primary-text, white) !important;
+    box-shadow: var(--shadow-btn, 0 2px 8px rgba(2, 132, 199, 0.3));
+    transform: translateY(-1px);
+  }
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  &:disabled {
+    border-color: var(--border-color, #94a3b8) !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: var(--text-muted, #94a3b8) !important;
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+/* --- FOOTER --- */
+.auth-footer-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1px, 0.3vh, 4px);
+  margin-top: clamp(4px, 1vh, 12px);
+  text-align: center;
+}
+
+.auth-link-group,
+.auth-legal-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 0.8vw, 8px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.auth-bullet {
+  color: var(--text-muted, #94a3b8);
+  font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+}
+
+.auth-divider {
+  width: 40px;
+  height: 1px;
+  margin: 2px 0;
+  background: var(--border-color, rgba(0, 0, 0, 0.1));
+}
+
+.auth-link-secondary,
+.auth-link-highlight {
+  color: var(--accent, #0284c7);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: clamp(0.65rem, 1.5vw, 0.8rem);
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--accent-hover, #0c4a6e);
+    text-decoration: underline;
+  }
+}
+
+.auth-register-info {
+  margin: 0;
+  color: var(--text-secondary, #334155);
+  font-size: clamp(0.65rem, 1.5vw, 0.8rem);
+}
+
+.auth-legal-links {
+  margin-top: clamp(1px, 0.3vh, 4px);
+  color: var(--text-muted, #64748b);
+  font-size: clamp(0.5rem, 1.2vw, 0.65rem);
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover {
+      color: var(--accent, #0c4a6e);
+      text-decoration: underline;
+    }
+  }
+}
+
+/* --- OTP / VERIFICACIÓN --- */
+.verification-container {
+  .timer-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: clamp(2px, 0.5vh, 6px);
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    font-weight: 800;
+    color: var(--text-primary, #0c4a6e);
+
+    mat-icon {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      width: clamp(1rem, 2.5vw, 1.3rem);
+      height: clamp(1rem, 2.5vw, 1.3rem);
+    }
+
+    &.low-time {
+      color: #ef4444;
+      animation: pulse 1s infinite;
+    }
+  }
+
+  .otp-info-text {
+    text-align: center;
+    font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+    color: var(--text-muted, #64748b);
+    margin-top: 0;
+  }
+}
+
+/* ============================================================ */
+/* FEEDBACK DE VOZ                                              */
+/* ============================================================ */
+.voice-feedback-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 1px;
+
+  .voice-status,
+  .voice-reply {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: clamp(0.5rem, 1.2vw, 0.65rem);
+    font-weight: 600;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .voice-status {
+    background: var(--accent-bg, rgba(2, 132, 199, 0.08));
+    color: var(--accent, #0284c7);
+    mat-icon {
+      color: var(--accent, #0284c7);
+      animation: pulseMic 1.5s infinite;
+      font-size: clamp(12px, 1.5vw, 16px);
+      width: clamp(12px, 1.5vw, 16px);
+      height: clamp(12px, 1.5vw, 16px);
+    }
+  }
+
+  .voice-reply {
+    background: rgba(16, 185, 129, 0.08);
+    color: #059669;
+    mat-icon {
+      color: #059669;
+      font-size: clamp(12px, 1.5vw, 16px);
+      width: clamp(12px, 1.5vw, 16px);
+      height: clamp(12px, 1.5vw, 16px);
+    }
+  }
+}
+
+/* ============================================================ */
+/* ANIMACIONES                                                  */
+/* ============================================================ */
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInError {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseMic {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.95); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================================ */
+/* RESPONSIVIDAD – MEDIA QUERIES                                */
+/* ============================================================ */
+
+@media (max-height: 700px) {
+  .auth-card, .auth-card-back {
+    padding: 8px 10px !important;
+  }
+  .auth-main-title {
+    font-size: 1.3rem;
+  }
+  .auth-header-content {
+    margin-bottom: 2px;
+  }
+  .auth-welcome-text {
+    font-size: 0.6rem;
+  }
+  .auth-form-layout {
+    gap: 0px;
+  }
+  .auth-action-row {
+    margin-top: 2px;
+    button {
+      height: 34px !important;
+      font-size: 0.65rem !important;
+    }
+  }
+  .auth-footer-area {
+    margin-top: 2px;
+    gap: 0px;
+  }
+  .auth-register-info,
+  .auth-link-secondary,
+  .auth-link-highlight {
+    font-size: 0.55rem;
+  }
+  .auth-legal-links {
+    font-size: 0.5rem;
+    margin-top: 0;
+  }
+  .password-hints-box {
+    padding: 1px 4px;
+    .hint-item {
+      font-size: 0.5rem;
+    }
+  }
+  .voice-feedback-container {
+    .voice-status, .voice-reply {
+      font-size: 0.5rem;
+      padding: 0px 4px;
+    }
+  }
+  .custom-field {
+    .mat-mdc-text-field-wrapper {
+      min-height: 36px !important;
+    }
+    .mdc-floating-label {
+      font-size: 0.65rem !important;
+    }
+    .mdc-floating-label--float-above {
+      font-size: 0.55rem !important;
+    }
+    .mdc-text-field__input,
+    input.mat-mdc-input-element {
+      font-size: 0.85rem !important;
+      padding: 2px 0 !important;
+    }
+    mat-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+    }
+    .mat-mdc-form-field-hint-wrapper,
+    .mat-mdc-form-field-error-wrapper {
+      font-size: 0.5rem !important;
+      padding-top: 0px !important;
+    }
+    .mat-mdc-form-field-hint {
+      font-size: 0.5rem !important;
+    }
+    .mdc-text-field__input::placeholder {
+      font-size: 0.6rem !important;
+    }
+  }
+  .error-banner {
+    font-size: 0.5rem;
+    padding: 2px 4px;
+    mat-icon {
+      font-size: 10px;
+      width: 10px;
+      height: 10px;
+    }
+  }
+  .verification-container {
+    .timer-display {
+      font-size: 0.9rem;
+      margin-bottom: 1px;
+      mat-icon {
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+    .otp-info-text {
+      font-size: 0.5rem;
+    }
+  }
+  .auth-error-message {
+    font-size: 0.5rem;
+    padding: 2px 4px;
+    mat-icon {
+      font-size: 10px;
+      width: 10px;
+      height: 10px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page-wrapper {
+    padding: 4px 8px;
+  }
+  .auth-card, .auth-card-back {
+    padding: 10px 8px !important;
+    border-radius: 18px !important;
+  }
+  .auth-main-title {
+    font-size: 1.2rem;
+  }
+  .auth-welcome-text {
+    font-size: 0.6rem;
+  }
+  .auth-action-row {
+    gap: 4px;
+    flex-wrap: wrap;
+    button {
+      height: 38px !important;
+      font-size: 0.6rem !important;
+      flex: 1 1 auto;
+      min-width: 60px;
+    }
+  }
+  .auth-link-group,
+  .auth-legal-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .name-row-layout {
+    flex-direction: column;
+    gap: 0;
+  }
+  .voice-feedback-container {
+    .voice-status, .voice-reply {
+      font-size: 0.5rem;
+      padding: 1px 3px;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-card, .auth-card-back {
+    padding: 6px 6px !important;
+  }
+  .auth-main-title {
+    font-size: 1rem;
+  }
+  .auth-action-row button {
+    height: 32px !important;
+    font-size: 0.55rem !important;
+    min-width: 50px;
+    white-space: normal;
+    word-break: break-word;
+    padding: 1px 3px;
+  }
+  .auth-card-container {
+    width: 100%;
+  }
+}
+
+
+
+// Marcar el texto del input en rojo cuando el campo es inválido y ha sido tocado/modificado
+.mat-mdc-form-field {
+  input.mat-mdc-input-element {
+    &.ng-invalid.ng-touched,
+    &.ng-invalid.ng-dirty {
+      color: #d32f2f !important;  // Rojo
+      &::placeholder {
+        color: #d32f2f !important; // Placeholder también rojo (opcional)
+      }
+    }
+  }
+
+  // Opcional: label y hint también en rojo
+  &.ng-invalid.ng-touched,
+  &.ng-invalid.ng-dirty {
+    .mdc-floating-label {
+      color: #d32f2f !important;
+    }
+    .mat-mdc-form-field-hint {
+      color: #d32f2f !important;
+    }
+  }
+}
+
+.mat-mdc-form-field:not(.otp-input) {
+  input.mat-mdc-input-element {
+    &.ng-invalid.ng-touched,
+    &.ng-invalid.ng-dirty {
+      color: #d32f2f !important;
+    }
+  }
+}
+
+
+
+
+
+/* ============================================================ */
+/* ESTILOS PARA OTP                                              */
+/* ============================================================ */
+
+/* ✅ ESTILOS QUE SÍ USAS */
+.otp-actions-row {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0 16px;
+  justify-content: center;
+}
+
+.btn-otp-secondary {
+  background-color: var(--btn-secondary-bg, #0c4a6e) !important;
+  color: var(--btn-secondary-color, white) !important;
+  border-radius: 14px !important;
+  font-weight: 700 !important;
+  font-size: 0.75rem !important;
+  padding: 0 16px !important;
+  height: 36px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: var(--shadow-btn, 0 4px 12px rgba(0, 0, 0, 0.1));
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-btn-hover, 0 8px 20px rgba(12, 74, 110, 0.3));
+    filter: brightness(1.15);
+  }
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}

@@ -1,0 +1,135 @@
+<!-- <div class="about-wrapper" [class.dark]="themeService.currentTheme() === 'dark'">
+  <div class="bg-blur-circle"></div>
+  <div class="bg-blur-circle-secondary"></div>
+
+  <article class="about-card fade-in">
+    
+    <header class="about-header">
+      <div class="logo-container">
+        <img src="/ico/Micro.jpg" alt="Logo VoxAcción" class="logo" />
+      </div>
+      <h1>VozAcción</h1>
+      <p class="tagline">El Universo de la Palabra</p>
+    </header>
+
+    <hr class="divider">
+
+    <section class="content">
+      <p class="intro">
+        <strong>Comandos de voz para todos</strong>. VozAcción permite interactuar con la tecnología 
+        usando solo la voz, facilitando el acceso a personas con diversas capacidades.
+      </p>
+
+      <ul class="features">
+        <li>
+          <div class="icon-box"><mat-icon>mic</mat-icon></div>
+          <span>Control total por voz, sin necesidad de clics.</span>
+        </li>
+        <li>
+          <div class="icon-box"><mat-icon>accessibility_new</mat-icon></div>
+          <span>Diseñado para personas con movilidad reducida.</span>
+        </li>
+        <li>
+          <div class="icon-box"><mat-icon>assistant</mat-icon></div>
+          <span>Asistente inteligente que entiende comandos naturales.</span>
+        </li>
+      </ul>
+    </section>
+
+    <footer class="about-footer">
+      <div class="contact-line">
+        <mat-icon>info</mat-icon> 
+        <span>Versión 1.0 - Proyecto de accesibilidad</span>
+      </div>
+      <div class="contact-line">
+        <mat-icon>code</mat-icon> 
+        <a href="https://github.com/tu-usuario/voxaction" target="_blank">Repositorio en GitHub</a>
+      </div>
+    </footer>
+
+    <button 
+      class="btn-close" 
+      (click)="goBack()"
+      matTooltip="Cerrar" 
+      matTooltipClass="custom-mic-tooltip"
+      aria-label="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+    
+  </article>
+</div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="about-wrapper" [class.dark]="themeService.currentTheme() === 'dark'">
+  <div class="bg-blur-circle"></div>
+  <div class="bg-blur-circle-secondary"></div>
+
+  <article class="about-card fade-in">
+    
+    <header class="about-header">
+      <div class="logo-container">
+        <img src="/ico/Micro.jpg" alt="Logo VoxAcción" class="logo" />
+      </div>
+      <h1>VozAcción</h1>
+      <p class="tagline">El Universo de la Palabra</p>
+    </header>
+
+    <hr class="divider">
+
+    <section class="content">
+      <p class="intro">
+        <strong>Comandos de voz para todos</strong>. VozAcción permite interactuar con la tecnología 
+        usando solo la voz, facilitando el acceso a personas con diversas capacidades.
+      </p>
+
+      <ul class="features">
+        <li>
+          <div class="icon-box"><mat-icon>mic</mat-icon></div>
+          <span>Control total por voz, sin necesidad de clics.</span>
+        </li>
+        <li>
+          <div class="icon-box"><mat-icon>accessibility_new</mat-icon></div>
+          <span>Diseñado para personas con movilidad reducida.</span>
+        </li>
+        <li>
+          <div class="icon-box"><mat-icon>assistant</mat-icon></div>
+          <span>Asistente inteligente que entiende comandos naturales.</span>
+        </li>
+      </ul>
+    </section>
+
+    <footer class="about-footer">
+      <div class="contact-line">
+        <mat-icon>info</mat-icon> 
+        <span>Versión 1.0 - Proyecto de accesibilidad</span>
+      </div>
+      <div class="contact-line">
+        <mat-icon>code</mat-icon> 
+        <a href="https://github.com/tu-usuario/voxaction" target="_blank">Repositorio en GitHub</a>
+      </div>
+    </footer>
+
+    <!-- ✅ BOTÓN VOLVER con la misma clase que en Register/Login -->
+    <button 
+      class="btn-back-secondary" 
+      (click)="goBack()"
+      matTooltip="Volver" 
+      matTooltipClass="custom-mic-tooltip"
+      aria-label="Volver">
+      <mat-icon>arrow_back</mat-icon>
+      VOLVER
+    </button>
+  </article>
+</div>

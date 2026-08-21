@@ -1,0 +1,119 @@
+<!-- src/app/features/pages/home/home.component.html -->
+
+<!-- ✅ TOOLBAR REUTILIZABLE -->
+<app-transparent-toolbar 
+  [title]="'VozAcción'"
+  [showLogo]="true"
+  [showThemeToggle]="true"
+  [showMicToggle]="true"
+  [showUserAvatar]="true"
+  [showBackButton]="false"
+  [showHelp]="true"
+  [position]="'fixed'"
+  [backgroundOpacity]="0.85"
+  (help)="showHelp()"
+  (login)="goToLogin()"
+  (logout)="logout()"
+></app-transparent-toolbar>
+
+<!-- ✅ FONDO CON IMAGEN (AÑADIR ESTO) -->
+<div class="hero-background"></div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="home-wrapper" [class.dark]="isDarkTheme">
+  
+  <!-- Elementos decorativos -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Contenido principal -->
+  <main class="home-content">
+    
+    <!-- Hero Section -->
+    <section class="hero-section">
+      
+      <h1 class="hero-title">
+        Voz<span>Acción</span>
+        <span class="hero-subtitle">El universo de la palabra</span>
+      </h1>
+      
+      <p class="hero-description">
+        Controla tu tecnología con la voz. Diseñado para todos,
+        <br>sin barreras ni complicaciones.
+      </p>
+
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+      <h2 class="section-title">¿Por qué <span>Voz</span>Acción?</h2>
+      
+      <div class="features-grid">
+        <mat-card class="feature-card">
+          <div class="feature-icon">
+            <mat-icon>record_voice_over</mat-icon>
+          </div>
+          <h3>Comandos de voz</h3>
+          <p>Interactúa con la aplicación usando solo tu voz. Sin clics, sin teclados.</p>
+        </mat-card>
+
+        <mat-card class="feature-card">
+          <div class="feature-icon">
+            <mat-icon>accessibility_new</mat-icon>
+          </div>
+          <h3>Accesibilidad</h3>
+          <p>Diseñado para personas con movilidad reducida o discapacidad visual.</p>
+        </mat-card>
+
+        <mat-card class="feature-card">
+          <div class="feature-icon">
+            <mat-icon>assistant</mat-icon>
+          </div>
+          <h3>Asistente inteligente</h3>
+          <p>Entiende comandos naturales y se adapta a tu forma de hablar.</p>
+        </mat-card>
+
+        <mat-card class="feature-card">
+          <div class="feature-icon">
+            <mat-icon>security</mat-icon>
+          </div>
+          <h3>Seguridad</h3>
+          <p>Tus datos están protegidos con autenticación segura y cifrado.</p>
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Call to Action (solo si NO está autenticado) -->
+    @if (!isAuthenticated) {
+      <section class="cta-section">
+        <div class="cta-content">
+          <h2>¿Listo para empezar?</h2>
+          <p>Únete a la revolución de la accesibilidad por voz.</p>
+          <button mat-flat-button class="btn-primary btn-large" (click)="goToRegister()">
+            <mat-icon>rocket_launch</mat-icon>
+            COMENZAR AHORA
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- Footer -->
+    <footer class="home-footer">
+      <div class="footer-links">
+        <a routerLink="/about">Acerca de</a>
+        <span class="footer-divider">•</span>
+        <a routerLink="/help">Ayuda</a>
+        <span class="footer-divider">•</span>
+        <a routerLink="/privacy">Privacidad</a>
+        <span class="footer-divider">•</span>
+        <a routerLink="/terms">Condiciones</a>
+      </div>
+      <p class="footer-copy">
+        &copy; JlrnSisfoft-{{ currentYear }} VozAcción <span class="version-badge">v1.0 · Accesibilidad</span> — Todos los derechos reservados
+      </p>
+    </footer>
+
+  </main>
+</div>

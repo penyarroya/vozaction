@@ -1,0 +1,120 @@
+/* =========================================================================
+   ESTILOS COMPONENTE RAÍZ (App / Zoneless)
+   ========================================================================= */
+
+// 1. PANTALLA DE CARGA INICIAL
+.app-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: sans-serif;
+  color: var(--color-primary, #4f46e5);
+  background-color: var(--bg-secondary);
+
+  .spinner {
+    border: 4px solid rgba(79, 70, 229, 0.1);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border-left-color: var(--color-primary, #4f46e5);
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+}
+
+// 2. BOTÓN CIRCULAR MINIMALISTA GLOBAL
+.btn-theme-circle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 9999;
+  
+  // Círculo perfecto
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  
+  // Consumo de tus variables semánticas globales de themes.scss
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-btn);
+  
+  // Centrado de los iconos
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--bg-secondary);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  // =========================================================================
+  // 3. HINT FLOTANTE CON PURO CSS (Aparece al hacer Hover)
+  // =========================================================================
+  
+  // Cuerpo del cuadro de texto informativo
+  &::after {
+    content: attr(data-hint); // Captura el texto dinámico inyectado en el HTML
+    position: absolute;
+    top: 120%; // Posicionado abajo del botón
+    right: 10%;
+    
+    background-color: var(--text-primary); // Color inverso automático
+    color: var(--bg-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-family: sans-serif;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    
+    // Estado inicial invisible
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  // Pequeño triángulo de la flecha indicadora
+  &::before {
+    content: '';
+    position: absolute;
+    top: 105%;
+    right: 14px;
+    border-width: 0 6px 6px 6px;
+    border-style: solid;
+    border-color: transparent transparent var(--text-primary) transparent;
+    
+    // Estado inicial invisible
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  // Activación simultánea del Hint y la Flecha al pasar el cursor
+  &:hover {
+    &::after, &::before {
+      opacity: 1;
+      transform: translateY(0); // Efecto de desplazamiento fluido hacia abajo
+    }
+  }
+}
+
+// 4. ANIMACIÓN GENERAL DEL SPINNER
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,321 @@
+// src/app/shared/components/transparent-toolbar/transparent-toolbar.component.scss
+
+// ============================================================
+// VARIABLES
+// ============================================================
+$toolbar-height: 64px;
+$z-index-toolbar: 1000;
+
+// ============================================================
+// TOOLBAR PRINCIPAL
+// ============================================================
+.toolbar {
+  height: $toolbar-height;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+  z-index: $z-index-toolbar;
+
+  // Posiciones
+  &.position-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  &.position-sticky {
+    position: sticky;
+    top: 0;
+  }
+  &.position-relative {
+    position: relative;
+  }
+
+  // Tema claro
+  &.light {
+    color: #0a0e1a;
+    .logo-text {
+      color: #0a0e1a;
+      span {
+        color: #38bdf8;
+      }
+    }
+    .nav-link {
+      color: rgba(10, 14, 26, 0.7);
+      &:hover, &.active {
+        color: #0a0e1a;
+      }
+    }
+    .nav-btn {
+      color: rgba(10, 14, 26, 0.6);
+      &:hover {
+        color: #0a0e1a;
+        background: rgba(0, 0, 0, 0.04);
+      }
+    }
+  }
+
+  // Tema oscuro
+  &.dark {
+    color: #f0f4f8;
+    .logo-text {
+      color: #f0f4f8;
+      span {
+        color: #38bdf8;
+      }
+    }
+    .nav-link {
+      color: rgba(240, 244, 248, 0.7);
+      &:hover, &.active {
+        color: #f0f4f8;
+      }
+    }
+    .nav-btn {
+      color: rgba(240, 244, 248, 0.6);
+      &:hover {
+        color: #f0f4f8;
+        background: rgba(255, 255, 255, 0.06);
+      }
+    }
+  }
+
+  // Transparente (fondo transparente con blur)
+  &.transparent {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}
+
+// ============================================================
+// TOOLBAR SPACER
+// ============================================================
+.toolbar-spacer {
+  height: $toolbar-height;
+}
+
+// ============================================================
+// SECCIÓN IZQUIERDA
+// ============================================================
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+// ============================================================
+// LOGO
+// ============================================================
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-right: 8px;
+
+  .logo-text {
+    span {
+      color: #38bdf8;
+    }
+  }
+}
+
+// ============================================================
+// TÍTULO
+// ============================================================
+.toolbar-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+// ============================================================
+// ENLACES DE NAVEGACIÓN
+// ============================================================
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 16px;
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    &.active {
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.12);
+    }
+  }
+}
+
+// ============================================================
+// SECCIÓN DERECHA
+// ============================================================
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+// ============================================================
+// BOTONES DE NAVEGACIÓN
+// ============================================================
+.nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+
+  &.mic-btn {
+    &.active {
+      color: #10b981 !important;
+    }
+  }
+}
+
+// ============================================================
+// BOTÓN DE LOGIN
+// ============================================================
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #0c4a6e, #1a6a9e) !important;
+  color: white !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  padding: 0 18px !important;
+  height: 36px !important;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(12, 74, 110, 0.3) !important;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// ============================================================
+// MENÚ DE USUARIO
+// ============================================================
+.user-btn {
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+// ============================================================
+// RESPONSIVE
+// ============================================================
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .toolbar-spacer {
+    height: 56px;
+  }
+
+  .logo-link .logo-text {
+    font-size: 1rem;
+  }
+
+  .nav-links {
+    display: none; // Ocultar en móvil (usar menú hamburguesa)
+  }
+
+  .nav-btn {
+    width: 36px;
+    height: 36px;
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .login-btn {
+    font-size: 0.65rem !important;
+    padding: 0 12px !important;
+    height: 32px !important;
+    
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbar {
+    padding: 0 12px;
+    height: 48px;
+  }
+
+  .toolbar-spacer {
+    height: 48px;
+  }
+
+  .logo-link .logo-text {
+    font-size: 0.85rem;
+  }
+
+  .nav-btn {
+    width: 32px;
+    height: 32px;
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .login-btn {
+    font-size: 0.55rem !important;
+    padding: 0 10px !important;
+    height: 28px !important;
+    
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+  }
+}

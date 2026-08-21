@@ -1,0 +1,422 @@
+/* ============================================================ */
+/* ESTILOS DE LAYOUT (LOGIN) – RESPONSIVE Y CON VARIABLES      */
+/* ============================================================ */
+
+/* --- CONTENEDOR PRINCIPAL --- */
+.auth-page-wrapper {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  padding: clamp(12px, 3vh, 30px);
+  box-sizing: border-box;
+  background: url('/img/pages/login/Faro_3.jpg') no-repeat center center;
+  background-size: cover;
+
+  /* Overlay para mejorar legibilidad sobre la imagen (opcional) */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 0;
+  }
+}
+
+/* --- ELEMENTOS DECORATIVOS (adaptados al tema) --- */
+.bg-blur-circle,
+.bg-blur-circle-secondary {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+  opacity: 0.6;
+}
+
+.bg-blur-circle {
+  width: min(600px, 80vw);
+  height: min(600px, 80vw);
+  top: -20%;
+  left: -20%;
+  background: var(--accent-bg, rgba(56, 189, 248, 0.3));
+  filter: blur(100px);
+}
+
+.bg-blur-circle-secondary {
+  width: min(400px, 60vw);
+  height: min(400px, 60vw);
+  right: -15%;
+  bottom: -25%;
+  background: var(--border-light, rgba(255, 255, 255, 0.15));
+  filter: blur(80px);
+}
+
+/* --- CONTENEDOR DE LA DIRECTIVA FOCUS TRAP --- */
+.focus-trap-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* --- TARJETA (usa variables de tema) --- */
+.auth-card {
+  width: min(100%, 500px);
+  padding: clamp(28px, 5vh, 45px) clamp(24px, 4vw, 40px);
+  border-radius: clamp(24px, 4vw, 32px) !important;
+  border: 1px solid var(--border-light, rgba(255, 255, 255, 0.5));
+  background: var(--blur-bg, rgba(255, 255, 255, 0.85)) !important;
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  box-shadow: var(--shadow-card, 0 25px 50px -12px rgba(0, 0, 0, 0.4)) !important;
+  z-index: 1;
+}
+
+/* --- HEADER --- */
+.auth-card-header {
+  justify-content: center;
+  padding: 0;
+}
+
+.auth-header-content {
+  width: 100%;
+  margin-bottom: clamp(16px, 4vh, 35px);
+  text-align: center;
+}
+
+.auth-main-title {
+  margin: 0;
+  color: var(--text-primary, #0c4a6e);
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 900;
+  line-height: 1.1;
+
+  span {
+    color: var(--accent, #0284c7);
+  }
+}
+
+.auth-welcome-text {
+  margin: 6px 0 0;
+  color: var(--text-secondary, #334155);
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  font-weight: 600;
+}
+
+/* --- FORMULARIO --- */
+.auth-form-layout {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.5vh, 16px);
+}
+
+/* --- CAMPOS PERSONALIZADOS (heredan variables de field-clean) --- */
+.custom-field {
+  width: 100%;
+
+  mat-icon {
+    color: var(--accent, #0284c7);
+  }
+}
+
+.toggle-pass-btn {
+  color: var(--accent, #0284c7);
+}
+
+/* --- ERROR (usa variables de texto) --- */
+.auth-error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: clamp(6px, 1vh, 14px);
+  padding: clamp(8px, 1.5vh, 16px) clamp(12px, 2vw, 20px);
+  border: 1px solid #fee2e2;
+  border-radius: 12px;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+  font-weight: 700;
+  text-align: center;
+
+  mat-icon {
+    width: clamp(18px, 2vw, 24px);
+    height: clamp(18px, 2vw, 24px);
+    font-size: clamp(18px, 2vw, 24px);
+    color: currentColor;
+  }
+}
+
+/* ============================================================ */
+/* BOTONES – ESTILO UNIFICADO CON REGISTER (USANDO VARIABLES)   */
+/* ============================================================ */
+.auth-action-row {
+  display: flex;
+  gap: clamp(10px, 2vw, 20px);
+  width: 100%;
+  margin-top: clamp(12px, 2.5vh, 24px);
+
+  button {
+    flex: 1;
+    height: clamp(48px, 7vh, 60px);
+    border-radius: clamp(16px, 2vw, 22px);
+    font-size: clamp(0.8rem, 1.8vw, 1rem);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    transition:
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      filter 0.3s ease;
+    cursor: pointer;
+    border: none;
+    outline: none;
+  }
+}
+
+.btn-back-secondary {
+  background-color: var(--btn-secondary-bg, #0c4a6e) !important;
+  color: var(--btn-secondary-color, white) !important;
+  box-shadow: var(--shadow-btn, 0 4px 12px rgba(0, 0, 0, 0.1));
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-btn-hover, 0 8px 20px rgba(12, 74, 110, 0.3));
+    filter: brightness(1.15);
+  }
+}
+
+.btn-submit-primary {
+  border: 2px solid var(--btn-primary-border, #0c4a6e) !important;
+  background: transparent !important;
+  color: var(--btn-primary-color, #0c4a6e) !important;
+
+  &:not(:disabled) {
+    border-color: var(--btn-primary-bg, #0284c7) !important;
+    background-color: var(--btn-primary-bg, #0284c7) !important;
+    color: var(--btn-primary-text, white) !important;
+    box-shadow: var(--shadow-btn, 0 4px 12px rgba(2, 132, 199, 0.3));
+    transform: translateY(-2px);
+  }
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  &:disabled {
+    border-color: var(--border-color, #94a3b8) !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+    color: var(--text-muted, #94a3b8) !important;
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+/* --- FOOTER --- */
+.auth-footer-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, 1vh, 10px);
+  margin-top: clamp(16px, 3vh, 30px);
+  text-align: center;
+}
+
+.auth-link-group,
+.auth-legal-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.5vw, 12px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.auth-bullet {
+  color: var(--text-muted, #94a3b8);
+  font-size: clamp(0.65rem, 1.5vw, 0.85rem);
+}
+
+.auth-divider {
+  width: 60px;
+  height: 1px;
+  margin: 6px 0;
+  background: var(--border-color, rgba(0, 0, 0, 0.1));
+}
+
+.auth-link-secondary,
+.auth-link-highlight {
+  color: var(--accent, #0284c7);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--accent-hover, #0c4a6e);
+    text-decoration: underline;
+  }
+}
+
+.auth-register-info {
+  margin: 0;
+  color: var(--text-secondary, #334155);
+  font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+}
+
+.auth-legal-links {
+  margin-top: clamp(4px, 1vh, 12px);
+  color: var(--text-muted, #64748b);
+  font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    &:hover {
+      color: var(--accent, #0c4a6e);
+      text-decoration: underline;
+    }
+  }
+}
+
+/* ============================================================ */
+/* ANIMACIONES                                                  */
+/* ============================================================ */
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================ */
+/* RESPONSIVIDAD – MEDIA QUERIES                                */
+/* ============================================================ */
+
+@media (max-height: 700px) {
+  .auth-card {
+    padding: 18px 20px !important;
+  }
+  .auth-main-title {
+    font-size: 1.8rem;
+  }
+  .auth-header-content {
+    margin-bottom: 12px;
+  }
+  .auth-welcome-text {
+    font-size: 0.8rem;
+  }
+  .auth-form-layout {
+    gap: 4px;
+  }
+  .auth-action-row {
+    margin-top: 8px;
+    button {
+      height: 42px;
+      font-size: 0.75rem;
+    }
+  }
+  .auth-footer-area {
+    margin-top: 10px;
+    gap: 2px;
+  }
+  .auth-link-secondary,
+  .auth-link-highlight {
+    font-size: 0.7rem;
+  }
+  .auth-register-info {
+    font-size: 0.7rem;
+  }
+  .auth-legal-links {
+    font-size: 0.6rem;
+    margin-top: 2px;
+  }
+  .auth-error-message {
+    font-size: 0.7rem;
+    padding: 6px 10px;
+    mat-icon {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
+  }
+  .custom-field {
+    .mat-mdc-text-field-wrapper {
+      min-height: 42px !important;
+    }
+    .mdc-floating-label {
+      font-size: 0.75rem !important;
+    }
+    .mdc-floating-label--float-above {
+      font-size: 0.65rem !important;
+    }
+    .mdc-text-field__input,
+    input.mat-mdc-input-element {
+      font-size: 0.95rem !important;
+      padding: 3px 0 !important;
+    }
+    mat-icon {
+      font-size: 20px !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+    .mat-mdc-form-field-hint-wrapper,
+    .mat-mdc-form-field-error-wrapper {
+      font-size: 0.6rem !important;
+      padding-top: 2px !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page-wrapper {
+    padding: 10px;
+  }
+  .auth-card {
+    padding: 20px 16px !important;
+    border-radius: 24px !important;
+  }
+  .auth-main-title {
+    font-size: 1.6rem;
+  }
+  .auth-welcome-text {
+    font-size: 0.75rem;
+  }
+  .auth-action-row {
+    gap: 8px;
+    flex-wrap: wrap;
+    button {
+      height: 46px;
+      font-size: 0.75rem;
+      flex: 1 1 auto;
+      min-width: 70px;
+    }
+  }
+  .auth-link-group,
+  .auth-legal-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .auth-card {
+    padding: 14px 12px !important;
+  }
+  .auth-main-title {
+    font-size: 1.3rem;
+  }
+  .auth-action-row button {
+    height: 38px;
+    font-size: 0.65rem;
+    min-width: 60px;
+    padding: 0 6px;
+    white-space: normal;
+  }
+}
