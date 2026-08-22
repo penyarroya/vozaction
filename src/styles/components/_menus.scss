@@ -1,10 +1,269 @@
+// // src/styles/_menus.scss
+
+// /* ============================================================
+//    🔥 ESTILOS GLOBALES PARA MENÚS DESPLEGABLES
+//    ============================================================ */
+
+// .mat-menu-panel {
+//   background: rgba(10, 14, 26, 0.95) !important;
+//   backdrop-filter: blur(16px) !important;
+//   -webkit-backdrop-filter: blur(16px) !important;
+//   border-radius: 12px !important;
+//   border: 1px solid rgba(255, 255, 255, 0.1) !important;
+//   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+//   min-width: 200px !important;
+//   margin-top: 8px !important;
+// }
+
+// .mat-menu-item {
+//   color: #ffffff !important;
+//   font-size: 0.9rem !important;
+//   padding: 12px 24px !important;
+//   height: auto !important;
+//   line-height: 1.5 !important;
+//   display: flex !important;
+//   align-items: center !important;
+//   gap: 12px !important;
+
+//   &:hover {
+//     background: rgba(56, 189, 248, 0.2) !important;
+//     color: #ffffff !important;
+//   }
+
+//   mat-icon {
+//     color: rgba(255, 255, 255, 0.8) !important;
+//     margin-right: 8px !important;
+//   }
+
+//   &:hover mat-icon {
+//     color: #38bdf8 !important;
+//   }
+
+//   // 🔥 Estilo especial para "Cerrar sesión"
+//   &.logout-item {
+//     color: #f87171 !important;
+
+//     &:hover {
+//       background: rgba(248, 113, 113, 0.15) !important;
+//       color: #ef4444 !important;
+//     }
+
+//     mat-icon {
+//       color: #f87171 !important;
+//     }
+
+//     &:hover mat-icon {
+//       color: #ef4444 !important;
+//     }
+//   }
+// }
+
+// .mat-menu-divider {
+//   border-color: rgba(255, 255, 255, 0.08) !important;
+//   margin: 4px 16px !important;
+// }
+
+// .cdk-overlay-backdrop {
+//   background: rgba(0, 0, 0, 0.3) !important;
+// }
+
+// /* ============================================================
+//    🔥 ESTILOS PARA MENÚ DE PERFIL (profile-menu)
+//    ============================================================ */
+
+// .mat-menu-panel.profile-menu {
+//   min-width: 280px !important;
+//   background: var(--card-bg, #1e293b) !important;
+//   border: 1px solid var(--border-color, #334155) !important;
+//   box-shadow: var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.4)) !important;
+
+//   // Header del menú
+//   .menu-header {
+//     display: flex !important;
+//     align-items: center !important;
+//     gap: 12px !important;
+//     padding: 16px 16px 12px !important;
+//     border-bottom: 1px solid var(--border-color, #334155);
+
+//     .menu-avatar {
+//       width: 40px !important;
+//       height: 40px !important;
+//       border-radius: 50% !important;
+//       background: linear-gradient(135deg, var(--accent, #38bdf8), var(--accent-dark, #0c4a6e)) !important;
+//       display: flex !important;
+//       align-items: center !important;
+//       justify-content: center !important;
+//       color: white !important;
+//       font-weight: 600 !important;
+//       font-size: 1rem !important;
+//       flex-shrink: 0 !important;
+//       text-transform: uppercase !important;
+//     }
+
+//     .menu-user-info {
+//       display: flex !important;
+//       flex-direction: column !important;
+//       min-width: 0 !important;
+
+//       .menu-user-name {
+//         font-weight: 600 !important;
+//         color: var(--text-primary, #f1f5f9) !important;
+//         font-size: 0.95rem !important;
+//       }
+
+//       .menu-user-email {
+//         color: var(--text-secondary, #94a3b8) !important;
+//         font-size: 0.8rem !important;
+//         word-break: break-all !important;
+//       }
+//     }
+//   }
+
+//   // Items del menú de perfil
+//   .mat-mdc-menu-item {
+//     color: var(--text-secondary, #cbd5e1) !important;
+//     padding: 12px 16px !important;
+//     gap: 12px !important;
+
+//     &:hover {
+//       background: var(--accent-bg, rgba(56, 189, 248, 0.1)) !important;
+//       color: var(--accent, #38bdf8) !important;
+//     }
+
+//     mat-icon {
+//       color: var(--text-secondary, #cbd5e1) !important;
+//       margin-right: 0 !important;
+//     }
+
+//     &:hover mat-icon {
+//       color: var(--accent, #38bdf8) !important;
+//     }
+//   }
+
+//   .logout-item {
+//     color: #ef4444 !important;
+
+//     &:hover {
+//       background: rgba(239, 68, 68, 0.1) !important;
+//       color: #ef4444 !important;
+//     }
+
+//     mat-icon {
+//       color: #ef4444 !important;
+//     }
+
+//     &:hover mat-icon {
+//       color: #ef4444 !important;
+//     }
+//   }
+
+//   .mat-divider {
+//     border-color: var(--border-color, #334155) !important;
+//     margin: 4px 0 !important;
+//   }
+// }
+
+
+// /* ============================================================
+//    🔥 RESPONSIVE MENÚ
+//    ============================================================ */
+
+// @media (max-width: 768px) {
+//   .mat-menu-panel {
+//     min-width: 160px !important;
+//     margin-top: 4px !important;
+//   }
+
+//   .mat-menu-item {
+//     font-size: 0.8rem !important;
+//     padding: 10px 16px !important;
+//   }
+
+//   .mat-menu-panel.profile-menu {
+//     min-width: 240px !important;
+
+//     .menu-header {
+//       padding: 12px 12px 10px !important;
+
+//       .menu-avatar {
+//         width: 34px !important;
+//         height: 34px !important;
+//         font-size: 0.85rem !important;
+//       }
+
+//       .menu-user-info {
+//         .menu-user-name {
+//           font-size: 0.85rem !important;
+//         }
+
+//         .menu-user-email {
+//           font-size: 0.7rem !important;
+//         }
+//       }
+//     }
+
+//     .mat-mdc-menu-item {
+//       padding: 10px 12px !important;
+//       font-size: 0.85rem !important;
+//     }
+//   }
+// }
+
+// @media (max-width: 480px) {
+//   .mat-menu-panel {
+//     min-width: 140px !important;
+//   }
+
+//   .mat-menu-item {
+//     font-size: 0.75rem !important;
+//     padding: 8px 12px !important;
+//   }
+
+//   .mat-menu-panel.profile-menu {
+//     min-width: 200px !important;
+
+//     .menu-header {
+//       padding: 10px 10px 8px !important;
+
+//       .menu-avatar {
+//         width: 30px !important;
+//         height: 30px !important;
+//         font-size: 0.75rem !important;
+//       }
+
+//       .menu-user-info {
+//         .menu-user-name {
+//           font-size: 0.8rem !important;
+//         }
+
+//         .menu-user-email {
+//           font-size: 0.65rem !important;
+//         }
+//       }
+//     }
+
+//     .mat-mdc-menu-item {
+//       padding: 8px 10px !important;
+//       font-size: 0.75rem !important;
+//     }
+//   }
+// }
+
+
+
+
+
+
+
+
+
 // src/styles/_menus.scss
 
 /* ============================================================
-   🔥 ESTILOS GLOBALES PARA MENÚS DESPLEGABLES
+   🔥 ESTILOS GLOBALES PARA MENÚS DESPLEGABLES (solo para menús sin clase específica)
    ============================================================ */
 
-.mat-menu-panel {
+.mat-menu-panel:not(.profile-menu) {
   background: rgba(10, 14, 26, 0.95) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
@@ -15,7 +274,7 @@
   margin-top: 8px !important;
 }
 
-.mat-menu-item {
+.mat-menu-item:not(.profile-menu .mat-mdc-menu-item) {
   color: #ffffff !important;
   font-size: 0.9rem !important;
   padding: 12px 24px !important;
@@ -39,7 +298,6 @@
     color: #38bdf8 !important;
   }
 
-  // 🔥 Estilo especial para "Cerrar sesión"
   &.logout-item {
     color: #f87171 !important;
 
@@ -58,7 +316,7 @@
   }
 }
 
-.mat-menu-divider {
+.mat-menu-divider:not(.profile-menu .mat-divider) {
   border-color: rgba(255, 255, 255, 0.08) !important;
   margin: 4px 16px !important;
 }
@@ -68,28 +326,212 @@
 }
 
 /* ============================================================
+   🔥 ESTILOS GLOBALES PARA MENÚS DESPLEGABLES (solo para menús sin clase específica)
+   ============================================================ */
+
+.mat-menu-panel:not(.profile-menu) {
+  background: rgba(10, 14, 26, 0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  min-width: 200px !important;
+  margin-top: 8px !important;
+}
+
+// ... otros estilos generales ...
+
+/* ============================================================
+   🔥 ESTILOS PARA MENÚ DE PERFIL (profile-menu) - ALTA ESPECIFICIDAD
+   ============================================================ */
+
+body .mat-menu-panel.profile-menu,
+body .mat-mdc-menu-panel.profile-menu {
+  // Fondo sólido según tema
+  background: var(--card-bg, #ffffff) !important;
+  background-color: var(--card-bg, #ffffff) !important;
+  background-image: none !important;
+  
+  // Eliminar blur y transparencia
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  
+  // Borde y sombra con tus variables
+  border: 1px solid var(--border-color, #e2e8f0) !important;
+  box-shadow: var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.12)) !important;
+  border-radius: 12px !important;
+  min-width: 280px !important;
+  margin-top: 8px !important;
+
+  .menu-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 16px 16px 12px !important;
+    border-bottom: 1px solid var(--border-color, #e2e8f0) !important;
+
+    .menu-avatar {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark)) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      color: white !important;
+      font-weight: 600 !important;
+      font-size: 1rem !important;
+      flex-shrink: 0 !important;
+      text-transform: uppercase !important;
+    }
+
+    .menu-user-info {
+      display: flex !important;
+      flex-direction: column !important;
+      min-width: 0 !important;
+
+      .menu-user-name {
+        font-weight: 600 !important;
+        color: var(--text-primary) !important;
+        font-size: 0.95rem !important;
+      }
+
+      .menu-user-email {
+        color: var(--text-secondary) !important;
+        font-size: 0.8rem !important;
+        word-break: break-all !important;
+      }
+    }
+  }
+
+  .mat-mdc-menu-item {
+    color: var(--text-secondary) !important;
+    padding: 12px 16px !important;
+    gap: 12px !important;
+    background: transparent !important;
+
+    &:hover {
+      background-color: var(--accent-bg) !important;
+      color: var(--accent) !important;
+    }
+
+    mat-icon {
+      color: var(--text-secondary) !important;
+      margin-right: 0 !important;
+    }
+
+    &:hover mat-icon {
+      color: var(--accent) !important;
+    }
+  }
+
+  .logout-item {
+    color: #ef4444 !important;
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.1) !important;
+      color: #ef4444 !important;
+    }
+
+    mat-icon {
+      color: #ef4444 !important;
+    }
+
+    &:hover mat-icon {
+      color: #ef4444 !important;
+    }
+  }
+
+  .mat-divider {
+    border-color: var(--border-color) !important;
+    margin: 4px 0 !important;
+  }
+}
+
+
+/* ============================================================
    🔥 RESPONSIVE MENÚ
    ============================================================ */
 
 @media (max-width: 768px) {
-  .mat-menu-panel {
+  .mat-menu-panel:not(.profile-menu) {
     min-width: 160px !important;
     margin-top: 4px !important;
   }
 
-  .mat-menu-item {
+  .mat-menu-item:not(.profile-menu .mat-mdc-menu-item) {
     font-size: 0.8rem !important;
     padding: 10px 16px !important;
+  }
+
+  .mat-menu-panel.profile-menu {
+    min-width: 240px !important;
+
+    .menu-header {
+      padding: 12px 12px 10px !important;
+
+      .menu-avatar {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 0.85rem !important;
+      }
+
+      .menu-user-info {
+        .menu-user-name {
+          font-size: 0.85rem !important;
+        }
+
+        .menu-user-email {
+          font-size: 0.7rem !important;
+        }
+      }
+    }
+
+    .mat-mdc-menu-item {
+      padding: 10px 12px !important;
+      font-size: 0.85rem !important;
+    }
   }
 }
 
 @media (max-width: 480px) {
-  .mat-menu-panel {
+  .mat-menu-panel:not(.profile-menu) {
     min-width: 140px !important;
   }
 
-  .mat-menu-item {
+  .mat-menu-item:not(.profile-menu .mat-mdc-menu-item) {
     font-size: 0.75rem !important;
     padding: 8px 12px !important;
+  }
+
+  .mat-menu-panel.profile-menu {
+    min-width: 200px !important;
+
+    .menu-header {
+      padding: 10px 10px 8px !important;
+
+      .menu-avatar {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 0.75rem !important;
+      }
+
+      .menu-user-info {
+        .menu-user-name {
+          font-size: 0.8rem !important;
+        }
+
+        .menu-user-email {
+          font-size: 0.65rem !important;
+        }
+      }
+    }
+
+    .mat-mdc-menu-item {
+      padding: 8px 10px !important;
+      font-size: 0.75rem !important;
+    }
   }
 }

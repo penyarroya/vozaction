@@ -1,0 +1,110 @@
+<!-- src/app/shared/components/footer/footer.component.html -->
+
+<footer 
+  [class]="footerClasses()" 
+  [style]="footerStyles()">
+  
+  <div class="footer-row">
+    
+    <!-- ========================================================== -->
+    <!-- IZQUIERDA: LOGO + VERSIÓN + COPYRIGHT                      -->
+    <!-- ========================================================== -->
+    <div class="footer-left">
+      <mat-icon class="brand-icon">mic</mat-icon>
+      <span class="brand-name">Voz<span class="highlight">Acción</span></span>
+      
+      @if (showVersion) {
+        <span class="brand-version">v1.0.0</span>
+      }
+      
+      @if (showCopyright) {
+        <span class="separator">|</span>
+        <span class="copyright">
+            &copy; JLRN-Gamosa1956/{{ currentYear }}
+        </span>
+        <!-- <span class="footer-heart">❤️</span> -->
+        <span class="separator">|</span>
+        <span class="footer-legal-text">Todos los derechos reservados</span>
+        <!-- <span class="separator">|</span>
+        <a href="mailto:contacto@tudominio.com" class="footer-contact" matTooltip="Contacto">
+            <mat-icon>email</mat-icon>
+        </a> -->
+     }
+
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- CENTRO: NAVEGACIÓN                                         -->
+    <!-- ========================================================== -->
+    @if (showNav) {
+      <nav class="footer-nav">
+        <a routerLink="/dashboard" matTooltip="Dashboard">
+          <mat-icon>dashboard</mat-icon>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a routerLink="/voice-actions" matTooltip="Acciones">
+          <mat-icon>flash_on</mat-icon>
+          <span class="nav-label">Acciones</span>
+        </a>
+        <a routerLink="/voice-commands" matTooltip="Comandos">
+          <mat-icon>settings_voice</mat-icon>
+          <span class="nav-label">Comandos</span>
+        </a>
+        <a routerLink="/profile" matTooltip="Perfil">
+          <mat-icon>person</mat-icon>
+          <span class="nav-label">Perfil</span>
+        </a>
+        <a routerLink="/settings" matTooltip="Configuración">
+          <mat-icon>settings</mat-icon>
+          <span class="nav-label">Configuración</span>
+        </a>
+      </nav>
+    }
+
+    <!-- ========================================================== -->
+    <!-- DERECHA: REDES SOCIALES + ENLACES LEGALES                  -->
+    <!-- ========================================================== -->
+    <div class="footer-right">
+      
+      <!-- Separador antes de redes -->
+      @if (showNav && showSocial) {
+        <span class="separator">|</span>
+      }
+
+      <!-- Redes Sociales -->
+      @if (showSocial) {
+        <div class="footer-social">
+          <a href="https://github.com/tu-usuario" target="_blank" rel="noopener noreferrer" mat-icon-button aria-label="GitHub" matTooltip="GitHub">
+            <mat-icon>code</mat-icon>
+          </a>
+          <a href="https://twitter.com/tu-usuario" target="_blank" rel="noopener noreferrer" mat-icon-button aria-label="Twitter" matTooltip="Twitter">
+            <mat-icon>alternate_email</mat-icon>
+          </a>
+          <a href="https://youtube.com/tu-usuario" target="_blank" rel="noopener noreferrer" mat-icon-button aria-label="YouTube" matTooltip="YouTube">
+            <mat-icon>smart_display</mat-icon>
+          </a>
+          <a href="https://linkedin.com/in/tu-usuario" target="_blank" rel="noopener noreferrer" mat-icon-button aria-label="LinkedIn" matTooltip="LinkedIn">
+            <mat-icon>work</mat-icon>
+          </a>
+        </div>
+      }
+
+      <!-- Separador entre redes y legal -->
+      @if ((showNav || showSocial) && showLegal) {
+        <span class="separator">|</span>
+      }
+
+      <!-- Enlaces Legales -->
+      @if (showLegal) {
+        <div class="footer-legal">
+          <a href="/privacy">Privacidad</a>
+          <span class="separator">|</span>
+          <a href="/terms">Términos</a>
+          <span class="separator">|</span>
+          <a href="/cookies">Cookies</a>
+        </div>
+      }
+    </div>
+
+  </div>
+</footer>

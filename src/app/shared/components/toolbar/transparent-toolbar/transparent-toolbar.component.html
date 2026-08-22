@@ -1,4 +1,5 @@
 <!-- src/app/shared/components/transparent-toolbar/transparent-toolbar.component.html -->
+
 <mat-toolbar 
   class="toolbar" 
   [class]="toolbarClasses"
@@ -7,13 +8,17 @@
   role="navigation"
   aria-label="Barra de navegación principal">
 
-  <!-- SECCIÓN IZQUIERDA -->
+  <!-- ========================================================== -->
+  <!-- SECCIÓN IZQUIERDA - Logo + Navegación                     -->
+  <!-- ========================================================== -->
   <div class="toolbar-left">
     <!-- Botón Volver -->
     @if (showBackButton) {
       <button mat-icon-button 
               class="nav-btn back-btn" 
               (click)="onBack()"
+              matTooltip="Volver"
+              matTooltipPosition="below"
               aria-label="Volver">
         <mat-icon>arrow_back</mat-icon>
       </button>
@@ -21,42 +26,91 @@
 
     <!-- Logo -->
     @if (showLogo) {
-      <a routerLink="/home" class="logo-link" aria-label="Ir a inicio">
-        <span class="logo-text">Voz<span>Acción</span></span>
+      <a routerLink="/dashboard" class="brand" aria-label="Ir al dashboard">
+        <div class="brand-icon">
+          <mat-icon>mic</mat-icon>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Voz<span class="highlight">Acción</span></span>
+          <span class="brand-badge" *ngIf="isAuthenticated()">v1.0</span>
+        </div>
       </a>
     }
 
-    <!-- Título (si no hay logo) -->
+    <!-- Título (cuando no hay logo) -->
     @if (!showLogo && title) {
       <span class="toolbar-title">{{ title }}</span>
     }
-
-    <!-- Enlaces de navegación -->
-    @if (navLinks.length > 0) {
-      <nav class="nav-links" aria-label="Navegación principal">
-        @for (link of navLinks; track link.route) {
-          <a [routerLink]="link.route" 
-             routerLinkActive="active" 
-             class="nav-link">
-            @if (link.icon) {
-              <mat-icon>{{ link.icon }}</mat-icon>
-            }
-            {{ link.label }}
-          </a>
-        }
-      </nav>
-    }
   </div>
 
-  <!-- SECCIÓN DERECHA -->
+  <!-- ========================================================== -->
+  <!-- ✅ CENTRO - SALUDO DEL USUARIO                            -->
+  <!-- ========================================================== -->
+  @if (showUserGreeting && greeting) {
+    <div class="toolbar-center">
+      <div class="user-greeting">
+        <span class="greeting-text">{{ greeting }}</span>
+        <span class="user-name">{{ userNameDisplay || userName() }}</span>
+        <span class="user-email">{{ userEmailDisplay || userEmail() }}</span>
+        <span class="current-time">
+          <mat-icon>schedule</mat-icon>
+          {{ currentTimeDisplay }}
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================================== -->
+  <!-- SECCIÓN DERECHA - Acciones del usuario                     -->
+  <!-- ========================================================== -->
   <div class="toolbar-right">
+    
+    <!-- Buscador (opcional) -->
+    @if (showSearch) {
+      <div class="search-container">
+        <button mat-icon-button 
+                class="nav-btn search-toggle"
+                (click)="toggleSearch()"
+                matTooltip="Buscar"
+                matTooltipPosition="below">
+          <mat-icon>search</mat-icon>
+        </button>
+        <div class="search-box" [class.open]="isSearchOpen()">
+          <input type="text" 
+                 placeholder="Buscar acciones, comandos..."
+                 (input)="onSearchInput($event)"
+                 (keyup.enter)="onSearchSubmit($event)">
+          <button mat-icon-button (click)="closeSearch()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+
     <!-- Botón Ayuda -->
     @if (showHelp) {
       <button mat-icon-button 
               class="nav-btn help-btn" 
               (click)="onHelp()"
+              matTooltip="Ayuda"
+              matTooltipPosition="below"
               aria-label="Ayuda">
         <mat-icon>help_outline</mat-icon>
+      </button>
+    }
+
+    <!-- Botón Notificaciones -->
+    @if (showNotifications) {
+      <button mat-icon-button 
+              class="nav-btn notif-btn"
+              [matBadge]="unreadNotifications"
+              matBadgeColor="accent"
+              matBadgeSize="small"
+              (click)="onNotificationClick()"
+              matTooltip="Notificaciones"
+              matTooltipPosition="below"
+              aria-label="Notificaciones">
+        <mat-icon>notifications_none</mat-icon>
       </button>
     }
 
@@ -66,8 +120,11 @@
               class="nav-btn mic-btn" 
               (click)="toggleMic()"
               [class.active]="isMicActive()"
+              [matTooltip]="isMicActive() ? 'Desactivar micrófono' : 'Activar micrófono'"
+              matTooltipPosition="below"
               aria-label="Alternar micrófono">
-        <mat-icon>{{ isMicActive() ? 'mic_off' : 'mic' }}</mat-icon>
+        <span class="mic-dot" [class.active]="isMicActive()"></span>
+        <mat-icon>{{ isMicActive() ? 'mic' : 'mic_off' }}</mat-icon>
       </button>
     }
 
@@ -76,44 +133,157 @@
       <button mat-icon-button 
               class="nav-btn theme-btn" 
               (click)="toggleTheme()"
+              [matTooltip]="isDarkTheme() ? 'Modo claro' : 'Modo oscuro'"
+              matTooltipPosition="below"
               aria-label="Cambiar tema">
-        <mat-icon>{{ isDarkTheme() ? 'dark_mode' : 'light_mode' }}</mat-icon>
+        <mat-icon>{{ isDarkTheme() ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
     }
 
-    <!-- Avatar de Usuario -->
+    <!-- Avatar de Usuario / Login -->
     @if (showUserAvatar) {
       @if (isAuthenticated()) {
-        <button mat-icon-button 
-                class="nav-btn user-btn" 
+        <button class="profile-btn" 
                 [matMenuTriggerFor]="userMenu"
+                matTooltip="Perfil"
+                matTooltipPosition="below"
                 aria-label="Menú de usuario">
-          <mat-icon>account_circle</mat-icon>
+          <div class="profile-avatar">
+            <span class="avatar-text">{{ (userNameDisplay || userName() || 'U') | slice:0:1 | uppercase }}</span>
+          </div>
+          <span class="profile-name">{{ userNameDisplay || userName() || 'Usuario' }}</span>
+          <mat-icon class="profile-arrow">expand_more</mat-icon>
         </button>
-        <mat-menu #userMenu="matMenu">
-          <button mat-menu-item disabled>
-            <mat-icon>account_circle</mat-icon>
-            <span>{{ userName() || 'Usuario' }}</span>
-          </button>
+
+        <!-- Menú de usuario -->
+        <mat-menu #userMenu="matMenu" class="profile-menu">
+          <div class="menu-header">
+            <div class="menu-avatar">
+              {{ (userNameDisplay || userName() || 'U') | slice:0:1 | uppercase }}
+            </div>
+            <div class="menu-user-info">
+              <span class="menu-user-name">{{ userNameDisplay || userName() || 'Usuario' }}</span>
+              <span class="menu-user-email">{{ userEmailDisplay || userEmail() || 'usuario@email.com' }}</span>
+            </div>
+          </div>
+
           <mat-divider></mat-divider>
-          <button mat-menu-item (click)="onLogout()">
+
+          <button mat-menu-item routerLink="/profile">
+            <mat-icon>person</mat-icon>
+            <span>Mi Perfil</span>
+          </button>
+          <button mat-menu-item routerLink="/settings">
+            <mat-icon>settings</mat-icon>
+            <span>Configuración</span>
+          </button>
+          <button mat-menu-item routerLink="/voice-settings">
+            <mat-icon>settings_voice</mat-icon>
+            <span>Configuración de Voz</span>
+          </button>
+
+          <mat-divider></mat-divider>
+
+          <button mat-menu-item (click)="onLogout()" class="logout-item">
             <mat-icon>logout</mat-icon>
-            <span>Cerrar sesión</span>
+            <span>Cerrar Sesión</span>
           </button>
         </mat-menu>
       } @else {
-        <button mat-flat-button 
-                class="login-btn" 
-                (click)="onLogin()">
+        <button class="login-btn" (click)="onLogin()">
           <mat-icon>login</mat-icon>
-          INICIAR SESIÓN
+          <span>Iniciar sesión</span>
         </button>
       }
     }
+
+    <!-- Botón Menú Móvil -->
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Menú móvil">
+      <mat-icon>menu</mat-icon>
+    </button>
   </div>
 </mat-toolbar>
 
-<!-- Espaciador para contenido (cuando la toolbar es fixed) -->
+<!-- ========================================================== -->
+<!-- ESPACIADOR (cuando la toolbar es fixed)                   -->
+<!-- ========================================================== -->
 @if (position === 'fixed') {
   <div class="toolbar-spacer"></div>
 }
+
+<!-- ========================================================== -->
+<!-- MENÚ MÓVIL                                                -->
+<!-- ========================================================== -->
+<div class="mobile-menu" [class.open]="isMobileMenuOpen()">
+  <div class="mobile-menu-content">
+    <div class="mobile-header">
+      <div class="mobile-brand">
+        <span class="brand-icon">🎤</span>
+        <span class="brand-name">VozAcción</span>
+      </div>
+      <button class="mobile-close" (click)="closeMobileMenu()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- ✅ Saludo en móvil -->
+    @if (showUserGreeting && greeting) {
+      <div class="mobile-user-info">
+        <span class="mobile-greeting">{{ greeting }}</span>
+        <span class="mobile-username">{{ userNameDisplay || userName() }}</span>
+        <span class="mobile-useremail">{{ userEmailDisplay || userEmail() }}</span>
+      </div>
+      <mat-divider></mat-divider>
+    }
+
+    <!-- Enlaces de navegación móvil -->
+    @for (link of navLinks; track link.route) {
+      <a [routerLink]="link.route" 
+         (click)="closeMobileMenu()"
+         routerLinkActive="active">
+        @if (link.icon) {
+          <mat-icon>{{ link.icon }}</mat-icon>
+        }
+        <span>{{ link.label }}</span>
+      </a>
+    }
+
+    <mat-divider></mat-divider>
+
+    <!-- Acciones móvil -->
+    <button class="mobile-action" (click)="toggleTheme(); closeMobileMenu()">
+      <mat-icon>{{ isDarkTheme() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      <span>{{ isDarkTheme() ? 'Modo claro' : 'Modo oscuro' }}</span>
+    </button>
+
+    <button class="mobile-action" (click)="toggleMic(); closeMobileMenu()">
+      <mat-icon>{{ isMicActive() ? 'mic' : 'mic_off' }}</mat-icon>
+      <span>{{ isMicActive() ? 'Desactivar mic' : 'Activar mic' }}</span>
+    </button>
+
+    <mat-divider></mat-divider>
+
+    <!-- Perfil móvil -->
+    <a routerLink="/profile" (click)="closeMobileMenu()">
+      <mat-icon>person</mat-icon>
+      <span>Mi Perfil</span>
+    </a>
+    <a routerLink="/settings" (click)="closeMobileMenu()">
+      <mat-icon>settings</mat-icon>
+      <span>Configuración</span>
+    </a>
+
+    <mat-divider></mat-divider>
+
+    <!-- Logout móvil -->
+    <button class="mobile-logout" (click)="onLogout()">
+      <mat-icon>logout</mat-icon>
+      <span>Cerrar Sesión</span>
+    </button>
+  </div>
+</div>
+
+<!-- Overlay móvil -->
+<div class="mobile-overlay" [class.open]="isMobileMenuOpen()" (click)="closeMobileMenu()"></div>

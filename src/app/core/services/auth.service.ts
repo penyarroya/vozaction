@@ -76,6 +76,12 @@ export class AuthService {
     return user ? user.username : 'Usuario';
   }
 
+  // ✅ NUEVO: Obtener email del usuario
+  getUserEmail(): string | null {
+    const user = this.currentUser();
+    return user ? user.email : null;
+  }
+
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.AUTH_URL}/login`, credentials, this.httpOptions)
       .pipe(

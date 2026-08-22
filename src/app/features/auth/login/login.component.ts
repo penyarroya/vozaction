@@ -2326,7 +2326,8 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
             // ✅ LIMPIAR ANTES DE NAVEGAR
             this.voiceService.clearTranscript();
             this.voiceService.speak('¡Bienvenido!');
-            this.router.navigate(['/home']);
+            // this.router.navigate(['/home']);
+            this.router.navigate(['/dashboard']);
           }
         },
         error: (err) => {

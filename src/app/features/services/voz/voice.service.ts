@@ -1291,7 +1291,8 @@ export class VoiceService implements OnDestroy {
     init: false,
     register: false,
     notfound: false,
-    home: false 
+    home: false,
+    dashboard: false 
   };
 
   public muted$ = this.mutedSubject.asObservable();
@@ -2177,11 +2178,23 @@ export class VoiceService implements OnDestroy {
   // CONTROL DE BIENVENIDA
   // ============================================================
 
-  hasWelcomeBeenShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home'): boolean {
+  // hasWelcomeBeenShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home'): boolean {
+  //   return this.welcomeFlags[page];
+  // }
+
+  // markWelcomeAsShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home'): void {
+  //   this.welcomeFlags[page] = true;
+  //   if (this.enableLogs) {
+  //     this.logger.log(`📌 Welcome marcado para: ${page}`);
+  //   }
+  // }
+
+  // ✅ DESPUÉS:
+  hasWelcomeBeenShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home' | 'dashboard'): boolean {
     return this.welcomeFlags[page];
   }
 
-  markWelcomeAsShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home'): void {
+  markWelcomeAsShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home' | 'dashboard'): void {
     this.welcomeFlags[page] = true;
     if (this.enableLogs) {
       this.logger.log(`📌 Welcome marcado para: ${page}`);
@@ -2196,7 +2209,8 @@ export class VoiceService implements OnDestroy {
       init: false,
       register: false,
       notfound: false,
-      home:false
+      home:false,
+      dashboard: false
     };
     if (this.enableLogs) {
       this.logger.log('🔄 Welcome flags reiniciados');
