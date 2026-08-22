@@ -87,7 +87,6 @@
     .footer-legal a,
     .footer-social a {
       color: var(--text-secondary);
-
       &:hover {
         color: var(--accent);
       }
@@ -103,7 +102,7 @@
   }
 
   // ==========================================================
-  // VERSIÓN COMPACTA (BASE)
+  // VERSIÓN COMPACTA (base) - UNIFICADA
   // ==========================================================
   &.compact {
     padding: 8px 16px;
@@ -137,12 +136,19 @@
       }
     }
 
-    // Redes sociales
+    // Redes sociales (ajuste para compacto)
     .footer-social a {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      min-height: 32px;
       mat-icon {
         font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+      }
+      svg {
         width: 18px;
         height: 18px;
       }
@@ -152,11 +158,9 @@
     .footer-legal a {
       font-size: 0.7rem;
     }
-
     .footer-right .copyright {
       font-size: 0.7rem;
     }
-
     .separator {
       font-size: 0.6rem;
     }
@@ -168,7 +172,7 @@
       border-radius: 0;
     }
 
-    // Ajustes específicos para position-fixed + compact (iconos aún más grandes)
+    // Ajustes específicos para position-fixed + compact
     &.position-fixed {
       .footer-nav a mat-icon {
         font-size: 16px;
@@ -176,10 +180,17 @@
         height: 16px;
       }
       .footer-social a {
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        min-height: 28px;
         mat-icon {
           font-size: 16px;
+          width: 16px;
+          height: 16px;
+          line-height: 16px;
+        }
+        svg {
           width: 16px;
           height: 16px;
         }
@@ -320,130 +331,56 @@
     }
   }
 
-//   // ==========================================================
-//   // REDES SOCIALES
-//   // ==========================================================
-//   .footer-social {
-//     display: flex;
-//     align-items: center;
-//     gap: 2px;
-
-//     a {
-//       color: var(--text-secondary);
-//       transition: all 0.3s ease;
-//       border-radius: 50%;
-//       width: 28px;
-//       height: 28px;
-//       display: flex;
-//       align-items: center;
-//       justify-content: center;
-
-//       &:hover {
-//         background: var(--accent-bg);
-//         color: var(--accent);
-//         transform: translateY(-2px);
-//       }
-
-//       mat-icon {
-//         font-size: 16px;
-//         width: 16px;
-//         height: 16px;
-//       }
-//     }
-//   }
-
-
-
   // ==========================================================
-    // REDES SOCIALES - CORREGIDO (iconos completos)
-    // ==========================================================
-    .footer-social {
+  // REDES SOCIALES - IGUALADAS A LA TOOLBAR
+  // ==========================================================
+  .footer-social {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 12px; // Más separación
 
     a {
-        // ✅ Asegurar que el contenedor sea cuadrado y sin overflow oculto
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        width: 32px;          // Tamaño base del botón
-        height: 32px;
-        min-width: 32px;
-        min-height: 32px;
-        border-radius: 50%;
-        color: var(--text-secondary);
-        transition: all 0.3s ease;
-        text-decoration: none;
-        overflow: visible !important; // ✅ Evita que el icono se recorte
-        background: transparent;
-        border: none;
-        padding: 0;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      border-radius: 50%;
+      color: var(--text-secondary);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      overflow: visible !important;
+      background: transparent;
+      border: none;
+      padding: 0;
 
-        &:hover {
+      &:hover {
         background: var(--accent-bg);
         color: var(--accent);
         transform: translateY(-2px);
-        }
+      }
 
-        // ✅ Asegurar que el mat-icon ocupe todo el espacio sin recortarse
-        mat-icon {
-        font-size: 20px;     // Tamaño del icono
-        width: 20px;
-        height: 20px;
-        line-height: 20px;
+      mat-icon {
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+        line-height: 22px;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        }
+      }
+
+      svg {
+        width: 22px;
+        height: 22px;
+        display: block;
+        flex-shrink: 0;
+      }
     }
-    }
-
-    // ==========================================================
-    // VERSIÓN COMPACTA - Redes sociales con iconos más grandes
-    // ==========================================================
-    &.compact {
-    // ... otros estilos ...
-
-    .footer-social a {
-        width: 28px;
-        height: 28px;
-        min-width: 28px;
-        min-height: 28px;
-
-        mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        line-height: 18px;
-        }
-    }
-    }
-
-    // ==========================================================
-    // POSITION-FIXED + COMPACT - Redes sociales
-    // ==========================================================
-    &.position-fixed {
-    &.compact {
-        .footer-social a {
-        width: 24px;
-        height: 24px;
-        min-width: 24px;
-        min-height: 24px;
-
-        mat-icon {
-            font-size: 16px;
-            width: 16px;
-            height: 16px;
-            line-height: 16px;
-        }
-        }
-    }
-    }
-
-
-
+  }
 
   // ==========================================================
   // ENLACES LEGALES
@@ -516,12 +453,10 @@
 }
 
 // ============================================================
-// 📱 RESPONSIVE
+// RESPONSIVE (breakpoints)
 // ============================================================
 
-// ============================================================
 // TABLET (768px - 1024px)
-// ============================================================
 @media (max-width: 1024px) {
   .app-footer {
     padding: 10px 20px;
@@ -544,12 +479,16 @@
     }
 
     .footer-social a {
-      width: 24px;
-      height: 24px;
+      width: 32px;
+      height: 32px;
       mat-icon {
-        font-size: 14px;
-        width: 14px;
-        height: 14px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      svg {
+        width: 18px;
+        height: 18px;
       }
     }
 
@@ -567,9 +506,7 @@
   }
 }
 
-// ============================================================
 // TABLET PEQUEÑA / MÓVIL GRANDE (600px - 768px)
-// ============================================================
 @media (max-width: 768px) {
   .app-footer {
     padding: 10px 16px;
@@ -606,12 +543,16 @@
     }
 
     .footer-social a {
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
       mat-icon {
-        font-size: 14px;
-        width: 14px;
-        height: 14px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+      svg {
+        width: 16px;
+        height: 16px;
       }
     }
 
@@ -636,12 +577,16 @@
         height: 14px;
       }
       .footer-social a {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
         mat-icon {
-          font-size: 12px;
-          width: 12px;
-          height: 12px;
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+        }
+        svg {
+          width: 14px;
+          height: 14px;
         }
       }
       .footer-legal a {
@@ -661,9 +606,7 @@
   }
 }
 
-// ============================================================
 // MÓVIL PEQUEÑO (480px - 600px)
-// ============================================================
 @media (max-width: 600px) {
   .app-footer {
     padding: 8px 14px;
@@ -695,12 +638,16 @@
     }
 
     .footer-social a {
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       mat-icon {
-        font-size: 12px;
-        width: 12px;
-        height: 12px;
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+      svg {
+        width: 14px;
+        height: 14px;
       }
     }
 
@@ -731,12 +678,16 @@
         }
       }
       .footer-social a {
-        width: 16px;
-        height: 16px;
+        width: 20px;
+        height: 20px;
         mat-icon {
-          font-size: 10px;
-          width: 10px;
-          height: 10px;
+          font-size: 12px;
+          width: 12px;
+          height: 12px;
+        }
+        svg {
+          width: 12px;
+          height: 12px;
         }
       }
       .footer-legal a {
@@ -757,9 +708,7 @@
   }
 }
 
-// ============================================================
 // MÓVIL MUY PEQUEÑO (< 480px)
-// ============================================================
 @media (max-width: 480px) {
   .app-footer {
     padding: 6px 12px;
@@ -791,12 +740,16 @@
     }
 
     .footer-social a {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       mat-icon {
-        font-size: 10px;
-        width: 10px;
-        height: 10px;
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+      }
+      svg {
+        width: 12px;
+        height: 12px;
       }
     }
 
@@ -827,12 +780,16 @@
         }
       }
       .footer-social a {
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         mat-icon {
-          font-size: 8px;
-          width: 8px;
-          height: 8px;
+          font-size: 10px;
+          width: 10px;
+          height: 10px;
+        }
+        svg {
+          width: 10px;
+          height: 10px;
         }
       }
       .footer-legal a {
@@ -853,9 +810,7 @@
   }
 }
 
-// ============================================================
 // PANTALLAS MUY GRANDES (> 1400px)
-// ============================================================
 @media (min-width: 1400px) {
   .app-footer {
     padding: 16px 32px;
@@ -877,12 +832,16 @@
     }
 
     .footer-social a {
-      width: 34px;
-      height: 34px;
+      width: 40px;
+      height: 40px;
       mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+      svg {
+        width: 22px;
+        height: 22px;
       }
     }
 
