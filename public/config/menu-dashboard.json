@@ -1,0 +1,48 @@
+{
+  "title": "VozAcción",
+  "showLogo": true,
+  "showThemeToggle": true,
+  "showMicToggle": true,
+  "showUserAvatar": true,
+  "showBackButton": false,
+  "showHelp": false ,
+  "showNotifications": false,
+  "unreadNotifications": 3,
+  "navLinks": [
+    { "label": "Dashboard", "route": "/dashboard", "icon": "dashboard",  "roles": ["ADMIN"] },
+    { "label": "Acciones", "route": "/voice-actions", "icon": "flash_on", "roles": ["ADMIN"] },
+    { "label": "Admin Panel", "route": "/admin", "icon": "admin_panel_settings", "roles": ["USER"] }
+  ],
+  "userMenuItems": [
+    { 
+        "label": "Mi Perfil",
+        "icon": "person",
+        "route": "/profile",
+        "roles": ["USER"] 
+    },
+    { 
+        "label": "Configuración", 
+        "icon": "settings", 
+        "route": "/settings",
+        "roles": ["USER"] 
+    },
+    { "label": "Configuración de Voz", 
+        "icon": "settings_voice", 
+        "route": "/voice-settings",
+        "roles": ["USER"]  
+    },
+    { 
+      "label": "Panel de Control", 
+      "icon": "dashboard", 
+      "route": "/admin/dashboard", 
+      "roles": ["USER"] 
+    },
+    { "isDivider": true },
+    {
+      "label": "Cerrar Sesión",
+      "icon": "logout",
+      "class": "logout-item",
+      "actionId": "logout"
+    }
+  ]
+}

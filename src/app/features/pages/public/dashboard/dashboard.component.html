@@ -389,34 +389,32 @@
 
 <div class="dashboard-wrapper" [class.dark]="isDarkTheme">
 
-  <app-transparent-toolbar 
-    [title]="'VozAcción'"
-    [showLogo]="true"
-    [showThemeToggle]="true"
-    [showMicToggle]="true"
-    [showUserAvatar]="true"
-    [showBackButton]="false"
-    [showHelp]="true"
-    [position]="'fixed'"
-    [backgroundOpacity]="0.85"
-    [showUserGreeting]="true"
+  <app-transparent-toolbar
+    [config]="toolbarConfig"
     [greeting]="greeting"
     [userNameDisplay]="userName"
     [userEmailDisplay]="userEmail"
     [currentTimeDisplay]="formattedCurrentTime"
+    [showUserGreeting]="true"
+    (mobileMenuClick)="toggleSidebarMobile()"
     (help)="showHelp()"
-    (login)="goToLogin()"
-    (logout)="logout()">
+    (login)="goToLogin()">
   </app-transparent-toolbar>
+
 
   <div class="dashboard-container">
     
+    <div class="sidebar-overlay" [class.open]="isSidebarOpen" (click)="toggleSidebarMobile()"></div>
+
     <div class="dashboard-layout">
 
       <!-- ========================================================== -->
       <!-- SIDEBAR                                                   -->
       <!-- ========================================================== -->
-      <aside class="dashboard-sidebar" [class.collapsed]="isSidebarCollapsed">
+      <!-- <aside class="dashboard-sidebar" [class.collapsed]="isSidebarCollapsed"> -->
+        <aside class="dashboard-sidebar" 
+              [class.collapsed]="isSidebarCollapsed"
+              [class.open]="isSidebarOpen">
         
         <button class="sidebar-toggle" (click)="toggleSidebar()">
           <mat-icon>{{ isSidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>

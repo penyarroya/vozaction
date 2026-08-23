@@ -1,3 +1,1077 @@
+// // ============================================================
+// // TOOLBAR PRINCIPAL - FORZANDO MODO OSCURO
+// // ============================================================
+// :host {
+//   display: block;
+//   z-index: 1000;
+// }
+
+// .toolbar {
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   padding: 0 24px;
+//   height: 64px;
+//   backdrop-filter: blur(12px);
+//   -webkit-backdrop-filter: blur(12px);
+//   border-bottom: 1px solid var(--border-color);
+//   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+//   z-index: 1000;
+//   display: flex;
+//   align-items: center;
+
+//   &.position-fixed {
+//     position: fixed;
+//   }
+//   &.position-sticky {
+//     position: sticky;
+//   }
+//   &.position-relative {
+//     position: relative;
+//   }
+
+//   &.transparent {
+//     background: var(--blur-bg);
+//   }
+
+//   &.light {
+//     background: var(--blur-bg);
+//     border-bottom-color: var(--border-color);
+
+//     // Textos oscuros para modo claro
+//     .brand .brand-name,
+//     .toolbar-title,
+//     .profile-name,
+//     .greeting-text,
+//     .user-email,
+//     .current-time,
+//     .nav-link,
+//     .profile-btn,
+//     .mobile-menu-btn {
+//       color: var(--text-primary);
+//     }
+
+//     mat-icon {
+//       color: var(--text-secondary);
+//     }
+
+//     .nav-btn:hover mat-icon,
+//     .nav-link:hover mat-icon {
+//       color: var(--accent);
+//     }
+//   }
+
+//   // 🔥 MODO OSCURO - FORZADO CON COLORES SÓLIDOS
+//   &.dark {
+//     // ⚠️ FORZAR fondo oscuro REAL
+//     background: #0f172a !important;
+//     border-bottom-color: #1e293b !important;
+
+//     // ==========================================================
+//     // TODOS LOS TEXTOS EN BLANCO O GRIS CLARO
+//     // ==========================================================
+//     .brand .brand-name,
+//     .toolbar-title,
+//     .profile-name,
+//     .mobile-brand,
+//     .mobile-username,
+//     .greeting-text {
+//       color: #f1f5f9 !important;
+//     }
+
+//     .user-email,
+//     .current-time,
+//     .nav-link,
+//     .profile-btn,
+//     .mobile-menu-btn,
+//     .login-btn {
+//       color: #cbd5e1 !important;
+//     }
+
+//     // ==========================================================
+//     // TODOS LOS ICONOS EN BLANCO O GRIS CLARO
+//     // ==========================================================
+//     mat-icon {
+//       color: #e2e8f0 !important;
+//       opacity: 1 !important;
+//     }
+
+//     // Iconos específicos con más contraste
+//     .mic-btn mat-icon,
+//     .theme-btn mat-icon,
+//     .help-btn mat-icon,
+//     .notif-btn mat-icon {
+//       color: #e2e8f0 !important;
+//       opacity: 1 !important;
+//     }
+
+//     // ==========================================================
+//     // ICONOS EN HOVER
+//     // ==========================================================
+//     .nav-btn:hover mat-icon,
+//     .nav-link:hover mat-icon {
+//       color: var(--accent) !important;
+//     }
+
+//     // ==========================================================
+//     // NAVEGACIÓN
+//     // ==========================================================
+//     .nav-link {
+//       &:hover {
+//         background: rgba(255, 255, 255, 0.08);
+//         color: var(--accent);
+
+//         mat-icon {
+//           color: var(--accent) !important;
+//         }
+//       }
+
+//       &.active {
+//         background: rgba(255, 255, 255, 0.1);
+//         color: var(--accent);
+
+//         mat-icon {
+//           color: var(--accent) !important;
+//         }
+
+//         &::after {
+//           background: var(--accent);
+//         }
+//       }
+//     }
+
+//     // ==========================================================
+//     // BOTÓN DE PERFIL
+//     // ==========================================================
+//     .profile-btn {
+//       background: rgba(255, 255, 255, 0.06) !important;
+//       border-color: rgba(255, 255, 255, 0.08) !important;
+
+//       &:hover {
+//         background: rgba(255, 255, 255, 0.12) !important;
+//         border-color: var(--accent) !important;
+//       }
+
+//       .profile-avatar {
+//         background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+//       }
+
+//       .profile-name {
+//         color: #f1f5f9 !important;
+//       }
+
+//       .profile-arrow {
+//         color: #94a3b8 !important;
+//       }
+//     }
+
+//     // ==========================================================
+//     // BOTÓN DE LOGIN
+//     // ==========================================================
+//     .login-btn {
+//       background: rgba(56, 189, 248, 0.15) !important;
+//       border-color: rgba(56, 189, 248, 0.2) !important;
+//       color: #f1f5f9 !important;
+
+//       &:hover {
+//         background: rgba(56, 189, 248, 0.25) !important;
+//         border-color: #38bdf8 !important;
+//       }
+
+//       mat-icon {
+//         color: #e2e8f0 !important;
+//       }
+//     }
+
+//     // ==========================================================
+//     // BOTÓN DE TEMA
+//     // ==========================================================
+//     .theme-btn {
+//       mat-icon {
+//         color: #e2e8f0 !important;
+
+//         &:hover {
+//           color: var(--accent) !important;
+//         }
+//       }
+//     }
+
+//     // ==========================================================
+//     // BOTÓN DE AYUDA
+//     // ==========================================================
+//     .help-btn {
+//       mat-icon {
+//         color: #e2e8f0 !important;
+
+//         &:hover {
+//           color: var(--accent) !important;
+//         }
+//       }
+//     }
+
+//     // ==========================================================
+//     // BOTÓN DE MICRÓFONO
+//     // ==========================================================
+//     .mic-btn {
+//       mat-icon {
+//         color: #e2e8f0 !important;
+//       }
+
+//       &:hover mat-icon {
+//         color: var(--accent) !important;
+//       }
+
+//       &.active {
+//         mat-icon {
+//           color: var(--accent) !important;
+//         }
+//         animation: pulse-mic 2s ease-in-out infinite;
+//       }
+
+//       .mic-dot {
+//         background: #475569;
+
+//         &.active {
+//           background: #22c55e;
+//           box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+//         }
+//       }
+//     }
+
+//     // ==========================================================
+//     // BOTÓN DE NOTIFICACIONES
+//     // ==========================================================
+//     .notif-btn {
+//       mat-icon {
+//         color: #e2e8f0 !important;
+
+//         &:hover {
+//           color: var(--accent) !important;
+//         }
+//       }
+//     }
+
+//     // ==========================================================
+//     // BADGE
+//     // ==========================================================
+//     .brand-badge {
+//       color: var(--accent);
+//       background: rgba(255, 255, 255, 0.1);
+//     }
+
+//     // ==========================================================
+//     // MENÚ MÓVIL
+//     // ==========================================================
+//     .mobile-menu-btn {
+//       mat-icon {
+//         color: #e2e8f0 !important;
+//       }
+
+//       &:hover {
+//         background: rgba(255, 255, 255, 0.08);
+//       }
+//     }
+
+//     // ==========================================================
+//     // SALUDO EN EL CENTRO
+//     // ==========================================================
+//     .user-greeting {
+//       .greeting-text {
+//         color: #94a3b8 !important;
+//       }
+
+//       .user-name {
+//         background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+//         background-clip: text;
+//         -webkit-background-clip: text;
+//         -webkit-text-fill-color: transparent;
+//         color: transparent !important;
+//       }
+
+//       .user-email {
+//         color: #94a3b8 !important;
+//       }
+
+//       .current-time {
+//         color: #94a3b8 !important;
+
+//         mat-icon {
+//           color: #94a3b8 !important;
+//         }
+//       }
+//     }
+
+//     // ==========================================================
+//     // BÚSQUEDA
+//     // ==========================================================
+//     .search-box input {
+//       color: #f1f5f9;
+//       background: rgba(255, 255, 255, 0.05);
+//       border-color: rgba(255, 255, 255, 0.08);
+
+//       &::placeholder {
+//         color: #64748b;
+//       }
+//     }
+
+//     // ==========================================================
+//     // BOTÓN VOLVER
+//     // ==========================================================
+//     .back-btn {
+//       color: #cbd5e1 !important;
+
+//       &:hover {
+//         color: var(--accent) !important;
+//         background: rgba(255, 255, 255, 0.08);
+//       }
+
+//       mat-icon {
+//         color: #cbd5e1 !important;
+//       }
+//     }
+//   }
+
+//   &.scrolled {
+//     box-shadow: var(--shadow-lg);
+//   }
+
+//   .toolbar-container {
+//     display: flex;
+//     align-items: center;
+//     justify-content: space-between;
+//     width: 100%;
+//     max-width: 1400px;
+//     margin: 0 auto;
+//     height: 100%;
+//     gap: 16px;
+//   }
+// }
+
+// // ============================================================
+// // SECCIÓN IZQUIERDA - LOGO "VozAcción"
+// // ============================================================
+// .toolbar-left {
+//   display: flex;
+//   align-items: center;
+//   gap: 8px;
+//   flex: 0 0 auto;
+
+//   .back-btn {
+//     color: var(--text-secondary);
+//     transition: all 0.3s ease;
+//     background: transparent;
+//     border: none;
+//     cursor: pointer;
+//     padding: 4px;
+//     border-radius: 50%;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+
+//     &:hover {
+//       color: var(--accent);
+//       transform: translateX(-2px);
+//       background: var(--accent-bg);
+//     }
+
+//     mat-icon {
+//       font-size: 24px;
+//     }
+//   }
+
+//   .brand {
+//     display: flex;
+//     align-items: center;
+//     gap: 10px;
+//     text-decoration: none;
+//     cursor: pointer;
+//     transition: all 0.3s ease;
+//     padding: 4px 8px;
+//     border-radius: 10px;
+
+//     &:hover {
+//       background: var(--accent-bg);
+//       transform: scale(1.02);
+//     }
+
+//     .brand-icon {
+//       width: 36px;
+//       height: 36px;
+//       border-radius: 10px;
+//       background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+//       display: flex;
+//       align-items: center;
+//       justify-content: center;
+//       box-shadow: 0 4px 12px var(--login-glow);
+
+//       mat-icon {
+//         color: white;
+//         font-size: 20px;
+//         width: 20px;
+//         height: 20px;
+//       }
+//     }
+
+//     .brand-text {
+//       display: flex;
+//       flex-direction: column;
+//       line-height: 1.2;
+
+//       .brand-name {
+//         font-size: 1.1rem;
+//         font-weight: 700;
+//         color: var(--text-primary);
+
+//         .highlight {
+//           background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+//           background-clip: text;
+//           -webkit-background-clip: text;
+//           -webkit-text-fill-color: transparent;
+//         }
+//       }
+
+//       .brand-badge {
+//         font-size: 0.5rem;
+//         font-weight: 600;
+//         text-transform: uppercase;
+//         color: var(--accent);
+//         background: var(--accent-bg);
+//         padding: 1px 8px;
+//         border-radius: 4px;
+//         letter-spacing: 0.5px;
+//         align-self: flex-start;
+//       }
+//     }
+//   }
+
+//   .toolbar-title {
+//     font-size: 1.1rem;
+//     font-weight: 600;
+//     color: var(--text-primary);
+//   }
+// }
+
+// // ============================================================
+// // CENTRO - SALUDO DEL USUARIO
+// // ============================================================
+// .toolbar-center {
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   flex: 1;
+//   padding: 0 16px;
+//   min-width: 0;
+
+//   .user-greeting {
+//     display: flex;
+//     align-items: center;
+//     gap: 12px;
+//     flex-wrap: wrap;
+//     justify-content: center;
+
+//     .greeting-text {
+//       font-size: 0.85rem;
+//       font-weight: 500;
+//       color: var(--text-secondary);
+//     }
+
+//     .user-name {
+//       font-size: 1rem;
+//       font-weight: 700;
+//       background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+//       background-clip: text;
+//       -webkit-background-clip: text;
+//       -webkit-text-fill-color: transparent;
+//       color: transparent;
+//     }
+
+//     .user-email {
+//       font-size: 0.75rem;
+//       color: var(--text-secondary);
+//       font-weight: 400;
+
+//       @media (max-width: 768px) {
+//         display: none;
+//       }
+//     }
+
+//     .current-time {
+//       font-size: 0.75rem;
+//       color: var(--text-secondary);
+//       font-weight: 400;
+//       display: inline-flex;
+//       align-items: center;
+//       gap: 4px;
+
+//       mat-icon {
+//         font-size: 14px;
+//         width: 14px;
+//         height: 14px;
+//         color: var(--text-secondary);
+//       }
+
+//       @media (max-width: 768px) {
+//         display: none;
+//       }
+//     }
+//   }
+// }
+
+// // ============================================================
+// // SECCIÓN DERECHA - Navegación + Iconos
+// // ============================================================
+// .toolbar-right {
+//   display: flex;
+//   align-items: center;
+//   gap: 16px;
+//   flex: 1;
+//   justify-content: flex-end;
+
+//   .nav-links {
+//     display: flex;
+//     align-items: center;
+//     gap: 2px;
+//     margin-right: 8px;
+
+//     .nav-link {
+//       display: flex;
+//       align-items: center;
+//       gap: 6px;
+//       padding: 6px 14px;
+//       border-radius: 50px;
+//       color: var(--text-secondary);
+//       text-decoration: none;
+//       font-size: 0.85rem;
+//       font-weight: 500;
+//       transition: all 0.3s ease;
+//       position: relative;
+
+//       mat-icon {
+//         font-size: 18px;
+//         width: 18px;
+//         height: 18px;
+//         color: var(--text-secondary);
+//       }
+
+//       .nav-label {
+//         @media (max-width: 900px) {
+//           display: none;
+//         }
+//       }
+
+//       &:hover {
+//         background: var(--accent-bg);
+//         color: var(--accent);
+
+//         mat-icon {
+//           color: var(--accent);
+//         }
+//       }
+
+//       &.active {
+//         background: var(--accent-bg);
+//         color: var(--accent);
+//         font-weight: 600;
+
+//         mat-icon {
+//           color: var(--accent);
+//         }
+
+//         &::after {
+//           content: '';
+//           position: absolute;
+//           bottom: 2px;
+//           left: 50%;
+//           transform: translateX(-50%);
+//           width: 16px;
+//           height: 3px;
+//           border-radius: 3px;
+//           background: var(--accent);
+//         }
+//       }
+//     }
+//   }
+
+//   .actions {
+//     display: flex;
+//     align-items: center;
+//     gap: 4px;
+//     flex: 0 0 auto;
+//   }
+
+//   .nav-btn {
+//     color: var(--text-secondary);
+//     transition: all 0.3s ease;
+//     background: transparent;
+//     border: none;
+//     border-radius: 50%;
+//     width: 40px;
+//     height: 40px;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     cursor: pointer;
+
+//     mat-icon {
+//       font-size: 22px;
+//       width: 22px;
+//       height: 22px;
+//       color: var(--text-secondary);
+//     }
+
+//     &:hover {
+//       color: var(--accent);
+//       transform: translateY(-2px);
+//       background: var(--accent-bg);
+
+//       mat-icon {
+//         color: var(--accent);
+//       }
+//     }
+//   }
+
+//   .help-btn {
+//     &:hover {
+//       color: var(--accent);
+
+//       mat-icon {
+//         color: var(--accent);
+//       }
+//     }
+//   }
+
+//   .mic-btn {
+//     position: relative;
+
+//     &.active {
+//       color: var(--accent);
+
+//       mat-icon {
+//         color: var(--accent);
+//       }
+//       animation: pulse-mic 2s ease-in-out infinite;
+//     }
+
+//     .mic-dot {
+//       position: absolute;
+//       top: 4px;
+//       right: 4px;
+//       width: 10px;
+//       height: 10px;
+//       border-radius: 50%;
+//       background: var(--mic-dot-bg);
+//       transition: all 0.3s ease;
+
+//       &.active {
+//         background: #22c55e;
+//         box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+//         animation: pulse-dot 1.5s ease-in-out infinite;
+//       }
+//     }
+//   }
+
+//   .theme-btn {
+//     mat-icon {
+//       transition: all 0.6s ease;
+//       color: var(--text-secondary);
+//     }
+
+//     &:hover mat-icon {
+//       transform: rotate(180deg);
+//       color: var(--accent);
+//     }
+//   }
+
+//   .login-btn {
+//     display: flex;
+//     align-items: center;
+//     gap: 8px;
+//     padding: 6px 18px;
+//     border-radius: 50px;
+//     background: var(--login-bg);
+//     border: 1px solid var(--login-border);
+//     color: var(--text-primary);
+//     cursor: pointer;
+//     font-weight: 500;
+//     font-size: 0.85rem;
+//     transition: all 0.3s ease;
+
+//     &:hover {
+//       background: var(--login-bg-hover);
+//       border-color: var(--login-border-hover);
+//       transform: translateY(-2px);
+//       box-shadow: 0 4px 16px var(--login-glow);
+//     }
+
+//     mat-icon {
+//       font-size: 18px;
+//       width: 18px;
+//       height: 18px;
+//       color: var(--text-secondary);
+//     }
+
+//     span {
+//       @media (max-width: 600px) {
+//         display: none;
+//       }
+//     }
+//   }
+
+//   .profile-btn {
+//     display: flex;
+//     align-items: center;
+//     gap: 8px;
+//     padding: 4px 12px 4px 4px;
+//     border-radius: 50px;
+//     background: var(--card-bg);
+//     border: 1px solid var(--border-color);
+//     cursor: pointer;
+//     transition: all 0.3s ease;
+//     font-family: inherit;
+
+//     &:hover {
+//       background: var(--accent-bg);
+//       border-color: var(--accent);
+//     }
+
+//     .profile-avatar {
+//       width: 32px;
+//       height: 32px;
+//       border-radius: 50%;
+//       background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+//       display: flex;
+//       align-items: center;
+//       justify-content: center;
+//       color: white;
+//       font-weight: 600;
+//       font-size: 0.85rem;
+//       flex-shrink: 0;
+
+//       .avatar-text {
+//         text-transform: uppercase;
+//       }
+//     }
+
+//     .profile-name {
+//       font-size: 0.85rem;
+//       font-weight: 500;
+//       color: var(--text-primary);
+//       max-width: 100px;
+//       overflow: hidden;
+//       text-overflow: ellipsis;
+//       white-space: nowrap;
+
+//       @media (max-width: 600px) {
+//         display: none;
+//       }
+//     }
+
+//     .profile-arrow {
+//       font-size: 16px;
+//       width: 16px;
+//       height: 16px;
+//       color: var(--text-muted);
+//     }
+//   }
+
+//   .mobile-menu-btn {
+//     display: none;
+//     background: transparent;
+//     border: none;
+//     color: var(--text-primary);
+//     padding: 8px;
+//     cursor: pointer;
+//     border-radius: 8px;
+//     transition: all 0.3s ease;
+
+//     &:hover {
+//       background: var(--accent-bg);
+//     }
+
+//     mat-icon {
+//       font-size: 28px;
+//       width: 28px;
+//       height: 28px;
+//       color: var(--text-primary);
+//     }
+//   }
+// }
+
+// // ============================================================
+// // ESPACIADOR
+// // ============================================================
+// .toolbar-spacer {
+//   height: 64px;
+// }
+
+// // ============================================================
+// // MENÚ MÓVIL
+// // ============================================================
+// .mobile-menu {
+//   position: fixed;
+//   top: 0;
+//   right: -320px;
+//   width: 320px;
+//   max-width: 85vw;
+//   height: 100vh;
+//   background: var(--bg-secondary);
+//   box-shadow: var(--shadow-lg);
+//   transition: all 0.3s ease;
+//   z-index: 1002;
+//   overflow-y: auto;
+
+//   &.open {
+//     right: 0;
+//   }
+
+//   .mobile-menu-content {
+//     padding: 20px;
+
+//     .mobile-header {
+//       display: flex;
+//       justify-content: space-between;
+//       align-items: center;
+//       padding: 8px 0;
+
+//       .mobile-brand {
+//         display: flex;
+//         align-items: center;
+//         gap: 10px;
+//         font-size: 1.2rem;
+//         font-weight: 700;
+//         color: var(--text-primary);
+
+//         .brand-icon {
+//           font-size: 24px;
+//         }
+//       }
+
+//       .mobile-close {
+//         background: transparent;
+//         border: none;
+//         color: var(--text-secondary);
+//         cursor: pointer;
+//         padding: 4px;
+//         border-radius: 50%;
+
+//         &:hover {
+//           background: var(--accent-bg);
+//           color: var(--accent);
+//         }
+
+//         mat-icon {
+//           font-size: 24px;
+//         }
+//       }
+//     }
+
+//     .mobile-user-info {
+//       padding: 12px 16px;
+//       display: flex;
+//       flex-direction: column;
+//       gap: 2px;
+
+//       .mobile-greeting {
+//         font-size: 0.8rem;
+//         color: var(--text-secondary);
+//       }
+
+//       .mobile-username {
+//         font-size: 1.1rem;
+//         font-weight: 700;
+//         color: var(--text-primary);
+//       }
+
+//       .mobile-useremail {
+//         font-size: 0.8rem;
+//         color: var(--text-secondary);
+//       }
+//     }
+
+//     a, .mobile-action, .mobile-logout {
+//       display: flex;
+//       align-items: center;
+//       gap: 12px;
+//       padding: 12px 16px;
+//       border-radius: 10px;
+//       color: var(--text-secondary);
+//       text-decoration: none;
+//       transition: all 0.3s ease;
+//       margin: 4px 0;
+//       width: 100%;
+//       border: none;
+//       background: transparent;
+//       font-size: 1rem;
+//       cursor: pointer;
+
+//       mat-icon {
+//         font-size: 22px;
+//         width: 22px;
+//         height: 22px;
+//         color: var(--text-secondary);
+//       }
+
+//       &:hover {
+//         background: var(--accent-bg);
+//         color: var(--accent);
+
+//         mat-icon {
+//           color: var(--accent);
+//         }
+//       }
+
+//       &.active {
+//         background: var(--accent-bg);
+//         color: var(--accent);
+//         font-weight: 600;
+
+//         mat-icon {
+//           color: var(--accent);
+//         }
+//       }
+//     }
+
+//     .mobile-logout {
+//       color: #ef4444;
+
+//       mat-icon {
+//         color: #ef4444;
+//       }
+
+//       &:hover {
+//         background: rgba(239, 68, 68, 0.1);
+//       }
+//     }
+//   }
+// }
+
+// .mobile-overlay {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   bottom: 0;
+//   background: var(--bg-overlay);
+//   z-index: 1001;
+//   opacity: 0;
+//   visibility: hidden;
+//   transition: all 0.3s ease;
+
+//   &.open {
+//     opacity: 1;
+//     visibility: visible;
+//   }
+// }
+
+// // ============================================================
+// // ANIMACIONES
+// // ============================================================
+// @keyframes pulse-mic {
+//   0%, 100% { transform: scale(1); }
+//   50% { transform: scale(1.05); }
+// }
+
+// @keyframes pulse-dot {
+//   0%, 100% {
+//     transform: scale(1);
+//     opacity: 1;
+//   }
+//   50% {
+//     transform: scale(1.3);
+//     opacity: 0.7;
+//   }
+// }
+
+// // ============================================================
+// // RESPONSIVE
+// // ============================================================
+// @media (max-width: 900px) {
+//   .toolbar-right .nav-links .nav-link .nav-label {
+//     display: none;
+//   }
+// }
+
+// @media (max-width: 768px) {
+//   .toolbar {
+//     padding: 0 16px;
+//     height: 56px;
+
+//     .toolbar-right .nav-links {
+//       display: none;
+//     }
+
+//     .toolbar-right .mobile-menu-btn {
+//       display: flex;
+//     }
+
+//     .toolbar-right .profile-btn .profile-name {
+//       display: none;
+//     }
+
+//     .toolbar-right .profile-btn {
+//       padding: 4px;
+//     }
+
+//     .toolbar-right .login-btn span {
+//       display: none;
+//     }
+//   }
+
+//   .toolbar-spacer {
+//     height: 56px;
+//   }
+// }
+
+// @media (max-width: 480px) {
+//   .toolbar {
+//     padding: 0 12px;
+//     height: 50px;
+
+//     .toolbar-left .brand .brand-text .brand-name {
+//       font-size: 0.95rem;
+//     }
+
+//     .toolbar-left .brand .brand-text .brand-badge {
+//       display: none;
+//     }
+
+//     .toolbar-left .brand .brand-icon {
+//       width: 30px;
+//       height: 30px;
+
+//       mat-icon {
+//         font-size: 16px;
+//         width: 16px;
+//         height: 16px;
+//       }
+//     }
+
+//     .toolbar-right .mic-btn .mic-dot {
+//       display: none;
+//     }
+//   }
+
+//   .toolbar-spacer {
+//     height: 50px;
+//   }
+
+//   .mobile-menu {
+//     width: 280px;
+//     right: -280px;
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
 // ============================================================
 // TOOLBAR PRINCIPAL - FORZANDO MODO OSCURO
 // ============================================================
@@ -983,71 +2057,149 @@
 }
 
 // ============================================================
-// RESPONSIVE
+// RESPONSIVE (MEJORADO)
 // ============================================================
+
+// Pantallas medianas: ocultar texto de enlaces (solo iconos)
 @media (max-width: 900px) {
   .toolbar-right .nav-links .nav-link .nav-label {
     display: none;
   }
+
+  // Reducir padding de enlaces para evitar desbordes
+  .toolbar-right .nav-links .nav-link {
+    padding: 6px 10px;
+  }
 }
 
+// Tablets y móviles grandes
 @media (max-width: 768px) {
   .toolbar {
     padding: 0 16px;
     height: 56px;
 
-    .toolbar-right .nav-links {
-      display: none;
+    .toolbar-right {
+      gap: 8px; // Reducir separación entre botones
+
+      .nav-links {
+        display: none; // Ocultar enlaces de navegación en tablet
+      }
+
+      .mobile-menu-btn {
+        display: flex; // Mostrar botón de menú móvil
+      }
+
+      .profile-btn .profile-name {
+        display: none; // Ocultar nombre de perfil
+      }
+
+      .profile-btn {
+        padding: 4px; // Reducir padding del botón de perfil
+      }
+
+      .login-btn span {
+        display: none; // Ocultar texto "Iniciar sesión" en tablet
+      }
+
+      // Reducir tamaño de botones de acción
+      .nav-btn {
+        width: 36px;
+        height: 36px;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      // Ajustar botón de login
+      .login-btn {
+        padding: 4px 12px;
+        font-size: 0.8rem;
+      }
     }
 
-    .toolbar-right .mobile-menu-btn {
-      display: flex;
-    }
-
-    .toolbar-right .profile-btn .profile-name {
-      display: none;
-    }
-
-    .toolbar-right .profile-btn {
-      padding: 4px;
-    }
-
-    .toolbar-right .login-btn span {
-      display: none;
-    }
+    // Ocultar email y hora en el saludo (ya están ocultos en el CSS base)
   }
 
   .toolbar-spacer {
     height: 56px;
   }
+
+  // Ajustar menú móvil para que ocupe más ancho en tablet
+  .mobile-menu {
+    width: 320px;
+    right: -320px;
+    max-width: 85vw;
+  }
 }
 
+// Móviles pequeños (≤480px)
 @media (max-width: 480px) {
   .toolbar {
     padding: 0 12px;
     height: 50px;
 
-    .toolbar-left .brand .brand-text .brand-name {
-      font-size: 0.95rem;
+    // Ocultar completamente el saludo en móviles muy pequeños
+    .toolbar-center {
+      display: none !important;
     }
 
-    .toolbar-left .brand .brand-text .brand-badge {
-      display: none;
-    }
+    .toolbar-left {
+      .brand .brand-text .brand-name {
+        font-size: 0.95rem;
+      }
 
-    .toolbar-left .brand .brand-icon {
-      width: 30px;
-      height: 30px;
+      .brand .brand-text .brand-badge {
+        display: none; // Ocultar badge "v1.0"
+      }
 
-      mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
+      .brand .brand-icon {
+        width: 30px;
+        height: 30px;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
       }
     }
 
-    .toolbar-right .mic-btn .mic-dot {
-      display: none;
+    .toolbar-right {
+      gap: 6px; // Reducir aún más el gap
+
+      .nav-btn {
+        width: 32px;
+        height: 32px;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      // Ocultar punto del micrófono en móvil muy pequeño
+      .mic-btn .mic-dot {
+        display: none;
+      }
+
+      // Ajustar botón de login
+      .login-btn {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+
+        span {
+          display: none; // Ocultar texto "Iniciar sesión"
+        }
+      }
+
+      // Ajustar perfil
+      .profile-btn {
+        padding: 2px;
+      }
     }
   }
 
@@ -1055,8 +2207,22 @@
     height: 50px;
   }
 
+  // Menú móvil a pantalla completa en móviles pequeños
   .mobile-menu {
-    width: 280px;
-    right: -280px;
+    width: 100vw;
+    right: -100vw;
+    max-width: 100vw;
+
+    &.open {
+      right: 0;
+    }
+  }
+
+  // Ajustar badge de notificaciones para que no se superponga
+  .notif-btn .mat-badge-content {
+    font-size: 10px !important;
+    min-width: 16px !important;
+    height: 16px !important;
+    line-height: 16px !important;
   }
 }

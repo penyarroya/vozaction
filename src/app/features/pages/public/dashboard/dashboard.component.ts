@@ -22,6 +22,7 @@
 // import { VoiceContextService } from '../../../services/voz/voice-context.service';
 // import { VoiceService } from '../../../services/voz/voice.service';
 // import { TransparentToolbarComponent } from '../../../../shared/components/toolbar/transparent-toolbar/transparent-toolbar.component';
+// import { FooterComponent } from '../../../../shared/components/footer/footer/footer.component';
 
 // // ============================================================
 // // INTERFACES Y TIPOS
@@ -89,6 +90,7 @@
 //     MatTooltipModule,
 //     MatBadgeModule,
 //     TransparentToolbarComponent,
+//     FooterComponent,
 //   ],
 //   templateUrl: './dashboard.component.html',
 //   styleUrls: ['./dashboard.component.scss']
@@ -113,6 +115,9 @@
 //   private welcomeShown = false;
 //   private isDestroyed = false;
 //   private timeInterval: any;
+//   // ✅ NUEVA: Para mantener el micrófono activo
+//   private micKeepAliveInterval: any;
+//   private readonly KEEP_ALIVE_INTERVAL = 8000; // 8 segundos
 
 //   // ============================================================
 //   // ESTADO PÚBLICO
@@ -300,6 +305,39 @@
 //   }
 
 //   // ============================================================
+//   // ✅ NUEVO: MANTENER MICRÓFONO ACTIVO
+//   // ============================================================
+  
+//   /**
+//    * Activa el micrófono si no está activo
+//    */
+//   private activateMicIfNeeded(): void {
+//     if (!this.isMicActive && !this.voiceService.isCurrentlyMuted()) {
+//       console.log('🎤 [Dashboard] Activando micrófono...');
+//       this.voiceService.unmute();
+//       this.isMicActive = true;
+//       this.cdr.detectChanges();
+//     }
+//   }
+
+//   /**
+//    * Mantiene el micrófono activo con un ping periódico
+//    */
+//   private startMicKeepAlive(): void {
+//     this.micKeepAliveInterval = setInterval(() => {
+//       if (!this.isDestroyed) {
+//         // Si el micrófono está silenciado pero debería estar activo
+//         if (!this.isMicActive && !this.voiceService.isCurrentlyMuted()) {
+//           console.log('🔄 [Dashboard] Manteniendo micrófono activo (keep-alive)...');
+//           this.voiceService.unmute();
+//           this.isMicActive = true;
+//           this.cdr.detectChanges();
+//         }
+//       }
+//     }, this.KEEP_ALIVE_INTERVAL);
+//   }
+
+//   // ============================================================
 //   // CICLO DE VIDA - INIT
 //   // ============================================================
 //   ngOnInit(): void {
@@ -329,6 +367,14 @@
 //     if (window.innerWidth < 768) {
 //       this.isSidebarCollapsed = true;
 //     }
+
+//     // ✅ NUEVO: Activar micrófono al iniciar
+//     setTimeout(() => {
+//       this.activateMicIfNeeded();
+//     }, 500);
+
+//     // ✅ NUEVO: Iniciar keep-alive del micrófono
+//     this.startMicKeepAlive();
 //   }
 
 //   // ============================================================
@@ -533,6 +579,12 @@
 //       clearInterval(this.timeInterval);
 //     }
 
+//     // ✅ NUEVO: Limpiar keep-alive
+//     if (this.micKeepAliveInterval) {
+//       clearInterval(this.micKeepAliveInterval);
+//       this.micKeepAliveInterval = null;
+//     }
+
 //     this.voiceContext.resetContext();
 //     window.speechSynthesis.cancel();
 //   }
@@ -550,11 +602,9 @@
 
 
 
-
-
 // dashboard.component.ts
 
-import { Component, inject, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, NgZone, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -577,6 +627,12 @@ import { VoiceContextService } from '../../../services/voz/voice-context.service
 import { VoiceService } from '../../../services/voz/voice.service';
 import { TransparentToolbarComponent } from '../../../../shared/components/toolbar/transparent-toolbar/transparent-toolbar.component';
 import { FooterComponent } from '../../../../shared/components/footer/footer/footer.component';
+
+// ✅ IMPORTAMOS LOS TIPOS DEL TOOLBAR
+import { ToolbarConfig, UserMenuItem } from '../../../../shared/components/toolbar/transparent-toolbar/transparent-toolbar.component';
+
+// ✅ IMPORTAMOS HTTP CLIENT PARA CARGAR EL JSON
+import { HttpClient } from '@angular/common/http';
 
 // ============================================================
 // INTERFACES Y TIPOS
@@ -629,6 +685,11 @@ interface StatsCard {
   gradient: string;
 }
 
+// ✅ INTERFAZ PARA CONFIGURACIÓN EXTERNA (con actionId)
+export interface ExternalToolbarConfig extends ToolbarConfig {
+  userMenuItems?: (UserMenuItem & { actionId?: string })[];
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -661,6 +722,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private voiceHandler = inject(VoiceCommandHandlerService);
   private authService = inject(AuthService);
   private themeService = inject(ThemeService);
+  private http = inject(HttpClient); // ✅ Inyectamos HttpClient
 
   // ============================================================
   // VARIABLES PRIVADAS
@@ -669,9 +731,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private welcomeShown = false;
   private isDestroyed = false;
   private timeInterval: any;
-  // ✅ NUEVA: Para mantener el micrófono activo
   private micKeepAliveInterval: any;
-  private readonly KEEP_ALIVE_INTERVAL = 8000; // 8 segundos
+  private readonly KEEP_ALIVE_INTERVAL = 8000;
 
   // ============================================================
   // ESTADO PÚBLICO
@@ -681,16 +742,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentYear = new Date().getFullYear();
 
   userName = this.authService.getUserName() || 'Usuario';
-  userEmail = this.authService.getUserEmail() || 'usuario@email.com';
+  userEmail = this.authService.getUserEmail() || 'rafa3la57@gmail.com';
 
   isDarkTheme = this.themeService.currentTheme() === 'dark';
   isMicActive = !this.voiceService.isCurrentlyMuted();
   isSidebarCollapsed = false;
 
-  // ✅ Sección activa
   activeSection: SectionType = 'dashboard';
 
-  // ✅ Sidebar items con el tipo correcto
+  isSidebarOpen = false;
+
   sidebarItems: SidebarItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'stats', label: 'Estadísticas', icon: 'analytics' },
@@ -699,6 +760,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { id: 'voice', label: 'Comandos Voz', icon: 'mic' },
     { id: 'settings', label: 'Configuración', icon: 'settings' }
   ];
+
+  // ============================================================
+  // MANEJADOR DE RESIZE PARA RESETEAR ESTADO EN MÓVIL
+  // ============================================================
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      // En móvil, aseguramos que el sidebar esté cerrado al inicio
+      this.isSidebarOpen = false;
+      // Y que no esté colapsado para que se vean los textos cuando se abra
+      this.isSidebarCollapsed = false;
+    }
+  }
+
+  // ============================================================
+  // MÉTODO PARA ALTERNAR SIDEBAR EN MÓVIL (DESDE EL TOOLBAR)
+  // ============================================================
+  toggleSidebarMobile(): void {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
 
   // ============================================================
   // GETTER - FECHA FORMATEADA
@@ -715,6 +797,40 @@ export class DashboardComponent implements OnInit, OnDestroy {
       hour12: false
     }).format(this.currentTime);
   }
+
+  /**
+   * Obtiene los roles del usuario actual desde el AuthService
+   */
+  private getUserRoles(): string[] {
+    const user = this.authService.currentUser();
+    return user?.roles || [];
+  }
+  
+  /**
+   * Filtra un array de items (navLinks, userMenuItems) según los roles del usuario.
+   * Si un item no tiene la propiedad 'roles', se muestra a todos.
+   */
+  private filterItemsByRoles<T extends { label?: string; roles?: string[] }>(items: T[]): T[] {
+    const userRoles = this.getUserRoles();
+    const filtered = items.filter(item => {
+      if (!item.roles || item.roles.length === 0) {
+        return true;
+      }
+      const visible = item.roles.some(role => userRoles.includes(role));
+      return visible;
+    });
+    return filtered;
+  }
+
+  // ============================================================
+  // ✅ CONFIGURACIÓN DEL TOOLBAR (se cargará desde JSON)
+  // ============================================================
+  toolbarConfig: ToolbarConfig = {};
+
+  // Mapa de acciones disponibles (para mapear actionId)
+  private actionMap: { [key: string]: () => void } = {
+    logout: () => this.logout(),
+  };
 
   // ============================================================
   // STATS CARDS
@@ -854,17 +970,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   setActiveSection(section: SectionType): void {
     this.activeSection = section;
     if (window.innerWidth < 768) {
-      this.isSidebarCollapsed = true;
+      // ❌ ELIMINA ESTA LÍNEA: this.isSidebarCollapsed = true;
+      // En su lugar, cierra el sidebar al navegar (opcional)
+      this.isSidebarOpen = false; // Cierra el sidebar al seleccionar una sección en móvil
     }
   }
 
   // ============================================================
-  // ✅ NUEVO: MANTENER MICRÓFONO ACTIVO
+  // MANTENER MICRÓFONO ACTIVO
   // ============================================================
-  
-  /**
-   * Activa el micrófono si no está activo
-   */
   private activateMicIfNeeded(): void {
     if (!this.isMicActive && !this.voiceService.isCurrentlyMuted()) {
       console.log('🎤 [Dashboard] Activando micrófono...');
@@ -874,13 +988,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Mantiene el micrófono activo con un ping periódico
-   */
   private startMicKeepAlive(): void {
     this.micKeepAliveInterval = setInterval(() => {
       if (!this.isDestroyed) {
-        // Si el micrófono está silenciado pero debería estar activo
         if (!this.isMicActive && !this.voiceService.isCurrentlyMuted()) {
           console.log('🔄 [Dashboard] Manteniendo micrófono activo (keep-alive)...');
           this.voiceService.unmute();
@@ -892,11 +1002,91 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
-  // CICLO DE VIDA - INIT
+  // ✅ CARGA DE CONFIGURACIÓN DEL TOOLBAR DESDE JSON
+  // ============================================================
+  private loadToolbarConfig(): void {
+    this.http.get<ExternalToolbarConfig>('/config/menu-dashboard.json')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (config) => {
+          let userMenuItems = config.userMenuItems?.map(item => {
+            if (item.actionId && this.actionMap[item.actionId]) {
+              return { ...item, action: this.actionMap[item.actionId] };
+            }
+            if (item.actionId && !this.actionMap[item.actionId]) {
+              console.warn(`⚠️ Acción no mapeada: ${item.actionId}`);
+              const { actionId, ...rest } = item;
+              return rest;
+            }
+            return item;
+          }) || [];
+
+          const navLinks = this.filterItemsByRoles(config.navLinks || []);
+          userMenuItems = this.filterItemsByRoles(userMenuItems);
+
+          this.toolbarConfig = {
+            ...config,
+            navLinks,
+            userMenuItems
+          };
+
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('❌ Error al cargar configuración del toolbar:', err);
+          this.toolbarConfig = this.getDefaultToolbarConfig();
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  /**
+   * Configuración por defecto (fallback si no se carga el JSON)
+   */
+  private getDefaultToolbarConfig(): ToolbarConfig {
+    return {
+      title: 'VozAcción',
+      showLogo: true,
+      showThemeToggle: true,
+      showMicToggle: true,
+      showUserAvatar: true,
+      showBackButton: false,
+      showHelp: true,
+      navLinks: [
+        { label: 'Dashboard', route: '/dashboard', icon: 'dashboard' },
+        { label: 'Acciones', route: '/voice-actions', icon: 'flash_on' }
+      ],
+      userMenuItems: [
+        { label: 'Mi Perfil', icon: 'person', route: '/profile' },
+        { label: 'Configuración', icon: 'settings', route: '/settings' },
+        { label: 'Configuración de Voz', icon: 'settings_voice', route: '/voice-settings' },
+        { isDivider: true },
+        {
+          label: 'Cerrar Sesión',
+          icon: 'logout',
+          class: 'logout-item',
+          action: () => this.logout()
+        }
+      ],
+      unreadNotifications: 3
+    };
+  }
+
+  // ============================================================
+  // CICLO DE VIDA
   // ============================================================
   ngOnInit(): void {
-    console.log('✅ DashboardComponent inicializado');
+    // Inicializar estado en móvil
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      this.isSidebarOpen = false;
+      this.isSidebarCollapsed = false; // No colapsar en móvil, queremos mostrar textos
+    }
 
+    // 1. Cargar configuración del toolbar
+    this.loadToolbarConfig();
+
+    // 2. Reloj y saludo
     this.timeInterval = setInterval(() => {
       this.currentTime = new Date();
       this.greeting = this.getGreeting();
@@ -904,6 +1094,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }, 1000);
 
     this.greeting = this.getGreeting();
+
+    // 3. Configurar voz
     this.setupVoiceContext();
 
     this.voiceService
@@ -918,16 +1110,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.showWelcomeMessage();
 
-    if (window.innerWidth < 768) {
-      this.isSidebarCollapsed = true;
-    }
+    // ❌ ELIMINA ESTA LÍNEA: if (window.innerWidth < 768) { this.isSidebarCollapsed = true; }
 
-    // ✅ NUEVO: Activar micrófono al iniciar
     setTimeout(() => {
       this.activateMicIfNeeded();
     }, 500);
 
-    // ✅ NUEVO: Iniciar keep-alive del micrófono
     this.startMicKeepAlive();
   }
 
@@ -966,9 +1154,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }, 1500);
   }
 
-  // ============================================================
-  // OBTENER SALUDO
-  // ============================================================
   private getGreeting(): string {
     const hour = this.currentTime.getHours();
     if (hour < 12) return 'Buenos días 🌅';
@@ -985,7 +1170,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     console.log(`📝 [Dashboard] Comando recibido: "${lower}"`);
 
-    // Navegación por secciones
     if (lower.includes('dashboard') || lower.includes('inicio') || lower.includes('panel')) {
       this.setActiveSection('dashboard');
       this.voiceService.speak('Navegando al panel de control');
@@ -1022,7 +1206,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Acciones rápidas
     for (const action of this.quickActions) {
       if (action.voiceCommand.some(cmd => lower.includes(cmd))) {
         this.voiceService.clearTranscript();
@@ -1032,7 +1215,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Comandos generales
     if (lower.includes('cerrar sesión') || lower.includes('logout') || lower.includes('salir')) {
       this.logout();
       return;
@@ -1121,7 +1303,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
-  // CICLO DE VIDA - DESTROY
+  // DESTROY
   // ============================================================
   ngOnDestroy(): void {
     console.log('🧹 DashboardComponent destruido');
@@ -1133,7 +1315,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       clearInterval(this.timeInterval);
     }
 
-    // ✅ NUEVO: Limpiar keep-alive
     if (this.micKeepAliveInterval) {
       clearInterval(this.micKeepAliveInterval);
       this.micKeepAliveInterval = null;
