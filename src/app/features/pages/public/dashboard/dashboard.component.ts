@@ -1,6 +1,4 @@
-// // dashboard.component.ts
-
-// import { Component, inject, OnInit, OnDestroy, NgZone, ChangeDetectorRef } from '@angular/core';
+// import { Component, inject, OnInit, OnDestroy, NgZone, ChangeDetectorRef, HostListener, signal } from '@angular/core';
 // import { CommonModule } from '@angular/common';
 // import { Router, RouterModule } from '@angular/router';
 // import { Subject, takeUntil } from 'rxjs';
@@ -24,15 +22,23 @@
 // import { TransparentToolbarComponent } from '../../../../shared/components/toolbar/transparent-toolbar/transparent-toolbar.component';
 // import { FooterComponent } from '../../../../shared/components/footer/footer/footer.component';
 
+// // ✅ IMPORTAMOS LOS TIPOS DEL TOOLBAR
+// import { ToolbarConfig, UserMenuItem } from '../../../../shared/components/toolbar/transparent-toolbar/transparent-toolbar.component';
+
+// // ✅ IMPORTAMOS HTTP CLIENT PARA CARGAR EL JSON
+// import { HttpClient } from '@angular/common/http';
+// import { FilterByNextClassPipe } from "../../../../shared/pipes/filter-by-next-class.pipe";
+
 // // ============================================================
-// // INTERFACES Y TIPOS
+// // INTERFACES Y TIPOS - VERSIÓN EDUCATIVA
 // // ============================================================
-// type SectionType = 'dashboard' | 'stats' | 'actions' | 'activity' | 'voice' | 'settings';
+// type SectionType = 'dashboard' | 'courses' | 'activities' | 'progress' | 'calendar' | 'messages' | 'settings';
 
 // interface SidebarItem {
 //   id: SectionType;
 //   label: string;
 //   icon: string;
+//   roles?: string[];
 // }
 
 // interface QuickAction {
@@ -45,16 +51,13 @@
 // }
 
 // interface UserStats {
-//   totalActions: number;
-//   voiceCommandsUsed: number;
-//   sessionsCount: number;
-//   lastActive: Date;
-//   voiceGrowth: string;
-//   actionsGrowth: string;
-//   sessionsChange: string;
-//   lastActiveStatus: 'positive' | 'negative' | 'neutral';
-//   lastActiveIcon: string;
-//   lastActiveLabel: string;
+//   totalCourses: number;
+//   completedCourses: number;
+//   inProgress: number;
+//   totalStudents: number;
+//   averageGrade: number;
+//   nextClass: Date;
+//   pendingTasks: number;
 // }
 
 // interface ActivityItem {
@@ -63,6 +66,7 @@
 //   icon: string;
 //   status: 'success' | 'pending' | 'error' | 'info';
 //   highlight?: string;
+//   course?: string;
 // }
 
 // interface StatsCard {
@@ -73,6 +77,23 @@
 //   trend: 'up' | 'down' | 'neutral';
 //   trendIcon: string;
 //   gradient: string;
+// }
+
+// // ✅ Interfaz para cursos
+// interface Course {
+//   id: string;
+//   title: string;
+//   instructor: string;
+//   progress: number;
+//   status: 'completed' | 'in-progress' | 'not-started' | 'pending';
+//   nextClass?: Date;
+//   category: string;
+//   thumbnail?: string;
+// }
+
+// // ✅ INTERFAZ PARA CONFIGURACIÓN EXTERNA (con actionId)
+// export interface ExternalToolbarConfig extends ToolbarConfig {
+//   userMenuItems?: (UserMenuItem & { actionId?: string })[];
 // }
 
 // @Component({
@@ -90,12 +111,13 @@
 //     MatTooltipModule,
 //     MatBadgeModule,
 //     TransparentToolbarComponent,
-//     FooterComponent,
-//   ],
+//     FooterComponent
+// ],
 //   templateUrl: './dashboard.component.html',
 //   styleUrls: ['./dashboard.component.scss']
 // })
 // export class DashboardComponent implements OnInit, OnDestroy {
+// //  
 //   // ============================================================
 //   // INYECCIONES
 //   // ============================================================
@@ -104,9 +126,10 @@
 //   private cdr = inject(ChangeDetectorRef);
 //   public voiceService = inject(VoiceService);
 //   private voiceContext = inject(VoiceContextService);
-//   private voiceHandler = inject(VoiceCommandHandlerService);
+//   //private voiceHandler = inject(VoiceCommandHandlerService);
 //   private authService = inject(AuthService);
 //   private themeService = inject(ThemeService);
+//   private http = inject(HttpClient);
 
 //   // ============================================================
 //   // VARIABLES PRIVADAS
@@ -115,36 +138,108 @@
 //   private welcomeShown = false;
 //   private isDestroyed = false;
 //   private timeInterval: any;
-//   // ✅ NUEVA: Para mantener el micrófono activo
 //   private micKeepAliveInterval: any;
-//   private readonly KEEP_ALIVE_INTERVAL = 8000; // 8 segundos
+//   private readonly KEEP_ALIVE_INTERVAL = 8000;
 
 //   // ============================================================
-//   // ESTADO PÚBLICO
+//   // ESTADO PÚBLICO - VERSIÓN EDUCATIVA
 //   // ============================================================
 //   currentTime = new Date();
 //   greeting = '';
 //   currentYear = new Date().getFullYear();
+//   currentTimeDisplay = signal('');
 
-//   userName = this.authService.getUserName() || 'Usuario';
-//   userEmail = this.authService.getUserEmail() || 'usuario@email.com';
+//   // ✅ GETTERS en lugar de propiedades fijas
+//   get userName(): string {
+//     return this.authService.getUserName() || 'Estudiante';
+//   }
 
+//   get userEmail(): string {
+//     return this.authService.getUserEmail() || 'estudiante@campus.edu';
+//   }
+
+//   get isAuthenticated(): boolean {
+//     return this.authService.isAuthenticated();
+//   }
+
+//   // ✅ Propiedades que no dependen del authService
 //   isDarkTheme = this.themeService.currentTheme() === 'dark';
 //   isMicActive = !this.voiceService.isCurrentlyMuted();
 //   isSidebarCollapsed = false;
 
-//   // ✅ Sección activa
 //   activeSection: SectionType = 'dashboard';
 
-//   // ✅ Sidebar items con el tipo correcto
-//   sidebarItems: SidebarItem[] = [
-//     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-//     { id: 'stats', label: 'Estadísticas', icon: 'analytics' },
-//     { id: 'actions', label: 'Acciones', icon: 'flash_on' },
-//     { id: 'activity', label: 'Actividad', icon: 'history' },
-//     { id: 'voice', label: 'Comandos Voz', icon: 'mic' },
-//     { id: 'settings', label: 'Configuración', icon: 'settings' }
+//   isSidebarOpen = false;
+
+//   sidebarItems: SidebarItem[] = [];
+
+//   currentDate = new Date();
+
+
+
+
+
+
+
+
+
+
+//   // ============================================================
+//   // DATOS PARA MENSAJES - ✅ AGREGAR ESTO
+//   // ============================================================
+//   messages = [
+//     {
+//       id: 1,
+//       sender: 'Dr. Juan Pérez',
+//       avatar: 'JP',
+//       content: 'Recordatorio: Examen de Matemáticas el viernes a las 10:00 AM',
+//       time: 'Hace 2 horas',
+//       unread: 2
+//     },
+//     {
+//       id: 2,
+//       sender: 'Ing. María García',
+//       avatar: 'MG',
+//       content: 'Tu proyecto final de Programación Web ha sido revisado',
+//       time: 'Hace 1 día',
+//       unread: 1
+//     },
+//     {
+//       id: 3,
+//       sender: 'Dra. Ana Martínez',
+//       avatar: 'AM',
+//       content: 'Nuevo material disponible para el curso de Historia del Arte',
+//       time: 'Hace 2 días',
+//       unread: 3
+//     },
+//     {
+//       id: 4,
+//       sender: 'Dr. Carlos Ruiz',
+//       avatar: 'CR',
+//       content: 'Próxima clase de Física Cuántica: Teoría de la Relatividad',
+//       time: 'Hace 3 días',
+//       unread: 0
+//     }
 //   ];
+
+//   // ============================================================
+//   // MANEJADOR DE RESIZE PARA RESETEAR ESTADO EN MÓVIL
+//   // ============================================================
+//   @HostListener('window:resize', ['$event'])
+//   onResize(event: any) {
+//     const isMobile = window.innerWidth < 768;
+//     if (isMobile) {
+//       this.isSidebarOpen = false;
+//       this.isSidebarCollapsed = false;
+//     }
+//   }
+
+//   // ============================================================
+//   // MÉTODO PARA ALTERNAR SIDEBAR EN MÓVIL (DESDE EL TOOLBAR)
+//   // ============================================================
+//   toggleSidebarMobile(): void {
+//     this.isSidebarOpen = !this.isSidebarOpen;
+//   }
 
 //   // ============================================================
 //   // GETTER - FECHA FORMATEADA
@@ -162,131 +257,390 @@
 //     }).format(this.currentTime);
 //   }
 
+
+
+// ============================================================
+// MÉTODO PARA ACTUALIZAR EL RELOJ
+// ============================================================
+// private updateTimeDisplay(): void {
+//   this.currentTimeDisplay = new Intl.DateTimeFormat('es-ES', {
+//     weekday: 'long',
+//     day: 'numeric',
+//     month: 'long',
+//     year: 'numeric',
+//     hour: '2-digit',
+//     minute: '2-digit',
+//     second: '2-digit',
+//     hour12: false
+//   }).format(this.currentTime);
+// }
+
+
 //   // ============================================================
-//   // STATS CARDS
+//   // GETTER - Cursos con próxima clase
+//   // ============================================================
+//   get coursesWithNextClass(): Course[] {
+//     return this.myCourses.filter(course => course.nextClass !== undefined && course.nextClass !== null);
+//   }
+
+
+//   // Getter para los días del calendario
+//   get calendarDays(): { number: number; hasEvent: boolean; isToday: boolean }[] {
+//     const days = [];
+//     const year = this.currentDate.getFullYear();
+//     const month = this.currentDate.getMonth();
+//     const today = new Date();
+//     const firstDayOfMonth = new Date(year, month, 1);
+//     const lastDayOfMonth = new Date(year, month + 1, 0);
+//     const daysInMonth = lastDayOfMonth.getDate();
+    
+//     // Días con eventos de tus cursos
+//     const eventDays = this.myCourses
+//       .filter(course => course.nextClass)
+//       .map(course => course.nextClass?.getDate())
+//       .filter(date => date !== undefined) as number[];
+
+//     // Días del mes anterior para completar la primera semana
+//     const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 = Domingo, 1 = Lunes...
+//     const daysFromPrevMonth = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+//     // Agregar días del mes anterior
+//     const prevMonthDate = new Date(year, month, 0);
+//     const prevMonthDays = prevMonthDate.getDate();
+//     for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
+//       days.push({
+//         number: prevMonthDays - i,
+//         hasEvent: false,
+//         isToday: false,
+//         isOtherMonth: true
+//       });
+//     }
+
+//     // Agregar días del mes actual
+//     for (let i = 1; i <= daysInMonth; i++) {
+//       const isToday = today.getDate() === i && 
+//                       today.getMonth() === month && 
+//                       today.getFullYear() === year;
+//       days.push({
+//         number: i,
+//         hasEvent: eventDays.includes(i),
+//         isToday: isToday,
+//         isOtherMonth: false
+//       });
+//     }
+
+//     // Completar la última semana con días del mes siguiente
+//     const totalDays = days.length;
+//     const remainingDays = 7 - (totalDays % 7);
+//     if (remainingDays < 7) {
+//       for (let i = 1; i <= remainingDays; i++) {
+//         days.push({
+//           number: i,
+//           hasEvent: false,
+//           isToday: false,
+//           isOtherMonth: true
+//         });
+//       }
+//     }
+
+//     return days;
+//   }
+
+
+//   // ============================================================
+//   // MÉTODOS PARA EL CALENDARIO
+//   // ============================================================
+
+//   previousMonth(): void {
+//     this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
+//   }
+
+//   nextMonth(): void {
+//     this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
+//   }
+
+
+//   // ============================================================
+//   // MÉTODOS ADICIONALES PARA LAS NUEVAS SECCIONES
+//   // ============================================================
+
+//   /**
+//    * Getter para tareas pendientes
+//    */
+//   get pendingTasks(): ActivityItem[] {
+//     return this.recentActivity.filter(activity => activity.status === 'pending');
+//   }
+  
+//   /**
+//    * Completar una tarea
+//    */
+//   completeTask(task: ActivityItem): void {
+//     task.status = 'success';
+//     this.voiceService.speak('Tarea marcada como completada. ¡Buen trabajo!');
+//     this.cdr.detectChanges();
+//   }
+
+//   /**
+//    * Configurar notificaciones
+//    */
+//   configureNotifications(): void {
+//     this.voiceService.speak('Abriendo configuración de notificaciones');
+//     this.router.navigate(['/notifications']);
+//   }
+
+//   /**
+//    * Gestionar seguridad
+//    */
+//   manageSecurity(): void {
+//     this.voiceService.speak('Abriendo configuración de seguridad');
+//     this.router.navigate(['/security']);
+//   }
+
+//   /**
+//    * Cambiar idioma
+//    */
+//   changeLanguage(): void {
+//     this.voiceService.speak('Cambiando idioma a español');
+//     // Lógica para cambiar idioma
+//   }
+
+
+
+//   /**
+//    * Obtiene los roles del usuario actual desde el AuthService
+//    */
+//   private getUserRoles(): string[] {
+//     const user = this.authService.currentUser();
+//     return user?.roles || [];
+//   }
+  
+//   /**
+//    * Filtra un array de items (navLinks, userMenuItems) según los roles del usuario.
+//    * Si un item no tiene la propiedad 'roles', se muestra a todos.
+//    */
+//   private filterItemsByRoles<T extends { label?: string; roles?: string[] }>(items: T[]): T[] {
+//     const userRoles = this.getUserRoles();
+//     const filtered = items.filter(item => {
+//       if (!item.roles || item.roles.length === 0) {
+//         return true;
+//       }
+//       const visible = item.roles.some(role => userRoles.includes(role));
+//       return visible;
+//     });
+//     return filtered;
+//   }
+
+//   // ============================================================
+//   // ✅ CONFIGURACIÓN DEL TOOLBAR (se cargará desde JSON)
+//   // ============================================================
+//   toolbarConfig: ToolbarConfig = {};
+
+//   // Mapa de acciones disponibles (para mapear actionId)
+//   private actionMap: { [key: string]: () => void } = {
+//     logout: () => this.logout(),
+//   };
+
+//   // ============================================================
+//   // STATS CARDS - VERSIÓN EDUCATIVA
 //   // ============================================================
 //   statsCards: StatsCard[] = [
 //     {
-//       icon: 'mic',
-//       label: 'Comandos de Voz',
-//       value: 128,
-//       change: '+12%',
+//       icon: 'school',
+//       label: 'Cursos Activos',
+//       value: 9,
+//       change: '+2',
 //       trend: 'up',
 //       trendIcon: 'trending_up',
 //       gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)'
 //     },
 //     {
-//       icon: 'playlist_add_check',
-//       label: 'Acciones Creadas',
-//       value: 47,
-//       change: '+8%',
+//       icon: 'assignment_turned_in',
+//       label: 'Completados',
+//       value: 5,
+//       change: '+80%',
 //       trend: 'up',
 //       trendIcon: 'trending_up',
 //       gradient: 'linear-gradient(135deg, #10b981, #059669)'
 //     },
 //     {
-//       icon: 'schedule',
-//       label: 'Sesiones',
-//       value: 12,
-//       change: '0%',
-//       trend: 'neutral',
-//       trendIcon: 'remove',
+//       icon: 'pending_actions',
+//       label: 'Tareas Pendientes',
+//       value: 3,
+//       change: '2',
+//       trend: 'down',
+//       trendIcon: 'trending_down',
 //       gradient: 'linear-gradient(135deg, #f59e0b, #d97706)'
 //     },
 //     {
-//       icon: 'access_time',
-//       label: 'Última Actividad',
-//       value: 'Ahora',
-//       change: 'Activo',
+//       icon: 'calendar_today',
+//       label: 'Próxima Clase',
+//       value: 'Mañana',
+//       change: '10:00 AM',
 //       trend: 'up',
-//       trendIcon: 'fiber_manual_record',
+//       trendIcon: 'event',
 //       gradient: 'linear-gradient(135deg, #3b82f6, #6366f1)'
 //     }
 //   ];
 
 //   // ============================================================
-//   // ESTADÍSTICAS
+//   // ESTADÍSTICAS EDUCATIVAS
 //   // ============================================================
-//   stats: UserStats = {
-//     totalActions: 47,
-//     voiceCommandsUsed: 128,
-//     sessionsCount: 12,
-//     lastActive: new Date(),
-//     voiceGrowth: '+12%',
-//     actionsGrowth: '+8%',
-//     sessionsChange: '0%',
-//     lastActiveStatus: 'positive',
-//     lastActiveIcon: 'fiber_manual_record',
-//     lastActiveLabel: 'Activo'
+//   courseStats: UserStats = {
+//     totalCourses: 12,
+//     completedCourses: 5,
+//     inProgress: 4,
+//     totalStudents: 156,
+//     averageGrade: 8.7,
+//     nextClass: new Date(Date.now() + 86400000 * 2),
+//     pendingTasks: 3
 //   };
 
 //   // ============================================================
-//   // ACCIONES RÁPIDAS
+//   // CURSOS DEL USUARIO
 //   // ============================================================
-//   quickActions: QuickAction[] = [
+//   myCourses: Course[] = [
 //     {
-//       label: 'Nueva Acción de Voz',
-//       icon: 'mic',
-//       route: '/voice-actions',
-//       voiceCommand: ['nueva acción', 'crear acción', 'acción de voz'],
-//       description: 'Crea una nueva acción controlada por voz',
-//       badge: 'new'
+//       id: '1',
+//       title: 'Matemáticas Avanzadas',
+//       instructor: 'Dr. Juan Pérez',
+//       progress: 75,
+//       status: 'in-progress',
+//       nextClass: new Date(Date.now() + 86400000),
+//       category: 'Ciencias'
 //     },
 //     {
-//       label: 'Mis Comandos',
-//       icon: 'settings_voice',
-//       route: '/voice-commands',
-//       voiceCommand: ['mis comandos', 'comandos', 'ver comandos'],
-//       description: 'Gestiona tus comandos de voz personalizados',
-//       badge: 'popular'
+//       id: '2',
+//       title: 'Programación Web',
+//       instructor: 'Ing. María García',
+//       progress: 100,
+//       status: 'completed',
+//       category: 'Tecnología'
 //     },
 //     {
-//       label: 'Historial',
-//       icon: 'history',
-//       route: '/history',
-//       voiceCommand: ['historial', 'ver historial', 'actividad'],
-//       description: 'Revisa tu historial de actividad',
-//       badge: ''
+//       id: '3',
+//       title: 'Historia del Arte',
+//       instructor: 'Dra. Ana Martínez',
+//       progress: 30,
+//       status: 'in-progress',
+//       nextClass: new Date(Date.now() + 86400000 * 3),
+//       category: 'Humanidades'
 //     },
 //     {
-//       label: 'Perfil',
-//       icon: 'person',
-//       route: '/profile',
-//       voiceCommand: ['perfil', 'mi perfil', 'configuración'],
-//       description: 'Administra tu información personal',
-//       badge: ''
+//       id: '4',
+//       title: 'Física Cuántica',
+//       instructor: 'Dr. Carlos Ruiz',
+//       progress: 0,
+//       status: 'not-started',
+//       category: 'Ciencias'
+//     },
+//     {
+//       id: '5',
+//       title: 'Diseño UX/UI',
+//       instructor: 'Lic. Laura Fernández',
+//       progress: 60,
+//       status: 'in-progress',
+//       nextClass: new Date(Date.now() + 86400000 * 5),
+//       category: 'Diseño'
 //     }
 //   ];
 
 //   // ============================================================
-//   // ACTIVIDAD RECIENTE
+//   // ACCIONES RÁPIDAS EDUCATIVAS
+//   // ============================================================
+//   quickActions: QuickAction[] = [
+//     {
+//       label: 'Ver Cursos',
+//       icon: 'menu_book',
+//       route: '/courses',
+//       voiceCommand: ['cursos', 'mis cursos', 'ver cursos'],
+//       description: 'Accede a todos tus cursos disponibles',
+//       badge: 'popular'
+//     },
+//     {
+//       label: 'Tareas Pendientes',
+//       icon: 'assignment',
+//       route: '/tasks',
+//       voiceCommand: ['tareas', 'pendientes', 'mis tareas'],
+//       description: 'Revisa tus tareas y entregas pendientes',
+//       badge: 'new'
+//     },
+//     {
+//       label: 'Calendario',
+//       icon: 'calendar_month',
+//       route: '/calendar',
+//       voiceCommand: ['calendario', 'horario', 'clases'],
+//       description: 'Consulta tu horario de clases',
+//       badge: ''
+//     },
+//     {
+//       label: 'Foros',
+//       icon: 'forum',
+//       route: '/forums',
+//       voiceCommand: ['foros', 'discusiones', 'participar'],
+//       description: 'Participa en los foros de discusión',
+//       badge: ''
+//     },
+//     {
+//       label: 'Progreso',
+//       icon: 'trending_up',
+//       route: '/progress',
+//       voiceCommand: ['progreso', 'avance', 'rendimiento'],
+//       description: 'Visualiza tu progreso académico',
+//       badge: ''
+//     },
+//     {
+//       label: 'Mensajes',
+//       icon: 'message',
+//       route: '/messages',
+//       voiceCommand: ['mensajes', 'chat', 'comunicación'],
+//       description: 'Comunícate con profesores y compañeros',
+//       badge: 'beta'
+//     }
+//   ];
+
+//   // ============================================================
+//   // ACTIVIDAD RECIENTE EDUCATIVA
 //   // ============================================================
 //   recentActivity: ActivityItem[] = [
 //     {
-//       action: 'Comando de voz ejecutado:',
-//       highlight: '"Crear tarea"',
-//       time: 'Hace 5 minutos',
-//       icon: 'check_circle',
-//       status: 'success'
-//     },
-//     {
-//       action: 'Nueva acción creada:',
-//       highlight: '"Recordatorio"',
+//       action: 'Completaste el curso:',
+//       highlight: '"Programación Web"',
 //       time: 'Hace 2 horas',
-//       icon: 'add_circle',
-//       status: 'success'
+//       icon: 'check_circle',
+//       status: 'success',
+//       course: 'Programación Web'
 //     },
 //     {
-//       action: 'Inicio de sesión',
-//       time: 'Hace 3 horas',
-//       icon: 'login',
-//       status: 'info'
-//     },
-//     {
-//       action: 'Configuración actualizada',
+//       action: 'Nueva tarea asignada:',
+//       highlight: '"Proyecto Final - Matemáticas"',
 //       time: 'Hace 1 día',
-//       icon: 'settings',
-//       status: 'pending'
+//       icon: 'assignment',
+//       status: 'pending',
+//       course: 'Matemáticas Avanzadas'
+//     },
+//     {
+//       action: 'Clase completada:',
+//       highlight: '"Historia del Arte - Módulo 3"',
+//       time: 'Hace 2 días',
+//       icon: 'school',
+//       status: 'success',
+//       course: 'Historia del Arte'
+//     },
+//     {
+//       action: 'Foro nuevo:',
+//       highlight: '"Discusión sobre IA"',
+//       time: 'Hace 3 días',
+//       icon: 'forum',
+//       status: 'info',
+//       course: 'Programación Web'
+//     },
+//     {
+//       action: 'Calificación recibida:',
+//       highlight: '"9.5 en Examen"',
+//       time: 'Hace 5 días',
+//       icon: 'grade',
+//       status: 'success',
+//       course: 'Diseño UX/UI'
 //     }
 //   ];
 
@@ -300,17 +654,13 @@
 //   setActiveSection(section: SectionType): void {
 //     this.activeSection = section;
 //     if (window.innerWidth < 768) {
-//       this.isSidebarCollapsed = true;
+//       this.isSidebarOpen = false;
 //     }
 //   }
 
 //   // ============================================================
-//   // ✅ NUEVO: MANTENER MICRÓFONO ACTIVO
+//   // MANTENER MICRÓFONO ACTIVO
 //   // ============================================================
-  
-//   /**
-//    * Activa el micrófono si no está activo
-//    */
 //   private activateMicIfNeeded(): void {
 //     if (!this.isMicActive && !this.voiceService.isCurrentlyMuted()) {
 //       console.log('🎤 [Dashboard] Activando micrófono...');
@@ -320,13 +670,9 @@
 //     }
 //   }
 
-//   /**
-//    * Mantiene el micrófono activo con un ping periódico
-//    */
 //   private startMicKeepAlive(): void {
 //     this.micKeepAliveInterval = setInterval(() => {
 //       if (!this.isDestroyed) {
-//         // Si el micrófono está silenciado pero debería estar activo
 //         if (!this.isMicActive && !this.voiceService.isCurrentlyMuted()) {
 //           console.log('🔄 [Dashboard] Manteniendo micrófono activo (keep-alive)...');
 //           this.voiceService.unmute();
@@ -338,60 +684,228 @@
 //   }
 
 //   // ============================================================
-//   // CICLO DE VIDA - INIT
+//   // ✅ CARGA DE CONFIGURACIÓN DEL TOOLBAR DESDE JSON
 //   // ============================================================
-//   ngOnInit(): void {
-//     console.log('✅ DashboardComponent inicializado');
-
-//     this.timeInterval = setInterval(() => {
-//       this.currentTime = new Date();
-//       this.greeting = this.getGreeting();
-//       this.cdr.detectChanges();
-//     }, 1000);
-
-//     this.greeting = this.getGreeting();
-//     this.setupVoiceContext();
-
-//     this.voiceService
-//       .getTranscript()
+//   private loadToolbarConfig(): void {
+//     this.http.get<ExternalToolbarConfig>('/config/dashboard/menu-dashboardEducativo.json')
 //       .pipe(takeUntil(this.destroy$))
-//       .subscribe((text: string) => {
-//         this.ngZone.run(() => {
-//           if (this.isDestroyed || !text) return;
-//           this.handleVoiceCommand(text);
-//         });
+//       .subscribe({
+//         next: (config) => {
+//           let userMenuItems = config.userMenuItems?.map(item => {
+//             if (item.actionId && this.actionMap[item.actionId]) {
+//               return { ...item, action: this.actionMap[item.actionId] };
+//             }
+//             if (item.actionId && !this.actionMap[item.actionId]) {
+//               console.warn(`⚠️ Acción no mapeada: ${item.actionId}`);
+//               const { actionId, ...rest } = item;
+//               return rest;
+//             }
+//             return item;
+//           }) || [];
+
+//           const navLinks = this.filterItemsByRoles(config.navLinks || []);
+//           userMenuItems = this.filterItemsByRoles(userMenuItems);
+
+//           this.toolbarConfig = {
+//             ...config,
+//             navLinks,
+//             userMenuItems
+//           };
+
+//           this.cdr.detectChanges();
+//         },
+//         error: (err) => {
+//           console.error('❌ Error al cargar configuración del toolbar:', err);
+//           this.toolbarConfig = this.getDefaultToolbarConfig();
+//           this.cdr.detectChanges();
+//         }
 //       });
-
-//     this.showWelcomeMessage();
-
-//     if (window.innerWidth < 768) {
-//       this.isSidebarCollapsed = true;
-//     }
-
-//     // ✅ NUEVO: Activar micrófono al iniciar
-//     setTimeout(() => {
-//       this.activateMicIfNeeded();
-//     }, 500);
-
-//     // ✅ NUEVO: Iniciar keep-alive del micrófono
-//     this.startMicKeepAlive();
 //   }
 
 //   // ============================================================
-//   // CONFIGURACIÓN DE VOZ
+//   // ✅ CARGA DE CONFIGURACIÓN DEL SIDEBAR DESDE JSON
+//   // ============================================================
+//   private loadSidebarConfig(): void {
+//     console.log('📂 Intentando cargar sidebar desde: /config/sidebar/sidebar-configEducativo.json');
+    
+//     this.http.get<{ sidebarItems: SidebarItem[] }>('/config/sidebar/sidebar-configEducativo.json')
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe({
+//         next: (response) => {
+//           console.log('✅ Sidebar cargado correctamente:', response);
+//           this.sidebarItems = this.filterItemsByRoles(response.sidebarItems);
+//           console.log('📋 Sidebar items después de filtrar:', this.sidebarItems);
+//           this.cdr.detectChanges();
+//         },
+//         error: (err) => {
+//           console.error('❌ Error al cargar configuración del sidebar:');
+//           console.error('  - Status:', err.status);
+//           console.error('  - Message:', err.message);
+//           console.error('  - URL:', err.url);
+//           console.log('🔄 Usando sidebar por defecto');
+//           this.sidebarItems = this.filterItemsByRoles(this.getDefaultSidebarItems());
+//           console.log('📋 Sidebar por defecto:', this.sidebarItems);
+//           this.cdr.detectChanges();
+//         }
+//       });
+//   }
+
+//   /**
+//    * Items por defecto (fallback si no se carga el JSON)
+//    */
+//   private getDefaultSidebarItems(): SidebarItem[] {
+//     return [
+//             { "id": "dashboard", "label": "Panel Principal", "icon": "dashboard", "roles": ["SUPER_ADMIN", "USER"] },
+//             { "id": "courses", "label": "Mis Cursos", "icon": "menu_book", "roles": ["SUPER_ADMIN", "USER"] },
+//             { "id": "activities", "label": "Tareas", "icon": "assignment", "roles": ["SUPER_ADMIN", "USER"] },
+//             { "id": "progress", "label": "Progreso", "icon": "trending_up", "roles": ["SUPER_ADMIN", "USER"] },
+//             { "id": "calendar", "label": "Calendario", "icon": "calendar_month", "roles":["SUPER_ADMIN", "USER"] },
+//             { "id": "messages", "label": "Mensajes", "icon": "message", "roles": ["SUPER_ADMIN", "USER"] },
+//             { "id": "settings", "label": "Configuración", "icon": "settings", "roles": ["SUPER_ADMIN", "USER"] }
+//           ]
+//   }
+
+//   /**
+//    * Configuración por defecto (fallback si no se carga el JSON)
+//    */
+//   private getDefaultToolbarConfig(): ToolbarConfig {
+//     return {
+//       title: 'Campus Virtual',
+//       showLogo: true,
+//       showThemeToggle: true,
+//       showMicToggle: true,
+//       showUserAvatar: true,
+//       showBackButton: false,
+//       showHelp: true,
+//       navLinks: [
+//         { label: 'Inicio', route: '/dashboard', icon: 'home', roles: ['SUPER_ADMIN', 'STUDENT', 'TEACHER'] },
+//         { label: 'Cursos', route: '/courses', icon: 'menu_book', roles: ['SUPER_ADMIN', 'STUDENT', 'TEACHER'] },
+//         { label: 'Calendario', route: '/calendar', icon: 'calendar_month', roles: ['SUPER_ADMIN', 'STUDENT', 'TEACHER'] }
+//       ],
+//       userMenuItems: [
+//         { label: 'Mi Perfil', icon: 'person', route: '/profile' },
+//         { label: 'Configuración', icon: 'settings', route: '/settings' },
+//         { label: 'Preferencias de Voz', icon: 'settings_voice', route: '/voice-settings' },
+//         { isDivider: true },
+//         {
+//           label: 'Cerrar Sesión',
+//           icon: 'logout',
+//           class: 'logout-item',
+//           action: () => this.logout()
+//         }
+//       ],
+//       unreadNotifications: 5
+//     };
+//   }
+
+//   // ============================================================
+//   // CICLO DE VIDA
+//   // ============================================================
+//   // ngOnInit(): void {
+//   //   const isMobile = window.innerWidth < 768;
+//   //   if (isMobile) {
+//   //     this.isSidebarOpen = false;
+//   //     this.isSidebarCollapsed = false;
+//   //   }
+
+//   //   this.loadToolbarConfig();
+//   //   this.loadSidebarConfig();
+
+//   //   this.timeInterval = setInterval(() => {
+//   //     this.currentTime = new Date();
+//   //     this.greeting = this.getGreeting();
+//   //     this.cdr.detectChanges();
+//   //   }, 1000);
+
+//   //   this.greeting = this.getGreeting();
+
+//   //   this.setupVoiceContext();
+
+//   //   this.voiceService
+//   //     .getTranscript()
+//   //     .pipe(takeUntil(this.destroy$))
+//   //     .subscribe((text: string) => {
+//   //       this.ngZone.run(() => {
+//   //         if (this.isDestroyed || !text) return;
+//   //         this.handleVoiceCommand(text);
+//   //       });
+//   //     });
+
+//   //   this.showWelcomeMessage();
+
+//   //   setTimeout(() => {
+//   //     this.activateMicIfNeeded();
+//   //   }, 500);
+
+//   //   this.startMicKeepAlive();
+//   // }
+
+
+
+
+
+
+//   ngOnInit(): void {
+//   const isMobile = window.innerWidth < 768;
+//   if (isMobile) {
+//     this.isSidebarOpen = false;
+//     this.isSidebarCollapsed = false;
+//   }
+
+//   this.loadToolbarConfig();
+//   this.loadSidebarConfig();
+
+//   // ✅ Reloj y saludo con NgZone
+//   this.timeInterval = setInterval(() => {
+//     this.ngZone.run(() => {
+//       this.currentTime = new Date();
+//       this.greeting = this.getGreeting();
+//     });
+//   }, 1000);
+
+//   this.greeting = this.getGreeting();
+
+//   this.setupVoiceContext();
+
+//   this.voiceService
+//     .getTranscript()
+//     .pipe(takeUntil(this.destroy$))
+//     .subscribe((text: string) => {
+//       this.ngZone.run(() => {
+//         if (this.isDestroyed || !text) return;
+//         this.handleVoiceCommand(text);
+//       });
+//     });
+
+//   this.showWelcomeMessage();
+
+//   setTimeout(() => {
+//     this.activateMicIfNeeded();
+//   }, 500);
+
+//   this.startMicKeepAlive();
+// }
+
+
+
+
+
+
+//   // ============================================================
+//   // CONFIGURACIÓN DE VOZ - VERSIÓN EDUCATIVA
 //   // ============================================================
 //   private setupVoiceContext(): void {
 //     const context = {
-//       activationMessage: `Bienvenido de vuelta ${this.userName}. Puedes navegar por el dashboard usando tu voz.`,
+//       activationMessage: `Bienvenido de vuelta ${this.userName}. Puedes navegar por el campus virtual usando tu voz.`,
 //       availableCommands: [
 //         'dashboard', 'inicio', 'panel',
-//         'estadísticas', 'estadisticas', 'analisis',
-//         'acciones', 'rápidas', 'rapidas',
-//         'historial', 'actividad', 'reciente',
-//         'voz', 'comandos', 'comando',
-//         'configuración', 'configuracion', 'ajustes',
-//         'nueva acción', 'mis comandos', 'perfil',
-//         'cerrar sesión', 'logout', 'salir',
+//         'cursos', 'mis cursos',
+//         'tareas', 'pendientes',
+//         'calendario', 'horario',
+//         'progreso', 'rendimiento',
+//         'mensajes', 'chat',
+//         'foros', 'discusión',
+//         'configuración', 'ajustes',
 //         'ayuda', 'silenciar micrófono', 'activar micrófono'
 //       ],
 //       preventBackend: true
@@ -405,16 +919,13 @@
 //         this.welcomeShown = true;
 //         if (!this.voiceService.hasWelcomeBeenShown('dashboard')) {
 //           this.voiceService.markWelcomeAsShown('dashboard');
-//           const welcomeMessage = `Hola ${this.userName}, bienvenido a tu panel de control. Tienes ${this.stats.voiceCommandsUsed} comandos de voz ejecutados.`;
+//           const welcomeMessage = `Hola ${this.userName}, bienvenido al Campus Virtual. Tienes ${this.courseStats.pendingTasks} tareas pendientes y ${this.courseStats.inProgress} cursos en progreso.`;
 //           this.voiceService.speakWhenReady(welcomeMessage);
 //         }
 //       }
 //     }, 1500);
 //   }
 
-//   // ============================================================
-//   // OBTENER SALUDO
-//   // ============================================================
 //   private getGreeting(): string {
 //     const hour = this.currentTime.getHours();
 //     if (hour < 12) return 'Buenos días 🌅';
@@ -423,7 +934,7 @@
 //   }
 
 //   // ============================================================
-//   // MANEJAR COMANDOS DE VOZ
+//   // MANEJAR COMANDOS DE VOZ - VERSIÓN EDUCATIVA
 //   // ============================================================
 //   private handleVoiceCommand(text: string): void {
 //     if (this.isDestroyed) return;
@@ -431,34 +942,40 @@
 
 //     console.log(`📝 [Dashboard] Comando recibido: "${lower}"`);
 
-//     // Navegación por secciones
+//     // Navegación por secciones educativas
 //     if (lower.includes('dashboard') || lower.includes('inicio') || lower.includes('panel')) {
 //       this.setActiveSection('dashboard');
-//       this.voiceService.speak('Navegando al panel de control');
+//       this.voiceService.speak('Navegando al panel de control del campus');
 //       return;
 //     }
 
-//     if (lower.includes('estadísticas') || lower.includes('estadisticas') || lower.includes('analisis')) {
-//       this.setActiveSection('stats');
-//       this.voiceService.speak('Navegando a estadísticas');
+//     if (lower.includes('cursos') || lower.includes('mis cursos')) {
+//       this.setActiveSection('courses');
+//       this.voiceService.speak('Navegando a tus cursos');
 //       return;
 //     }
 
-//     if (lower.includes('acciones') || lower.includes('rápidas') || lower.includes('rapidas')) {
-//       this.setActiveSection('actions');
-//       this.voiceService.speak('Navegando a acciones rápidas');
+//     if (lower.includes('tareas') || lower.includes('pendientes')) {
+//       this.setActiveSection('activities');
+//       this.voiceService.speak('Navegando a tareas pendientes');
 //       return;
 //     }
 
-//     if (lower.includes('historial') || lower.includes('actividad') || lower.includes('reciente')) {
-//       this.setActiveSection('activity');
-//       this.voiceService.speak('Navegando a actividad reciente');
+//     if (lower.includes('progreso') || lower.includes('rendimiento') || lower.includes('avance')) {
+//       this.setActiveSection('progress');
+//       this.voiceService.speak('Navegando a tu progreso académico');
 //       return;
 //     }
 
-//     if (lower.includes('voz') || lower.includes('comandos') || lower.includes('comando')) {
-//       this.setActiveSection('voice');
-//       this.voiceService.speak('Navegando a comandos de voz');
+//     if (lower.includes('calendario') || lower.includes('horario')) {
+//       this.setActiveSection('calendar');
+//       this.voiceService.speak('Navegando al calendario académico');
+//       return;
+//     }
+
+//     if (lower.includes('mensajes') || lower.includes('chat')) {
+//       this.setActiveSection('messages');
+//       this.voiceService.speak('Navegando a mensajes');
 //       return;
 //     }
 
@@ -468,7 +985,7 @@
 //       return;
 //     }
 
-//     // Acciones rápidas
+//     // Acciones rápidas por voz
 //     for (const action of this.quickActions) {
 //       if (action.voiceCommand.some(cmd => lower.includes(cmd))) {
 //         this.voiceService.clearTranscript();
@@ -478,7 +995,6 @@
 //       }
 //     }
 
-//     // Comandos generales
 //     if (lower.includes('cerrar sesión') || lower.includes('logout') || lower.includes('salir')) {
 //       this.logout();
 //       return;
@@ -531,7 +1047,7 @@
 //   }
 
 //   showHelp(): void {
-//     const message = 'En el panel de control puedes navegar usando tu voz. Di: "dashboard", "estadísticas", "acciones", "historial", "voz", o "configuración" para cambiar de sección.';
+//     const message = 'En el campus virtual puedes navegar usando tu voz. Di: "cursos", "tareas", "calendario", "progreso", "mensajes" o "configuración" para cambiar de sección.';
 //     this.voiceService.speak(message);
 //   }
 
@@ -563,11 +1079,20 @@
 
 //   viewAllActivity(): void {
 //     this.voiceService.clearTranscript();
-//     this.router.navigate(['/history']);
+//     this.router.navigate(['/progress']);
 //   }
 
 //   // ============================================================
-//   // CICLO DE VIDA - DESTROY
+//   // MÉTODO PARA NAVEGAR A UN CURSO ESPECÍFICO
+//   // ============================================================
+//   navigateToCourse(courseId: string): void {
+//     this.voiceService.clearTranscript();
+//     this.voiceService.speak(`Navegando al curso`);
+//     this.router.navigate([`/course/${courseId}`]);
+//   }
+
+//   // ============================================================
+//   // DESTROY
 //   // ============================================================
 //   ngOnDestroy(): void {
 //     console.log('🧹 DashboardComponent destruido');
@@ -579,7 +1104,6 @@
 //       clearInterval(this.timeInterval);
 //     }
 
-//     // ✅ NUEVO: Limpiar keep-alive
 //     if (this.micKeepAliveInterval) {
 //       clearInterval(this.micKeepAliveInterval);
 //       this.micKeepAliveInterval = null;
@@ -602,7 +1126,8 @@
 
 
 
-// dashboard.component.ts
+
+
 
 import { Component, inject, OnInit, OnDestroy, NgZone, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -622,7 +1147,6 @@ import { MatBadgeModule } from '@angular/material/badge';
 // Servicios
 import { AuthService } from '../../../../core/services/auth.service';
 import { ThemeService } from '../../../../shared/services/themes/themes.service';
-import { VoiceCommandHandlerService } from '../../../services/voz/voice-command-handler.service';
 import { VoiceContextService } from '../../../services/voz/voice-context.service';
 import { VoiceService } from '../../../services/voz/voice.service';
 import { TransparentToolbarComponent } from '../../../../shared/components/toolbar/transparent-toolbar/transparent-toolbar.component';
@@ -635,14 +1159,15 @@ import { ToolbarConfig, UserMenuItem } from '../../../../shared/components/toolb
 import { HttpClient } from '@angular/common/http';
 
 // ============================================================
-// INTERFACES Y TIPOS
+// INTERFACES Y TIPOS - VERSIÓN EDUCATIVA
 // ============================================================
-type SectionType = 'dashboard' | 'stats' | 'actions' | 'activity' | 'voice' | 'settings';
+type SectionType = 'dashboard' | 'courses' | 'activities' | 'progress' | 'calendar' | 'messages' | 'settings';
 
 interface SidebarItem {
   id: SectionType;
   label: string;
   icon: string;
+  roles?: string[];
 }
 
 interface QuickAction {
@@ -655,16 +1180,13 @@ interface QuickAction {
 }
 
 interface UserStats {
-  totalActions: number;
-  voiceCommandsUsed: number;
-  sessionsCount: number;
-  lastActive: Date;
-  voiceGrowth: string;
-  actionsGrowth: string;
-  sessionsChange: string;
-  lastActiveStatus: 'positive' | 'negative' | 'neutral';
-  lastActiveIcon: string;
-  lastActiveLabel: string;
+  totalCourses: number;
+  completedCourses: number;
+  inProgress: number;
+  totalStudents: number;
+  averageGrade: number;
+  nextClass: Date;
+  pendingTasks: number;
 }
 
 interface ActivityItem {
@@ -673,6 +1195,7 @@ interface ActivityItem {
   icon: string;
   status: 'success' | 'pending' | 'error' | 'info';
   highlight?: string;
+  course?: string;
 }
 
 interface StatsCard {
@@ -683,6 +1206,18 @@ interface StatsCard {
   trend: 'up' | 'down' | 'neutral';
   trendIcon: string;
   gradient: string;
+}
+
+// ✅ Interfaz para cursos
+interface Course {
+  id: string;
+  title: string;
+  instructor: string;
+  progress: number;
+  status: 'completed' | 'in-progress' | 'not-started' | 'pending';
+  nextClass?: Date;
+  category: string;
+  thumbnail?: string;
 }
 
 // ✅ INTERFAZ PARA CONFIGURACIÓN EXTERNA (con actionId)
@@ -705,7 +1240,7 @@ export interface ExternalToolbarConfig extends ToolbarConfig {
     MatTooltipModule,
     MatBadgeModule,
     TransparentToolbarComponent,
-    FooterComponent,
+    FooterComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
@@ -719,10 +1254,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   public voiceService = inject(VoiceService);
   private voiceContext = inject(VoiceContextService);
-  private voiceHandler = inject(VoiceCommandHandlerService);
   private authService = inject(AuthService);
   private themeService = inject(ThemeService);
-  private http = inject(HttpClient); // ✅ Inyectamos HttpClient
+  private http = inject(HttpClient);
 
   // ============================================================
   // VARIABLES PRIVADAS
@@ -735,30 +1269,79 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private readonly KEEP_ALIVE_INTERVAL = 8000;
 
   // ============================================================
-  // ESTADO PÚBLICO
+  // ESTADO PÚBLICO - VERSIÓN EDUCATIVA
   // ============================================================
   currentTime = new Date();
   greeting = '';
   currentYear = new Date().getFullYear();
 
-  userName = this.authService.getUserName() || 'Usuario';
-  userEmail = this.authService.getUserEmail() || 'rafa3la57@gmail.com';
+  // ✅ Propiedad para el reloj
+  currentTimeDisplay: string = '';
 
+  // ✅ GETTER - FECHA FORMATEADA (devuelve la propiedad)
+  get formattedCurrentTime(): string {
+    return this.currentTimeDisplay;
+  }
+
+  // ✅ GETTERS para datos del usuario
+  get userName(): string {
+    return this.authService.getUserName() || 'Estudiante';
+  }
+
+  get userEmail(): string {
+    return this.authService.getUserEmail() || 'estudiante@campus.edu';
+  }
+
+  get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  // ✅ Propiedades que no dependen del authService
   isDarkTheme = this.themeService.currentTheme() === 'dark';
   isMicActive = !this.voiceService.isCurrentlyMuted();
   isSidebarCollapsed = false;
 
   activeSection: SectionType = 'dashboard';
-
   isSidebarOpen = false;
+  sidebarItems: SidebarItem[] = [];
+  currentDate = new Date();
 
-  sidebarItems: SidebarItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { id: 'stats', label: 'Estadísticas', icon: 'analytics' },
-    { id: 'actions', label: 'Acciones', icon: 'flash_on' },
-    { id: 'activity', label: 'Actividad', icon: 'history' },
-    { id: 'voice', label: 'Comandos Voz', icon: 'mic' },
-    { id: 'settings', label: 'Configuración', icon: 'settings' }
+  // ============================================================
+  // DATOS PARA MENSAJES
+  // ============================================================
+  messages = [
+    {
+      id: 1,
+      sender: 'Dr. Juan Pérez',
+      avatar: 'JP',
+      content: 'Recordatorio: Examen de Matemáticas el viernes a las 10:00 AM',
+      time: 'Hace 2 horas',
+      unread: 2
+    },
+    {
+      id: 2,
+      sender: 'Ing. María García',
+      avatar: 'MG',
+      content: 'Tu proyecto final de Programación Web ha sido revisado',
+      time: 'Hace 1 día',
+      unread: 1
+    },
+    {
+      id: 3,
+      sender: 'Dra. Ana Martínez',
+      avatar: 'AM',
+      content: 'Nuevo material disponible para el curso de Historia del Arte',
+      time: 'Hace 2 días',
+      unread: 3
+    },
+    {
+      id: 4,
+      sender: 'Dr. Carlos Ruiz',
+      avatar: 'CR',
+      content: 'Próxima clase de Física Cuántica: Teoría de la Relatividad',
+      time: 'Hace 3 días',
+      unread: 0
+    }
   ];
 
   // ============================================================
@@ -768,34 +1351,136 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onResize(event: any) {
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
-      // En móvil, aseguramos que el sidebar esté cerrado al inicio
       this.isSidebarOpen = false;
-      // Y que no esté colapsado para que se vean los textos cuando se abra
       this.isSidebarCollapsed = false;
     }
   }
 
   // ============================================================
-  // MÉTODO PARA ALTERNAR SIDEBAR EN MÓVIL (DESDE EL TOOLBAR)
+  // MÉTODO PARA ALTERNAR SIDEBAR EN MÓVIL
   // ============================================================
   toggleSidebarMobile(): void {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
   // ============================================================
-  // GETTER - FECHA FORMATEADA
+  // GETTER - Cursos con próxima clase
   // ============================================================
-  get formattedCurrentTime(): string {
-    return new Intl.DateTimeFormat('es-ES', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).format(this.currentTime);
+  get coursesWithNextClass(): Course[] {
+    return this.myCourses.filter(course => course.nextClass !== undefined && course.nextClass !== null);
+  }
+
+  // ============================================================
+  // Getter para los días del calendario
+  // ============================================================
+  get calendarDays(): { number: number; hasEvent: boolean; isToday: boolean }[] {
+    const days = [];
+    const year = this.currentDate.getFullYear();
+    const month = this.currentDate.getMonth();
+    const today = new Date();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    const daysInMonth = lastDayOfMonth.getDate();
+    
+    const eventDays = this.myCourses
+      .filter(course => course.nextClass)
+      .map(course => course.nextClass?.getDate())
+      .filter(date => date !== undefined) as number[];
+
+    const firstDayOfWeek = firstDayOfMonth.getDay();
+    const daysFromPrevMonth = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+    const prevMonthDate = new Date(year, month, 0);
+    const prevMonthDays = prevMonthDate.getDate();
+    for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
+      days.push({
+        number: prevMonthDays - i,
+        hasEvent: false,
+        isToday: false,
+        isOtherMonth: true
+      });
+    }
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const isToday = today.getDate() === i && 
+                      today.getMonth() === month && 
+                      today.getFullYear() === year;
+      days.push({
+        number: i,
+        hasEvent: eventDays.includes(i),
+        isToday: isToday,
+        isOtherMonth: false
+      });
+    }
+
+    const totalDays = days.length;
+    const remainingDays = 7 - (totalDays % 7);
+    if (remainingDays < 7) {
+      for (let i = 1; i <= remainingDays; i++) {
+        days.push({
+          number: i,
+          hasEvent: false,
+          isToday: false,
+          isOtherMonth: true
+        });
+      }
+    }
+
+    return days;
+  }
+
+  // ============================================================
+  // MÉTODOS PARA EL CALENDARIO
+  // ============================================================
+  previousMonth(): void {
+    this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
+  }
+
+  nextMonth(): void {
+    this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
+  }
+
+  // ============================================================
+  // MÉTODOS ADICIONALES
+  // ============================================================
+
+  /**
+   * Getter para tareas pendientes
+   */
+  get pendingTasks(): ActivityItem[] {
+    return this.recentActivity.filter(activity => activity.status === 'pending');
+  }
+  
+  /**
+   * Completar una tarea
+   */
+  completeTask(task: ActivityItem): void {
+    task.status = 'success';
+    this.voiceService.speak('Tarea marcada como completada. ¡Buen trabajo!');
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Configurar notificaciones
+   */
+  configureNotifications(): void {
+    this.voiceService.speak('Abriendo configuración de notificaciones');
+    this.router.navigate(['/notifications']);
+  }
+
+  /**
+   * Gestionar seguridad
+   */
+  manageSecurity(): void {
+    this.voiceService.speak('Abriendo configuración de seguridad');
+    this.router.navigate(['/security']);
+  }
+
+  /**
+   * Cambiar idioma
+   */
+  changeLanguage(): void {
+    this.voiceService.speak('Cambiando idioma a español');
   }
 
   /**
@@ -807,8 +1492,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
   
   /**
-   * Filtra un array de items (navLinks, userMenuItems) según los roles del usuario.
-   * Si un item no tiene la propiedad 'roles', se muestra a todos.
+   * Filtra un array de items según los roles del usuario.
    */
   private filterItemsByRoles<T extends { label?: string; roles?: string[] }>(items: T[]): T[] {
     const userRoles = this.getUserRoles();
@@ -833,130 +1517,206 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   // ============================================================
-  // STATS CARDS
+  // STATS CARDS - VERSIÓN EDUCATIVA
   // ============================================================
   statsCards: StatsCard[] = [
     {
-      icon: 'mic',
-      label: 'Comandos de Voz',
-      value: 128,
-      change: '+12%',
+      icon: 'school',
+      label: 'Cursos Activos',
+      value: 9,
+      change: '+2',
       trend: 'up',
       trendIcon: 'trending_up',
       gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)'
     },
     {
-      icon: 'playlist_add_check',
-      label: 'Acciones Creadas',
-      value: 47,
-      change: '+8%',
+      icon: 'assignment_turned_in',
+      label: 'Completados',
+      value: 5,
+      change: '+80%',
       trend: 'up',
       trendIcon: 'trending_up',
       gradient: 'linear-gradient(135deg, #10b981, #059669)'
     },
     {
-      icon: 'schedule',
-      label: 'Sesiones',
-      value: 12,
-      change: '0%',
-      trend: 'neutral',
-      trendIcon: 'remove',
+      icon: 'pending_actions',
+      label: 'Tareas Pendientes',
+      value: 3,
+      change: '2',
+      trend: 'down',
+      trendIcon: 'trending_down',
       gradient: 'linear-gradient(135deg, #f59e0b, #d97706)'
     },
     {
-      icon: 'access_time',
-      label: 'Última Actividad',
-      value: 'Ahora',
-      change: 'Activo',
+      icon: 'calendar_today',
+      label: 'Próxima Clase',
+      value: 'Mañana',
+      change: '10:00 AM',
       trend: 'up',
-      trendIcon: 'fiber_manual_record',
+      trendIcon: 'event',
       gradient: 'linear-gradient(135deg, #3b82f6, #6366f1)'
     }
   ];
 
   // ============================================================
-  // ESTADÍSTICAS
+  // ESTADÍSTICAS EDUCATIVAS
   // ============================================================
-  stats: UserStats = {
-    totalActions: 47,
-    voiceCommandsUsed: 128,
-    sessionsCount: 12,
-    lastActive: new Date(),
-    voiceGrowth: '+12%',
-    actionsGrowth: '+8%',
-    sessionsChange: '0%',
-    lastActiveStatus: 'positive',
-    lastActiveIcon: 'fiber_manual_record',
-    lastActiveLabel: 'Activo'
+  courseStats: UserStats = {
+    totalCourses: 12,
+    completedCourses: 5,
+    inProgress: 4,
+    totalStudents: 156,
+    averageGrade: 8.7,
+    nextClass: new Date(Date.now() + 86400000 * 2),
+    pendingTasks: 3
   };
 
   // ============================================================
-  // ACCIONES RÁPIDAS
+  // CURSOS DEL USUARIO
   // ============================================================
-  quickActions: QuickAction[] = [
+  myCourses: Course[] = [
     {
-      label: 'Nueva Acción de Voz',
-      icon: 'mic',
-      route: '/voice-actions',
-      voiceCommand: ['nueva acción', 'crear acción', 'acción de voz'],
-      description: 'Crea una nueva acción controlada por voz',
-      badge: 'new'
+      id: '1',
+      title: 'Matemáticas Avanzadas',
+      instructor: 'Dr. Juan Pérez',
+      progress: 75,
+      status: 'in-progress',
+      nextClass: new Date(Date.now() + 86400000),
+      category: 'Ciencias'
     },
     {
-      label: 'Mis Comandos',
-      icon: 'settings_voice',
-      route: '/voice-commands',
-      voiceCommand: ['mis comandos', 'comandos', 'ver comandos'],
-      description: 'Gestiona tus comandos de voz personalizados',
-      badge: 'popular'
+      id: '2',
+      title: 'Programación Web',
+      instructor: 'Ing. María García',
+      progress: 100,
+      status: 'completed',
+      category: 'Tecnología'
     },
     {
-      label: 'Historial',
-      icon: 'history',
-      route: '/history',
-      voiceCommand: ['historial', 'ver historial', 'actividad'],
-      description: 'Revisa tu historial de actividad',
-      badge: ''
+      id: '3',
+      title: 'Historia del Arte',
+      instructor: 'Dra. Ana Martínez',
+      progress: 30,
+      status: 'in-progress',
+      nextClass: new Date(Date.now() + 86400000 * 3),
+      category: 'Humanidades'
     },
     {
-      label: 'Perfil',
-      icon: 'person',
-      route: '/profile',
-      voiceCommand: ['perfil', 'mi perfil', 'configuración'],
-      description: 'Administra tu información personal',
-      badge: ''
+      id: '4',
+      title: 'Física Cuántica',
+      instructor: 'Dr. Carlos Ruiz',
+      progress: 0,
+      status: 'not-started',
+      category: 'Ciencias'
+    },
+    {
+      id: '5',
+      title: 'Diseño UX/UI',
+      instructor: 'Lic. Laura Fernández',
+      progress: 60,
+      status: 'in-progress',
+      nextClass: new Date(Date.now() + 86400000 * 5),
+      category: 'Diseño'
     }
   ];
 
   // ============================================================
-  // ACTIVIDAD RECIENTE
+  // ACCIONES RÁPIDAS EDUCATIVAS
+  // ============================================================
+  quickActions: QuickAction[] = [
+    {
+      label: 'Ver Cursos',
+      icon: 'menu_book',
+      route: '/courses',
+      voiceCommand: ['cursos', 'mis cursos', 'ver cursos'],
+      description: 'Accede a todos tus cursos disponibles',
+      badge: 'popular'
+    },
+    {
+      label: 'Tareas Pendientes',
+      icon: 'assignment',
+      route: '/tasks',
+      voiceCommand: ['tareas', 'pendientes', 'mis tareas'],
+      description: 'Revisa tus tareas y entregas pendientes',
+      badge: 'new'
+    },
+    {
+      label: 'Calendario',
+      icon: 'calendar_month',
+      route: '/calendar',
+      voiceCommand: ['calendario', 'horario', 'clases'],
+      description: 'Consulta tu horario de clases',
+      badge: ''
+    },
+    {
+      label: 'Foros',
+      icon: 'forum',
+      route: '/forums',
+      voiceCommand: ['foros', 'discusiones', 'participar'],
+      description: 'Participa en los foros de discusión',
+      badge: ''
+    },
+    {
+      label: 'Progreso',
+      icon: 'trending_up',
+      route: '/progress',
+      voiceCommand: ['progreso', 'avance', 'rendimiento'],
+      description: 'Visualiza tu progreso académico',
+      badge: ''
+    },
+    {
+      label: 'Mensajes',
+      icon: 'message',
+      route: '/messages',
+      voiceCommand: ['mensajes', 'chat', 'comunicación'],
+      description: 'Comunícate con profesores y compañeros',
+      badge: 'beta'
+    }
+  ];
+
+  // ============================================================
+  // ACTIVIDAD RECIENTE EDUCATIVA
   // ============================================================
   recentActivity: ActivityItem[] = [
     {
-      action: 'Comando de voz ejecutado:',
-      highlight: '"Crear tarea"',
-      time: 'Hace 5 minutos',
-      icon: 'check_circle',
-      status: 'success'
-    },
-    {
-      action: 'Nueva acción creada:',
-      highlight: '"Recordatorio"',
+      action: 'Completaste el curso:',
+      highlight: '"Programación Web"',
       time: 'Hace 2 horas',
-      icon: 'add_circle',
-      status: 'success'
+      icon: 'check_circle',
+      status: 'success',
+      course: 'Programación Web'
     },
     {
-      action: 'Inicio de sesión',
-      time: 'Hace 3 horas',
-      icon: 'login',
-      status: 'info'
-    },
-    {
-      action: 'Configuración actualizada',
+      action: 'Nueva tarea asignada:',
+      highlight: '"Proyecto Final - Matemáticas"',
       time: 'Hace 1 día',
-      icon: 'settings',
-      status: 'pending'
+      icon: 'assignment',
+      status: 'pending',
+      course: 'Matemáticas Avanzadas'
+    },
+    {
+      action: 'Clase completada:',
+      highlight: '"Historia del Arte - Módulo 3"',
+      time: 'Hace 2 días',
+      icon: 'school',
+      status: 'success',
+      course: 'Historia del Arte'
+    },
+    {
+      action: 'Foro nuevo:',
+      highlight: '"Discusión sobre IA"',
+      time: 'Hace 3 días',
+      icon: 'forum',
+      status: 'info',
+      course: 'Programación Web'
+    },
+    {
+      action: 'Calificación recibida:',
+      highlight: '"9.5 en Examen"',
+      time: 'Hace 5 días',
+      icon: 'grade',
+      status: 'success',
+      course: 'Diseño UX/UI'
     }
   ];
 
@@ -970,9 +1730,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   setActiveSection(section: SectionType): void {
     this.activeSection = section;
     if (window.innerWidth < 768) {
-      // ❌ ELIMINA ESTA LÍNEA: this.isSidebarCollapsed = true;
-      // En su lugar, cierra el sidebar al navegar (opcional)
-      this.isSidebarOpen = false; // Cierra el sidebar al seleccionar una sección en móvil
+      this.isSidebarOpen = false;
     }
   }
 
@@ -1005,7 +1763,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ✅ CARGA DE CONFIGURACIÓN DEL TOOLBAR DESDE JSON
   // ============================================================
   private loadToolbarConfig(): void {
-    this.http.get<ExternalToolbarConfig>('/config/menu-dashboard.json')
+    this.http.get<ExternalToolbarConfig>('/config/dashboard/menu-dashboardEducativo.json')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (config) => {
@@ -1040,12 +1798,55 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
+  // ============================================================
+  // ✅ CARGA DE CONFIGURACIÓN DEL SIDEBAR DESDE JSON
+  // ============================================================
+  private loadSidebarConfig(): void {
+    console.log('📂 Intentando cargar sidebar desde: /config/sidebar/sidebar-configEducativo.json');
+    
+    this.http.get<{ sidebarItems: SidebarItem[] }>('/config/sidebar/sidebar-configEducativo.json')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Sidebar cargado correctamente:', response);
+          this.sidebarItems = this.filterItemsByRoles(response.sidebarItems);
+          console.log('📋 Sidebar items después de filtrar:', this.sidebarItems);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('❌ Error al cargar configuración del sidebar:');
+          console.error('  - Status:', err.status);
+          console.error('  - Message:', err.message);
+          console.error('  - URL:', err.url);
+          console.log('🔄 Usando sidebar por defecto');
+          this.sidebarItems = this.filterItemsByRoles(this.getDefaultSidebarItems());
+          console.log('📋 Sidebar por defecto:', this.sidebarItems);
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  /**
+   * Items por defecto (fallback si no se carga el JSON)
+   */
+  private getDefaultSidebarItems(): SidebarItem[] {
+    return [
+      { "id": "dashboard", "label": "Panel Principal", "icon": "dashboard", "roles": ["SUPER_ADMIN", "USER"] },
+      { "id": "courses", "label": "Mis Cursos", "icon": "menu_book", "roles": ["SUPER_ADMIN", "USER"] },
+      { "id": "activities", "label": "Tareas", "icon": "assignment", "roles": ["SUPER_ADMIN", "USER"] },
+      { "id": "progress", "label": "Progreso", "icon": "trending_up", "roles": ["SUPER_ADMIN", "USER"] },
+      { "id": "calendar", "label": "Calendario", "icon": "calendar_month", "roles":["SUPER_ADMIN", "USER"] },
+      { "id": "messages", "label": "Mensajes", "icon": "message", "roles": ["SUPER_ADMIN", "USER"] },
+      { "id": "settings", "label": "Configuración", "icon": "settings", "roles": ["SUPER_ADMIN", "USER"] }
+    ];
+  }
+
   /**
    * Configuración por defecto (fallback si no se carga el JSON)
    */
   private getDefaultToolbarConfig(): ToolbarConfig {
     return {
-      title: 'VozAcción',
+      title: 'Campus Virtual',
       showLogo: true,
       showThemeToggle: true,
       showMicToggle: true,
@@ -1053,13 +1854,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       showBackButton: false,
       showHelp: true,
       navLinks: [
-        { label: 'Dashboard', route: '/dashboard', icon: 'dashboard' },
-        { label: 'Acciones', route: '/voice-actions', icon: 'flash_on' }
+        { label: 'Inicio', route: '/dashboard', icon: 'home', roles: ['SUPER_ADMIN', 'STUDENT', 'TEACHER'] },
+        { label: 'Cursos', route: '/courses', icon: 'menu_book', roles: ['SUPER_ADMIN', 'STUDENT', 'TEACHER'] },
+        { label: 'Calendario', route: '/calendar', icon: 'calendar_month', roles: ['SUPER_ADMIN', 'STUDENT', 'TEACHER'] }
       ],
       userMenuItems: [
         { label: 'Mi Perfil', icon: 'person', route: '/profile' },
         { label: 'Configuración', icon: 'settings', route: '/settings' },
-        { label: 'Configuración de Voz', icon: 'settings_voice', route: '/voice-settings' },
+        { label: 'Preferencias de Voz', icon: 'settings_voice', route: '/voice-settings' },
         { isDivider: true },
         {
           label: 'Cerrar Sesión',
@@ -1068,34 +1870,86 @@ export class DashboardComponent implements OnInit, OnDestroy {
           action: () => this.logout()
         }
       ],
-      unreadNotifications: 3
+      unreadNotifications: 5
     };
   }
 
+  
+
   // ============================================================
-  // CICLO DE VIDA
+  // CICLO DE VIDA - ngOnInit
   // ============================================================
+  // ngOnInit(): void {
+  //   const isMobile = window.innerWidth < 768;
+  //   if (isMobile) {
+  //     this.isSidebarOpen = false;
+  //     this.isSidebarCollapsed = false;
+  //   }
+
+  //   this.loadToolbarConfig();
+  //   this.loadSidebarConfig();
+
+  //   // ✅ INICIALIZAR EL RELOJ
+  //   this.updateTimeDisplay();
+
+  //   // ✅ ACTUALIZAR CADA SEGUNDO
+  //   this.timeInterval = setInterval(() => {
+  //     this.currentTime = new Date();
+  //     this.greeting = this.getGreeting();
+  //     this.updateTimeDisplay();
+  //   }, 1000);
+
+  //   this.greeting = this.getGreeting();
+
+  //   this.setupVoiceContext();
+
+  //   this.voiceService
+  //     .getTranscript()
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe((text: string) => {
+  //       this.ngZone.run(() => {
+  //         if (this.isDestroyed || !text) return;
+  //         this.handleVoiceCommand(text);
+  //       });
+  //     });
+
+  //   this.showWelcomeMessage();
+
+  //   setTimeout(() => {
+  //     this.activateMicIfNeeded();
+  //   }, 500);
+
+  //   this.startMicKeepAlive();
+  // }
+
+
+
+
+  //
   ngOnInit(): void {
-    // Inicializar estado en móvil
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
       this.isSidebarOpen = false;
-      this.isSidebarCollapsed = false; // No colapsar en móvil, queremos mostrar textos
+      this.isSidebarCollapsed = false;
     }
 
-    // 1. Cargar configuración del toolbar
     this.loadToolbarConfig();
+    this.loadSidebarConfig();
 
-    // 2. Reloj y saludo
+    // ✅ Inicializar reloj
+    this.updateTimeDisplay();
+
+    // ✅ Actualizar cada segundo
     this.timeInterval = setInterval(() => {
       this.currentTime = new Date();
       this.greeting = this.getGreeting();
+      this.updateTimeDisplay();
+      // ✅ FORZAR DETECCIÓN DE CAMBIOS
       this.cdr.detectChanges();
     }, 1000);
 
     this.greeting = this.getGreeting();
 
-    // 3. Configurar voz
     this.setupVoiceContext();
 
     this.voiceService
@@ -1110,8 +1964,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.showWelcomeMessage();
 
-    // ❌ ELIMINA ESTA LÍNEA: if (window.innerWidth < 768) { this.isSidebarCollapsed = true; }
-
     setTimeout(() => {
       this.activateMicIfNeeded();
     }, 500);
@@ -1119,21 +1971,39 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.startMicKeepAlive();
   }
 
+
+
+  private updateTimeDisplay(): void {
+    this.currentTimeDisplay = new Intl.DateTimeFormat('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(this.currentTime);
+    
+    // Debug: ver en consola
+    console.log('🕐 Reloj actualizado:', this.currentTimeDisplay);
+  }
+
   // ============================================================
-  // CONFIGURACIÓN DE VOZ
+  // CONFIGURACIÓN DE VOZ - VERSIÓN EDUCATIVA
   // ============================================================
   private setupVoiceContext(): void {
     const context = {
-      activationMessage: `Bienvenido de vuelta ${this.userName}. Puedes navegar por el dashboard usando tu voz.`,
+      activationMessage: `Bienvenido de vuelta ${this.userName}. Puedes navegar por el campus virtual usando tu voz.`,
       availableCommands: [
         'dashboard', 'inicio', 'panel',
-        'estadísticas', 'estadisticas', 'analisis',
-        'acciones', 'rápidas', 'rapidas',
-        'historial', 'actividad', 'reciente',
-        'voz', 'comandos', 'comando',
-        'configuración', 'configuracion', 'ajustes',
-        'nueva acción', 'mis comandos', 'perfil',
-        'cerrar sesión', 'logout', 'salir',
+        'cursos', 'mis cursos',
+        'tareas', 'pendientes',
+        'calendario', 'horario',
+        'progreso', 'rendimiento',
+        'mensajes', 'chat',
+        'foros', 'discusión',
+        'configuración', 'ajustes',
         'ayuda', 'silenciar micrófono', 'activar micrófono'
       ],
       preventBackend: true
@@ -1147,7 +2017,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.welcomeShown = true;
         if (!this.voiceService.hasWelcomeBeenShown('dashboard')) {
           this.voiceService.markWelcomeAsShown('dashboard');
-          const welcomeMessage = `Hola ${this.userName}, bienvenido a tu panel de control. Tienes ${this.stats.voiceCommandsUsed} comandos de voz ejecutados.`;
+          const welcomeMessage = `Hola ${this.userName}, bienvenido al Campus Virtual. Tienes ${this.courseStats.pendingTasks} tareas pendientes y ${this.courseStats.inProgress} cursos en progreso.`;
           this.voiceService.speakWhenReady(welcomeMessage);
         }
       }
@@ -1162,7 +2032,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
-  // MANEJAR COMANDOS DE VOZ
+  // MANEJAR COMANDOS DE VOZ - VERSIÓN EDUCATIVA
   // ============================================================
   private handleVoiceCommand(text: string): void {
     if (this.isDestroyed) return;
@@ -1172,31 +2042,37 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     if (lower.includes('dashboard') || lower.includes('inicio') || lower.includes('panel')) {
       this.setActiveSection('dashboard');
-      this.voiceService.speak('Navegando al panel de control');
+      this.voiceService.speak('Navegando al panel de control del campus');
       return;
     }
 
-    if (lower.includes('estadísticas') || lower.includes('estadisticas') || lower.includes('analisis')) {
-      this.setActiveSection('stats');
-      this.voiceService.speak('Navegando a estadísticas');
+    if (lower.includes('cursos') || lower.includes('mis cursos')) {
+      this.setActiveSection('courses');
+      this.voiceService.speak('Navegando a tus cursos');
       return;
     }
 
-    if (lower.includes('acciones') || lower.includes('rápidas') || lower.includes('rapidas')) {
-      this.setActiveSection('actions');
-      this.voiceService.speak('Navegando a acciones rápidas');
+    if (lower.includes('tareas') || lower.includes('pendientes')) {
+      this.setActiveSection('activities');
+      this.voiceService.speak('Navegando a tareas pendientes');
       return;
     }
 
-    if (lower.includes('historial') || lower.includes('actividad') || lower.includes('reciente')) {
-      this.setActiveSection('activity');
-      this.voiceService.speak('Navegando a actividad reciente');
+    if (lower.includes('progreso') || lower.includes('rendimiento') || lower.includes('avance')) {
+      this.setActiveSection('progress');
+      this.voiceService.speak('Navegando a tu progreso académico');
       return;
     }
 
-    if (lower.includes('voz') || lower.includes('comandos') || lower.includes('comando')) {
-      this.setActiveSection('voice');
-      this.voiceService.speak('Navegando a comandos de voz');
+    if (lower.includes('calendario') || lower.includes('horario')) {
+      this.setActiveSection('calendar');
+      this.voiceService.speak('Navegando al calendario académico');
+      return;
+    }
+
+    if (lower.includes('mensajes') || lower.includes('chat')) {
+      this.setActiveSection('messages');
+      this.voiceService.speak('Navegando a mensajes');
       return;
     }
 
@@ -1267,7 +2143,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   showHelp(): void {
-    const message = 'En el panel de control puedes navegar usando tu voz. Di: "dashboard", "estadísticas", "acciones", "historial", "voz", o "configuración" para cambiar de sección.';
+    const message = 'En el campus virtual puedes navegar usando tu voz. Di: "cursos", "tareas", "calendario", "progreso", "mensajes" o "configuración" para cambiar de sección.';
     this.voiceService.speak(message);
   }
 
@@ -1299,7 +2175,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   viewAllActivity(): void {
     this.voiceService.clearTranscript();
-    this.router.navigate(['/history']);
+    this.router.navigate(['/progress']);
+  }
+
+  // ============================================================
+  // MÉTODO PARA NAVEGAR A UN CURSO ESPECÍFICO
+  // ============================================================
+  navigateToCourse(courseId: string): void {
+    this.voiceService.clearTranscript();
+    this.voiceService.speak(`Navegando al curso`);
+    this.router.navigate([`/course/${courseId}`]);
   }
 
   // ============================================================

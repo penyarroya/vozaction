@@ -1,0 +1,27 @@
+{
+  "title": "Campus Virtual",
+  "showLogo": true,
+  "showThemeToggle": true,
+  "showMicToggle": true,
+  "showUserAvatar": true,
+  "showBackButton": false,
+  "showHelp": true,
+  "navLinks": [
+    { "label": "Inicio", "route": "/dashboard", "icon": "home", "roles": ["SUPER_ADMIN", "STUDENT", "TEACHER"] },
+    { "label": "Cursos", "route": "/courses", "icon": "menu_book", "roles": ["SUPER_ADMIN", "STUDENT", "TEACHER"] },
+    { "label": "Calendario", "route": "/calendar", "icon": "calendar_month", "roles": ["SUPER_ADMIN", "STUDENT", "TEACHER"] }
+  ],
+  "userMenuItems": [
+    { "label": "Mi Perfil", "icon": "person", "route": "/profile" },
+    { "label": "Configuración", "icon": "settings", "route": "/settings" },
+    { "label": "Preferencias de Voz", "icon": "settings_voice", "route": "/voice-settings" },
+    { "isDivider": true },
+    {
+      "label": "Cerrar Sesión",
+      "icon": "logout",
+      "class": "logout-item",
+      "actionId": "logout"
+    }
+  ],
+  "unreadNotifications": 5
+}

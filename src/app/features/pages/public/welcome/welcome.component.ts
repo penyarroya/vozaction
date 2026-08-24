@@ -258,20 +258,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     // COMANDOS RECONOCIDOS EN WELCOME
     // ============================================================
 
-    // 🔥 "acerca de" - navega a About sin mensaje de voz
-    if (lower.includes('acerca de') || lower.includes('quienes somos') || lower.includes('qué es')) {
-      console.log('ℹ️ [Welcome] Navegando a About...');
-      this.router.navigate(['/about']);
-      return;
-    }
-
-    // 🔥 "login" / "iniciar sesión" - navega al login
+    // 🔥 "login" / "iniciar sesión" - navega al login (PRIMERO)
     if (lower.includes('login') || 
         lower.includes('iniciar sesión') || 
-        lower.includes('inicio') || 
-        lower === 'entrar') {
+        lower.includes('inicio sesión') || 
+        lower === 'entrar' ||
+        lower.includes('acceder')) {
       console.log('🔐 [Welcome] Navegando a login');
-      //this.voiceService.speak('Navegando a inicio de sesión');
       this.router.navigate(['/login']);
       return;
     }
@@ -281,6 +274,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       console.log('📝 [Welcome] Navegando a registro');
       this.voiceService.speak('Navegando a registro de usuario');
       this.router.navigate(['/register']);
+      return;
+    }
+
+    // 🔥 "acerca de" - navega a About (SEGUNDO)
+    if (lower.includes('acerca de') || lower.includes('quienes somos') || lower.includes('qué es') || lower.includes('about')) {
+      console.log('ℹ️ [Welcome] Navegando a About...');
+      this.router.navigate(['/about']);
       return;
     }
 
@@ -317,6 +317,15 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     // ============================================================
     console.log(`⏭️ [Welcome] Comando no reconocido: "${lower}"`);
   }
+
+
+
+
+
+
+
+
+
 
   //
   private loadImages(): void {

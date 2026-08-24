@@ -6,6 +6,7 @@ import { Observable, tap, catchError, throwError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginResponse } from '../../features/auth/models/LoginResponse';
 import { LoginRequest } from '../../features/auth/models/LoginRequest';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +14,7 @@ import { LoginRequest } from '../../features/auth/models/LoginRequest';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router); // ← AÑADIR
 
   private readonly AUTH_URL = `${environment.apiGateway}${environment.authEndpoint}`;
   private readonly USER_INFO_KEY = 'user_info';
@@ -33,6 +35,49 @@ export class AuthService {
     console.log('🏗️ AuthService constructor - currentUser:', this.currentUser());
   }
 
+  // private getInitialUser(): LoginResponse | null {
+  //   if (!isPlatformBrowser(this.platformId)) return null;
+
+  //   const isTabActive = sessionStorage.getItem(this.TAB_SESSION_KEY);
+  //   if (!isTabActive) {
+  //     sessionStorage.setItem(this.TAB_SESSION_KEY, 'true');
+  //     return null;
+  //   }
+    
+  //   const savedUser = localStorage.getItem(this.USER_INFO_KEY);
+  //   if (!savedUser) return null;
+
+  //   try {
+  //     const storedUser = JSON.parse(savedUser);
+      
+  //     const user: LoginResponse = {
+  //       id: storedUser.id,
+  //       username: storedUser.username,
+  //       email: '',
+  //       roles: storedUser.roles || [],
+  //       type: 'Bearer',
+  //       token: '',
+  //       refreshToken: null
+  //     };
+      
+  //     console.log('✅ Sesión restaurada con roles:', user.roles);
+  //     return user;
+  //   } catch (e) {
+  //     console.error('Error parseando usuario:', e);
+  //     return null;
+  //   }
+  // }
+
+
+
+
+
+
+
+
+
+  // auth.service.ts
+
   private getInitialUser(): LoginResponse | null {
     if (!isPlatformBrowser(this.platformId)) return null;
 
@@ -51,7 +96,7 @@ export class AuthService {
       const user: LoginResponse = {
         id: storedUser.id,
         username: storedUser.username,
-        email: '',
+        email: storedUser.email || '',  // ✅ Restaurar email
         roles: storedUser.roles || [],
         type: 'Bearer',
         token: '',
@@ -59,12 +104,18 @@ export class AuthService {
       };
       
       console.log('✅ Sesión restaurada con roles:', user.roles);
+      console.log('📧 Email restaurado:', user.email);
       return user;
     } catch (e) {
       console.error('Error parseando usuario:', e);
       return null;
     }
   }
+
+
+
+
+
 
   getUserId(): number | null {
     const user = this.currentUser();
@@ -77,19 +128,69 @@ export class AuthService {
   }
 
   // ✅ NUEVO: Obtener email del usuario
+  // getUserEmail(): string | null {
+  //   const user = this.currentUser();
+  //   return user ? user.email : null;
+  // }
+
+
+
+  //
   getUserEmail(): string | null {
+    // 1. Intentar desde currentUser
     const user = this.currentUser();
-    return user ? user.email : null;
+    if (user?.email) {
+      return user.email;
+    }
+    
+    // 2. Intentar desde localStorage (por separado)
+    if (isPlatformBrowser(this.platformId)) {
+      const email = localStorage.getItem('userEmail');
+      if (email) {
+        return email;
+      }
+    }
+    
+    return null;
   }
 
+
+
+  // login(credentials: LoginRequest): Observable<LoginResponse> {
+  //   return this.http.post<LoginResponse>(`${this.AUTH_URL}/login`, credentials, this.httpOptions)
+  //     .pipe(
+  //       tap((response) => {
+  //         console.log('✅ Login exitoso');
+          
+  //         if (isPlatformBrowser(this.platformId)) {
+  //           sessionStorage.setItem(this.TAB_SESSION_KEY, 'true');
+  //         }
+          
+  //         this.updateLocalSession(response);
+  //       }),
+  //       catchError((error) => this.handleError(error))
+  //     );
+  // }
+
+
+
+
+
+  //
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.AUTH_URL}/login`, credentials, this.httpOptions)
       .pipe(
         tap((response) => {
           console.log('✅ Login exitoso');
+          console.log('📧 Email recibido:', response.email);
           
           if (isPlatformBrowser(this.platformId)) {
             sessionStorage.setItem(this.TAB_SESSION_KEY, 'true');
+            
+            // ✅ Guardar email por separado
+            if (response.email) {
+              localStorage.setItem('userEmail', response.email);
+            }
           }
           
           this.updateLocalSession(response);
@@ -97,6 +198,12 @@ export class AuthService {
         catchError((error) => this.handleError(error))
       );
   }
+
+
+
+
+
+
 
   logout(): Observable<void> {
     return this.http.post<void>(`${this.AUTH_URL}/logout`, {}, this.httpOptions)
@@ -132,6 +239,50 @@ export class AuthService {
    * Verifica la sesión actual con el servidor
    * ✅ Maneja 401 silenciosamente (NO limpia la sesión)
    */
+  // checkSession(): Observable<LoginResponse | null> {
+  //   // Si no hay token/ sesión local, no llamar al servidor
+  //   const localUser = this.currentUser();
+  //   if (!localUser) {
+  //     console.log('ℹ️ [checkSession] No hay sesión local, omitiendo verificación');
+  //     return of(null);
+  //   }
+
+  //   console.log('🔄 [checkSession] Verificando sesión con el servidor...');
+    
+  //   return this.http.get<LoginResponse>(`${this.AUTH_URL}/user-info`, this.httpOptions)
+  //     .pipe(
+  //       tap((user) => {
+  //         if (user) {
+  //           console.log('✅ [checkSession] Sesión válida');
+  //           this.updateLocalSession(user);
+  //         }
+  //       }),
+  //       catchError((error: HttpErrorResponse) => {
+  //         // 🔴 401 es NORMAL cuando no hay sesión activa
+  //         if (error.status === 401) {
+  //           console.log('ℹ️ [checkSession] No hay sesión activa (comportamiento esperado)');
+  //           // ⚠️ NO llamar a fullLocalLogout() aquí
+  //           return of(null);
+  //         }
+          
+  //         // Para otros errores, loggear pero no limpiar sesión
+  //         console.error('❌ [checkSession] Error verificando sesión:', error.status);
+  //         return of(null);
+  //       })
+  //     );
+  // }
+
+
+
+
+
+
+
+  /**
+   * Verifica la sesión actual con el servidor
+   * ✅ Maneja 401 silenciosamente (NO limpia la sesión)
+   * 🔥 Maneja 500 redirigiendo a login
+   */
   checkSession(): Observable<LoginResponse | null> {
     // Si no hay token/ sesión local, no llamar al servidor
     const localUser = this.currentUser();
@@ -151,19 +302,30 @@ export class AuthService {
           }
         }),
         catchError((error: HttpErrorResponse) => {
-          // 🔴 401 es NORMAL cuando no hay sesión activa
           if (error.status === 401) {
             console.log('ℹ️ [checkSession] No hay sesión activa (comportamiento esperado)');
-            // ⚠️ NO llamar a fullLocalLogout() aquí
             return of(null);
           }
           
-          // Para otros errores, loggear pero no limpiar sesión
+          // 🔥 Redirigir a login en caso de 500 (o cualquier error no 401)
+          if (error.status === 500) {
+            console.error('❌ [checkSession] Error 500 - redirigiendo a login');
+            this.fullLocalLogout();
+            // Redirigir a login desde el servicio
+            setTimeout(() => {
+              this.router.navigate(['/login']);
+            }, 0);
+            return of(null);
+          }
+          
           console.error('❌ [checkSession] Error verificando sesión:', error.status);
           return of(null);
         })
       );
   }
+
+
+
 
   /**
    * 🔥 NUEVO: Forzar verificación de sesión (con limpieza en 401)
@@ -194,19 +356,56 @@ export class AuthService {
 
 
 
+  // private updateLocalSession(user: LoginResponse): void {
+  //   console.log('💾 Guardando sesión local (id, username y roles)');
+  //   this.currentUser.set(user);
+    
+  //   if (isPlatformBrowser(this.platformId)) {
+  //     const sessionData = {
+  //       id: user.id,
+  //       username: user.username,
+  //       roles: user.roles
+  //     };
+  //     localStorage.setItem(this.USER_INFO_KEY, JSON.stringify(sessionData));
+  //   }
+  // }
+
+
+
+
+
+
+
+
+  //
   private updateLocalSession(user: LoginResponse): void {
-    console.log('💾 Guardando sesión local (id, username y roles)');
+    console.log('💾 Guardando sesión local (id, username, email y roles)');
     this.currentUser.set(user);
     
     if (isPlatformBrowser(this.platformId)) {
       const sessionData = {
         id: user.id,
         username: user.username,
+        email: user.email || '',  // ✅ Guardar email
         roles: user.roles
       };
       localStorage.setItem(this.USER_INFO_KEY, JSON.stringify(sessionData));
+      
+      // ✅ Guardar email por separado para acceso rápido
+      if (user.email) {
+        localStorage.setItem('userEmail', user.email);
+      }
     }
   }
+
+
+
+
+
+
+
+
+
 
   public fullLocalLogout(): void {
     console.log('🧹 Limpiando toda la sesión local');

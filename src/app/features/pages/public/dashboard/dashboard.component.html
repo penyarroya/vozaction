@@ -1,393 +1,5 @@
-<!-- ============================================================ -->
-<!-- DASHBOARD COMPONENT - VERSIÓN CON SCROLL (ELEGANTE)         -->
-<!-- ============================================================ -->
+<!-- Tratamiento de voa -->
 <!-- <div class="dashboard-wrapper" [class.dark]="isDarkTheme">
-
-  <app-transparent-toolbar 
-    [title]="'VozAcción'"
-    [showLogo]="true"
-    [showThemeToggle]="true"
-    [showMicToggle]="true"
-    [showUserAvatar]="true"
-    [showBackButton]="false"
-    [showHelp]="true"
-    [position]="'fixed'"
-    [backgroundOpacity]="0.85"
-    [showUserGreeting]="true"
-    [greeting]="greeting"
-    [userNameDisplay]="userName"
-    [userEmailDisplay]="userEmail"
-    [currentTimeDisplay]="formattedCurrentTime"
-    (help)="showHelp()"
-    (login)="goToLogin()"
-    (logout)="logout()">
-  </app-transparent-toolbar>
-
-  <div class="dashboard-container">
-    
-    <div class="dashboard-layout">
-
-      <aside class="dashboard-sidebar" [class.collapsed]="isSidebarCollapsed">
-        
-        <button class="sidebar-toggle" (click)="toggleSidebar()">
-          <mat-icon>{{ isSidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
-        </button>
-
-        <div class="sidebar-profile">
-          <div class="profile-avatar">
-            {{ (userName | slice:0:1) || 'U' | uppercase }}
-          </div>
-          @if (!isSidebarCollapsed) {
-            <div class="profile-info">
-              <span class="profile-name">{{ userName }}</span>
-              <span class="profile-email">{{ userEmail }}</span>
-            </div>
-          }
-        </div>
-
-        <mat-divider></mat-divider>
-
-        <nav class="sidebar-nav">
-          @for (item of sidebarItems; track item.id) {
-            <a 
-              class="nav-item" 
-              [class.active]="activeSection === item.id"
-              (click)="setActiveSection(item.id)">
-              <mat-icon>{{ item.icon }}</mat-icon>
-              @if (!isSidebarCollapsed) {
-                <span>{{ item.label }}</span>
-              }
-            </a>
-          }
-        </nav>
-
-        <mat-divider></mat-divider>
-
-        <button class="sidebar-logout" (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          @if (!isSidebarCollapsed) {
-            <span>Cerrar Sesión</span>
-          }
-        </button>
-      </aside>
-
-      <div class="main-wrapper">
-
-        <main class="dashboard-main">
-
-          @if (activeSection === 'dashboard') {
-            <section class="content-section">
-              <div class="section-header">
-                <h1>
-                  <mat-icon>dashboard</mat-icon>
-                  Panel de Control
-                </h1>
-                <p class="section-description">Resumen general de tu actividad</p>
-              </div>
-
-              <div class="stats-grid">
-                @for (stat of statsCards; track stat.label) {
-                  <div class="stat-card">
-                    <div class="stat-icon" [style.background]="stat.gradient">
-                      <mat-icon>{{ stat.icon }}</mat-icon>
-                    </div>
-                    <div class="stat-info">
-                      <span class="stat-value">{{ stat.value }}</span>
-                      <span class="stat-label">{{ stat.label }}</span>
-                      <span class="stat-change" [class]="stat.trend">
-                        <mat-icon>{{ stat.trendIcon }}</mat-icon>
-                        {{ stat.change }}
-                      </span>
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <div class="dashboard-grid">
-                <div class="recent-summary">
-                  <h3>Última actividad</h3>
-                  @for (activity of recentActivity | slice:0:4; track activity.time) {
-                    <div class="activity-item">
-                      <div class="activity-icon">
-                        <mat-icon>{{ activity.icon }}</mat-icon>
-                      </div>
-                      <div class="activity-content">
-                        <p class="activity-text">
-                          {{ activity.action }}
-                          @if (activity.highlight) {
-                            <span class="highlight">{{ activity.highlight }}</span>
-                          }
-                        </p>
-                        <span class="activity-time">{{ activity.time }}</span>
-                      </div>
-                    </div>
-                  }
-                </div>
-
-                <div class="quick-actions-panel">
-                  <h3>Acciones Rápidas</h3>
-                  <div class="quick-actions-grid">
-                    @for (action of quickActions; track action.label) {
-                      <div 
-                        class="quick-action-card" 
-                        (click)="executeQuickAction(action)">
-                        <div class="action-icon">
-                          <mat-icon>{{ action.icon }}</mat-icon>
-                        </div>
-                        <span class="action-label">{{ action.label }}</span>
-                        @if (action.badge) {
-                          <span class="action-badge" [class]="action.badge">
-                            {{ action.badge }}
-                          </span>
-                        }
-                      </div>
-                    }
-                  </div>
-                </div>
-              </div>
-            </section>
-          }
-
-          @if (activeSection === 'stats') {
-            <section class="content-section">
-              <div class="section-header">
-                <h1>
-                  <mat-icon>analytics</mat-icon>
-                  Estadísticas Detalladas
-                </h1>
-                <p class="section-description">Análisis completo de tu actividad</p>
-              </div>
-
-              <div class="stats-grid">
-                @for (stat of statsCards; track stat.label) {
-                  <div class="stat-card">
-                    <div class="stat-icon" [style.background]="stat.gradient">
-                      <mat-icon>{{ stat.icon }}</mat-icon>
-                    </div>
-                    <div class="stat-info">
-                      <span class="stat-value">{{ stat.value }}</span>
-                      <span class="stat-label">{{ stat.label }}</span>
-                      <span class="stat-change" [class]="stat.trend">
-                        <mat-icon>{{ stat.trendIcon }}</mat-icon>
-                        {{ stat.change }}
-                      </span>
-                    </div>
-                  </div>
-                }
-              </div>
-
-              <div class="stats-detail">
-                <div class="detail-card">
-                  <h4>Comandos por día</h4>
-                  <div class="chart-placeholder">📊 Actividad diaria</div>
-                </div>
-                <div class="detail-card">
-                  <h4>Distribución de acciones</h4>
-                  <div class="chart-placeholder">📈 Distribución de uso</div>
-                </div>
-              </div>
-            </section>
-          }
-
-          @if (activeSection === 'actions') {
-            <section class="content-section">
-              <div class="section-header">
-                <h1>
-                  <mat-icon>flash_on</mat-icon>
-                  Acciones Rápidas
-                </h1>
-                <p class="section-description">Usa tu voz o haz clic para navegar</p>
-              </div>
-
-              <div class="quick-actions-grid full">
-                @for (action of quickActions; track action.label) {
-                  <div 
-                    class="quick-action-card full" 
-                    (click)="executeQuickAction(action)">
-                    <div class="action-icon">
-                      <mat-icon>{{ action.icon }}</mat-icon>
-                    </div>
-                    <h4>{{ action.label }}</h4>
-                    <p>{{ action.description }}</p>
-                    <span class="voice-hint">
-                      <mat-icon>keyboard_voice</mat-icon>
-                      {{ action.voiceCommand[0] }}
-                    </span>
-                    @if (action.badge) {
-                      <span class="action-badge" [class]="action.badge">
-                        {{ action.badge }}
-                      </span>
-                    }
-                  </div>
-                }
-              </div>
-            </section>
-          }
-
-          @if (activeSection === 'activity') {
-            <section class="content-section">
-              <div class="section-header">
-                <h1>
-                  <mat-icon>history</mat-icon>
-                  Actividad Reciente
-                </h1>
-                <p class="section-description">Historial completo de tus acciones</p>
-              </div>
-
-              <div class="activity-list">
-                @for (activity of recentActivity; track activity.time) {
-                  <div class="activity-item">
-                    <div class="activity-icon">
-                      <mat-icon>{{ activity.icon }}</mat-icon>
-                    </div>
-                    <div class="activity-content">
-                      <p class="activity-text">
-                        {{ activity.action }}
-                        @if (activity.highlight) {
-                          <span class="highlight">{{ activity.highlight }}</span>
-                        }
-                      </p>
-                      <p class="activity-time">
-                        <mat-icon>access_time</mat-icon>
-                        {{ activity.time }}
-                      </p>
-                    </div>
-                    <span class="activity-badge" [class]="activity.status">
-                      {{ activity.status }}
-                    </span>
-                  </div>
-                }
-              </div>
-            </section>
-          }
-
-          @if (activeSection === 'voice') {
-            <section class="content-section">
-              <div class="section-header">
-                <h1>
-                  <mat-icon>mic</mat-icon>
-                  Comandos de Voz
-                </h1>
-                <p class="section-description">Gestiona tus comandos de voz personalizados</p>
-              </div>
-
-              <div class="voice-commands">
-                @for (action of quickActions; track action.label) {
-                  <div class="command-card">
-                    <div class="command-icon">
-                      <mat-icon>keyboard_voice</mat-icon>
-                    </div>
-                    <div class="command-info">
-                      <h4>{{ action.label }}</h4>
-                      <p>{{ action.voiceCommand.join(', ') }}</p>
-                    </div>
-                    <button class="command-btn" (click)="executeQuickAction(action)">
-                      Ejecutar
-                    </button>
-                  </div>
-                }
-              </div>
-            </section>
-          }
-
-          @if (activeSection === 'settings') {
-            <section class="content-section">
-              <div class="section-header">
-                <h1>
-                  <mat-icon>settings</mat-icon>
-                  Configuración
-                </h1>
-                <p class="section-description">Personaliza tu experiencia</p>
-              </div>
-
-              <div class="settings-grid">
-                <div class="setting-card">
-                  <div class="setting-icon">
-                    <mat-icon>dark_mode</mat-icon>
-                  </div>
-                  <div class="setting-info">
-                    <h4>Tema</h4>
-                    <p>Alternar entre modo claro y oscuro</p>
-                    <button class="setting-btn" (click)="toggleTheme()">
-                      {{ isDarkTheme ? '☀️ Modo claro' : '🌙 Modo oscuro' }}
-                    </button>
-                  </div>
-                </div>
-
-                <div class="setting-card">
-                  <div class="setting-icon">
-                    <mat-icon>mic</mat-icon>
-                  </div>
-                  <div class="setting-info">
-                    <h4>Micrófono</h4>
-                    <p>Activar o desactivar el micrófono</p>
-                    <button class="setting-btn" (click)="toggleMic()">
-                      {{ isMicActive ? '🔴 Desactivar' : '🟢 Activar' }}
-                    </button>
-                  </div>
-                </div>
-
-                <div class="setting-card">
-                  <div class="setting-icon">
-                    <mat-icon>volume_up</mat-icon>
-                  </div>
-                  <div class="setting-info">
-                    <h4>Notificaciones</h4>
-                    <p>Configurar alertas y notificaciones</p>
-                    <button class="setting-btn">Configurar</button>
-                  </div>
-                </div>
-
-                <div class="setting-card">
-                  <div class="setting-icon">
-                    <mat-icon>security</mat-icon>
-                  </div>
-                  <div class="setting-info">
-                    <h4>Seguridad</h4>
-                    <p>Gestionar tu seguridad y privacidad</p>
-                    <button class="setting-btn">Gestionar</button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          }
-
-        </main>
-
-        <footer class="dashboard-footer">
-          <p>
-            &copy; {{ currentYear }} 
-            <span class="footer-link">VozAcción</span> 
-            - Panel de Control v2.0.0
-            <span class="footer-heart">❤️</span>
-            Hecho con 
-            <mat-icon class="footer-icon">favorite</mat-icon>
-            para ti
-          </p>
-        </footer>
-
-      </div>
-
-    </div>
-
-  </div>
-</div> -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="dashboard-wrapper" [class.dark]="isDarkTheme">
 
   <app-transparent-toolbar
     [config]="toolbarConfig"
@@ -408,10 +20,6 @@
 
     <div class="dashboard-layout">
 
-      <!-- ========================================================== -->
-      <!-- SIDEBAR                                                   -->
-      <!-- ========================================================== -->
-      <!-- <aside class="dashboard-sidebar" [class.collapsed]="isSidebarCollapsed"> -->
         <aside class="dashboard-sidebar" 
               [class.collapsed]="isSidebarCollapsed"
               [class.open]="isSidebarOpen">
@@ -458,16 +66,10 @@
         </button>
       </aside>
 
-      <!-- ========================================================== -->
-      <!-- CONTENIDO PRINCIPAL + FOOTER                              -->
-      <!-- ========================================================== -->
       <div class="main-wrapper">
 
         <main class="dashboard-main">
 
-          <!-- ========================================================== -->
-          <!-- DASHBOARD                                                  -->
-          <!-- ========================================================== -->
           @if (activeSection === 'dashboard') {
             <section class="content-section">
               <div class="section-header">
@@ -541,9 +143,6 @@
             </section>
           }
 
-          <!-- ========================================================== -->
-          <!-- ESTADÍSTICAS                                              -->
-          <!-- ========================================================== -->
           @if (activeSection === 'stats') {
             <section class="content-section">
               <div class="section-header">
@@ -585,9 +184,6 @@
             </section>
           }
 
-          <!-- ========================================================== -->
-          <!-- ACCIONES RÁPIDAS                                          -->
-          <!-- ========================================================== -->
           @if (activeSection === 'actions') {
             <section class="content-section">
               <div class="section-header">
@@ -623,9 +219,6 @@
             </section>
           }
 
-          <!-- ========================================================== -->
-          <!-- ACTIVIDAD                                                 -->
-          <!-- ========================================================== -->
           @if (activeSection === 'activity') {
             <section class="content-section">
               <div class="section-header">
@@ -663,9 +256,6 @@
             </section>
           }
 
-          <!-- ========================================================== -->
-          <!-- COMANDOS DE VOZ                                           -->
-          <!-- ========================================================== -->
           @if (activeSection === 'voice') {
             <section class="content-section">
               <div class="section-header">
@@ -695,9 +285,6 @@
             </section>
           }
 
-          <!-- ========================================================== -->
-          <!-- CONFIGURACIÓN                                             -->
-          <!-- ========================================================== -->
           @if (activeSection === 'settings') {
             <section class="content-section">
               <div class="section-header">
@@ -762,9 +349,6 @@
 
         </main>
 
-        <!-- ========================================================== -->
-        <!-- ✅ FOOTER COMPONENT - REEMPLAZA EL FOOTER ANTIGUO        -->
-        <!-- ========================================================== -->
         <app-footer 
           [position]="'fixed'"
           [bottom]="'0'"
@@ -782,5 +366,620 @@
 
     </div>
 
+  </div>
+</div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="dashboard-wrapper" [class.dark]="isDarkTheme">
+
+  <app-transparent-toolbar
+    [config]="toolbarConfig"
+    [greeting]="greeting"
+    [userNameDisplay]="userName"
+    [userEmailDisplay]="userEmail"
+    [currentTimeDisplay]="formattedCurrentTime"
+    [showUserGreeting]="true"
+    (mobileMenuClick)="toggleSidebarMobile()"
+    (help)="showHelp()"
+    (login)="goToLogin()">
+  </app-transparent-toolbar>
+
+  <div class="dashboard-container">
+    <div class="sidebar-overlay" [class.open]="isSidebarOpen" (click)="toggleSidebarMobile()"></div>
+
+    <div class="dashboard-layout">
+      <!-- ========================================================== -->
+      <!-- SIDEBAR                                                    -->
+      <!-- ========================================================== -->
+      <aside class="dashboard-sidebar" 
+            [class.collapsed]="isSidebarCollapsed"
+            [class.open]="isSidebarOpen">
+        
+        <button class="sidebar-toggle" (click)="toggleSidebar()">
+          <mat-icon>{{ isSidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+        </button>
+
+        <div class="sidebar-profile">
+          <div class="profile-avatar">
+            {{ (userName | slice:0:1) || 'E' | uppercase }}
+          </div>
+          @if (!isSidebarCollapsed) {
+            <div class="profile-info">
+              <span class="profile-name">{{ userName }}</span>
+              <span class="profile-email">{{ userEmail }}</span>
+              <span class="profile-role">Estudiante</span>
+            </div>
+          }
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <nav class="sidebar-nav">
+          @for (item of sidebarItems; track item.id) {
+            <a 
+              class="nav-item" 
+              [class.active]="activeSection === item.id"
+              (click)="setActiveSection(item.id)">
+              <mat-icon>{{ item.icon }}</mat-icon>
+              @if (!isSidebarCollapsed) {
+                <span>{{ item.label }}</span>
+              }
+            </a>
+          }
+        </nav>
+
+        <mat-divider></mat-divider>
+
+        <button class="sidebar-logout" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          @if (!isSidebarCollapsed) {
+            <span>Cerrar Sesión</span>
+          }
+        </button>
+      </aside>
+
+      <!-- ========================================================== -->
+      <!-- CONTENIDO PRINCIPAL                                        -->
+      <!-- ========================================================== -->
+      <div class="main-wrapper">
+        <main class="dashboard-main">
+
+          <!-- ========================================================== -->
+          <!-- 1. PANEL PRINCIPAL (Dashboard)                            -->
+          <!-- ========================================================== -->
+          @if (activeSection === 'dashboard') {
+            <section class="content-section">
+              <div class="section-header">
+                <h1>
+                  <mat-icon>dashboard</mat-icon>
+                  Panel de Control
+                </h1>
+                <p class="section-description">Resumen de tu actividad académica</p>
+              </div>
+
+              <!-- Stats Cards -->
+              <div class="stats-grid">
+                @for (stat of statsCards; track stat.label) {
+                  <div class="stat-card">
+                    <div class="stat-icon" [style.background]="stat.gradient">
+                      <mat-icon>{{ stat.icon }}</mat-icon>
+                    </div>
+                    <div class="stat-info">
+                      <span class="stat-value">{{ stat.value }}</span>
+                      <span class="stat-label">{{ stat.label }}</span>
+                      <span class="stat-change" [class]="stat.trend">
+                        <mat-icon>{{ stat.trendIcon }}</mat-icon>
+                        {{ stat.change }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Acciones Rápidas -->
+              <div class="quick-actions-section">
+                <h3>
+                  <mat-icon>flash_on</mat-icon>
+                  Acciones Rápidas
+                </h3>
+                <div class="quick-actions-grid">
+                  @for (action of quickActions | slice:0:4; track action.label) {
+                    <div 
+                      class="quick-action-card" 
+                      (click)="executeQuickAction(action)">
+                      <div class="action-icon">
+                        <mat-icon>{{ action.icon }}</mat-icon>
+                      </div>
+                      <span class="action-label">{{ action.label }}</span>
+                      @if (action.badge) {
+                        <span class="action-badge" [class]="action.badge">
+                          {{ action.badge }}
+                        </span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- ========================================================== -->
+          <!-- 2. MIS CURSOS                                              -->
+          <!-- ========================================================== -->
+          @if (activeSection === 'courses') {
+            <section class="content-section">
+              <div class="section-header">
+                <h1>
+                  <mat-icon>menu_book</mat-icon>
+                  Mis Cursos
+                </h1>
+                <p class="section-description">Todos tus cursos académicos</p>
+              </div>
+
+              <div class="course-grid">
+                @for (course of myCourses; track course.id) {
+                  <div class="course-card">
+                    <div class="course-header">
+                      <span class="course-category">{{ course.category }}</span>
+                      <span class="course-status-badge" [class]="course.status">
+                        {{ course.status === 'completed' ? 'Completado' : 
+                           course.status === 'in-progress' ? 'En progreso' : 
+                           'Por comenzar' }}
+                      </span>
+                    </div>
+                    <h3>{{ course.title }}</h3>
+                    <p class="course-instructor">{{ course.instructor }}</p>
+                    <div class="course-progress">
+                      <div class="progress-bar">
+                        <div class="progress-fill" [style.width.%]="course.progress"></div>
+                      </div>
+                      <span>{{ course.progress }}%</span>
+                    </div>
+                    @if (course.nextClass) {
+                      <p class="next-class">
+                        <mat-icon>event</mat-icon>
+                        Próxima clase: {{ course.nextClass | date:'dd/MM/yyyy HH:mm' }}
+                      </p>
+                    }
+                    <button class="course-action-btn" (click)="navigateToCourse(course.id)">
+                      {{ course.status === 'completed' ? 'Revisar' : 
+                         course.status === 'in-progress' ? 'Continuar' : 
+                         'Comenzar' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- ========================================================== -->
+          <!-- 3. TAREAS                                                  -->
+          <!-- ========================================================== -->
+          @if (activeSection === 'activities') {
+            <section class="content-section">
+              <div class="section-header">
+                <h1>
+                  <mat-icon>assignment</mat-icon>
+                  Tareas Pendientes
+                </h1>
+                <p class="section-description">Gestiona tus tareas y entregas</p>
+              </div>
+
+              <div class="task-list">
+                @for (task of pendingTasks; track task.time) {
+                  <div class="task-card">
+                    <div class="task-header">
+                      <span class="task-status pending">Pendiente</span>
+                      <span class="task-course">{{ task.course }}</span>
+                    </div>
+                    <p class="task-description">
+                      {{ task.action }}
+                      <strong>{{ task.highlight }}</strong>
+                    </p>
+                    <div class="task-footer">
+                      <span class="task-date">
+                        <mat-icon>access_time</mat-icon>
+                        {{ task.time }}
+                      </span>
+                      <button class="task-action-btn" (click)="completeTask(task)">
+                        Marcar como completada
+                      </button>
+                    </div>
+                  </div>
+                }
+                @if (pendingTasks.length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>check_circle</mat-icon>
+                    <p>¡No tienes tareas pendientes!</p>
+                    <span>Buen trabajo, sigue así 🎉</span>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- ========================================================== -->
+          <!-- 4. PROGRESO                                                -->
+          <!-- ========================================================== -->
+          @if (activeSection === 'progress') {
+            <section class="content-section">
+              <div class="section-header">
+                <h1>
+                  <mat-icon>trending_up</mat-icon>
+                  Mi Progreso Académico
+                </h1>
+                <p class="section-description">Visualiza tu avance y rendimiento</p>
+              </div>
+
+              <div class="progress-stats">
+                <div class="progress-stat-card">
+                  <h4>Promedio General</h4>
+                  <div class="big-number">{{ courseStats.averageGrade }}</div>
+                  <span class="sub-text">/ 10</span>
+                </div>
+                <div class="progress-stat-card">
+                  <h4>Cursos Completados</h4>
+                  <div class="big-number">{{ courseStats.completedCourses }}</div>
+                  <span class="sub-text">de {{ courseStats.totalCourses }}</span>
+                </div>
+                <div class="progress-stat-card">
+                  <h4>Tasa de Éxito</h4>
+                  <div class="big-number">78%</div>
+                  <span class="sub-text">+12% que el mes pasado</span>
+                </div>
+                <div class="progress-stat-card">
+                  <h4>Horas Estudiadas</h4>
+                  <div class="big-number">156</div>
+                  <span class="sub-text">horas este mes</span>
+                </div>
+              </div>
+
+              <div class="course-progress-full">
+                <h3>Progreso por Curso</h3>
+                @for (course of myCourses; track course.id) {
+                  <div class="course-progress-item">
+                    <div class="course-progress-header">
+                      <span class="course-name">{{ course.title }}</span>
+                      <span class="course-percent">{{ course.progress }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width.%]="course.progress" 
+                           [style.background]="course.progress === 100 ? '#10b981' : 'var(--accent)'">
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Actividad Reciente (completa) -->
+              <div class="recent-section-full">
+                <h3>
+                  <mat-icon>history</mat-icon>
+                  Actividad Reciente
+                </h3>
+                @for (activity of recentActivity; track activity.time) {
+                  <div class="activity-item">
+                    <div class="activity-icon">
+                      <mat-icon>{{ activity.icon }}</mat-icon>
+                    </div>
+                    <div class="activity-content">
+                      <p class="activity-text">
+                        {{ activity.action }}
+                        @if (activity.highlight) {
+                          <span class="highlight">{{ activity.highlight }}</span>
+                        }
+                        @if (activity.course) {
+                          <span class="course-tag">{{ activity.course }}</span>
+                        }
+                      </p>
+                      <span class="activity-time">{{ activity.time }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- ========================================================== -->
+          <!-- 5. CALENDARIO                                              -->
+          <!-- ========================================================== -->
+          <!-- @if (activeSection === 'calendar') {
+            <section class="content-section">
+              <div class="section-header">
+                <h1>
+                  <mat-icon>calendar_month</mat-icon>
+                  Calendario Académico
+                </h1>
+                <p class="section-description">Próximas clases y eventos</p>
+              </div>
+
+              <div class="calendar-grid">
+                <div class="calendar-container">
+                  <div class="calendar-placeholder">
+                    <div class="calendar-header">
+                      <button class="calendar-nav">‹</button>
+                      <span>{{ currentDate | date:'MMMM yyyy' }}</span>
+                      <button class="calendar-nav">›</button>
+                    </div>
+                    <div class="calendar-grid-days">
+                      <div class="day-header">Lun</div>
+                      <div class="day-header">Mar</div>
+                      <div class="day-header">Mié</div>
+                      <div class="day-header">Jue</div>
+                      <div class="day-header">Vie</div>
+                      <div class="day-header">Sáb</div>
+                      <div class="day-header">Dom</div>
+                      @for (day of calendarDays; track day.number) {
+                        <div class="day" [class.has-event]="day.hasEvent">
+                          {{ day.number }}
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                <div class="upcoming-events">
+                  <h4>📅 Próximos Eventos</h4>
+                  @for (course of myCourses; track course.id) {
+                    @if (course.nextClass) {
+                      <div class="event-item">
+                        <div class="event-date">
+                          {{ course.nextClass | date:'dd' }}
+                          <span>{{ course.nextClass | date:'MMM' }}</span>
+                        </div>
+                        <div class="event-info">
+                          <h5>{{ course.title }}</h5>
+                          <p>{{ course.instructor }}</p>
+                          <span>{{ course.nextClass | date:'HH:mm' }}</span>
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            </section>
+          } -->
+
+
+
+
+          <!-- ========================================================== -->
+          <!-- 5. CALENDARIO                                              -->
+          <!-- ========================================================== -->
+          @if (activeSection === 'calendar') {
+            <section class="content-section">
+              <div class="section-header">
+                <h1>
+                  <mat-icon>calendar_month</mat-icon>
+                  Calendario Académico
+                </h1>
+                <p class="section-description">Próximas clases y eventos</p>
+              </div>
+
+              <!-- ✅ NUEVO: Contenedor centrado -->
+              <div class="calendar-section-wrapper">
+                <div class="calendar-grid">
+                  <!-- CALENDARIO -->
+                  <div class="calendar-container">
+                    <div class="calendar-header">
+                      <button class="calendar-nav" (click)="previousMonth()">‹</button>
+                      <span>{{ currentDate | date:'MMMM yyyy' | titlecase }}</span>
+                      <button class="calendar-nav" (click)="nextMonth()">›</button>
+                    </div>
+                    <div class="calendar-grid-days">
+                      <div class="day-header">Lun</div>
+                      <div class="day-header">Mar</div>
+                      <div class="day-header">Mié</div>
+                      <div class="day-header">Jue</div>
+                      <div class="day-header">Vie</div>
+                      <div class="day-header">Sáb</div>
+                      <div class="day-header">Dom</div>
+                      @for (day of calendarDays; track day.number) {
+                        <div class="day" 
+                            [class.has-event]="day.hasEvent"
+                            [class.today]="day.isToday">
+                          {{ day.number }}
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- PRÓXIMOS EVENTOS -->
+                  <div class="upcoming-events">
+                    <h4>📅 Próximos Eventos</h4>
+                    <div class="events-list">
+                      @for (course of coursesWithNextClass; track course.id) {
+                        <div class="event-item">
+                          <div class="event-date">
+                            {{ course.nextClass | date:'dd' }}
+                            <span>{{ course.nextClass | date:'MMM' }}</span>
+                          </div>
+                          <div class="event-info">
+                            <h5>{{ course.title }}</h5>
+                            <p>{{ course.instructor }}</p>
+                            <span class="event-time">
+                              <mat-icon>access_time</mat-icon>
+                              {{ course.nextClass | date:'HH:mm' }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+                      @if (coursesWithNextClass.length === 0) {
+                        <div class="empty-events">
+                          <mat-icon>event_available</mat-icon>
+                          <p>No hay eventos próximos</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          }
+
+
+
+
+
+
+
+
+
+          <!-- ========================================================== -->
+          <!-- 6. MENSAJES                                                -->
+          <!-- ========================================================== -->
+          @if (activeSection === 'messages') {
+            <section class="content-section">
+              <div class="section-header">
+                <h1>
+                  <mat-icon>message</mat-icon>
+                  Mensajes
+                </h1>
+                <p class="section-description">Comunícate con tu comunidad educativa</p>
+              </div>
+
+              <div class="messages-list">
+                @for (message of messages; track message.id) {
+                  <div class="message-item">
+                    <div class="message-avatar">{{ message.avatar }}</div>
+                    <div class="message-content">
+                      <h4>{{ message.sender }}</h4>
+                      <p>{{ message.content }}</p>
+                      <span class="message-time">{{ message.time }}</span>
+                    </div>
+                    @if (message.unread > 0) {
+                      <span class="message-badge">{{ message.unread }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- ========================================================== -->
+          <!-- 7. CONFIGURACIÓN                                           -->
+          <!-- ========================================================== -->
+          @if (activeSection === 'settings') {
+            <section class="content-section">
+              <div class="section-header">
+                <h1>
+                  <mat-icon>settings</mat-icon>
+                  Configuración
+                </h1>
+                <p class="section-description">Personaliza tu experiencia en el campus virtual</p>
+              </div>
+
+              <div class="settings-grid">
+                <div class="setting-card">
+                  <div class="setting-icon">
+                    <mat-icon>dark_mode</mat-icon>
+                  </div>
+                  <div class="setting-info">
+                    <h4>Tema</h4>
+                    <p>Alternar entre modo claro y oscuro</p>
+                    <button class="setting-btn" (click)="toggleTheme()">
+                      {{ isDarkTheme ? '☀️ Modo claro' : '🌙 Modo oscuro' }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="setting-card">
+                  <div class="setting-icon">
+                    <mat-icon>mic</mat-icon>
+                  </div>
+                  <div class="setting-info">
+                    <h4>Micrófono</h4>
+                    <p>Activar o desactivar el micrófono para comandos de voz</p>
+                    <button class="setting-btn" (click)="toggleMic()">
+                      {{ isMicActive ? '🔴 Desactivar' : '🟢 Activar' }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="setting-card">
+                  <div class="setting-icon">
+                    <mat-icon>notifications</mat-icon>
+                  </div>
+                  <div class="setting-info">
+                    <h4>Notificaciones</h4>
+                    <p>Configurar alertas de clases, tareas y mensajes</p>
+                    <button class="setting-btn" (click)="configureNotifications()">
+                      Configurar
+                    </button>
+                  </div>
+                </div>
+
+                <div class="setting-card">
+                  <div class="setting-icon">
+                    <mat-icon>security</mat-icon>
+                  </div>
+                  <div class="setting-info">
+                    <h4>Seguridad</h4>
+                    <p>Gestionar tu seguridad y privacidad</p>
+                    <button class="setting-btn" (click)="manageSecurity()">
+                      Gestionar
+                    </button>
+                  </div>
+                </div>
+
+                <div class="setting-card">
+                  <div class="setting-icon">
+                    <mat-icon>language</mat-icon>
+                  </div>
+                  <div class="setting-info">
+                    <h4>Idioma</h4>
+                    <p>Cambiar el idioma de la plataforma</p>
+                    <button class="setting-btn" (click)="changeLanguage()">
+                      Español
+                    </button>
+                  </div>
+                </div>
+
+                <div class="setting-card">
+                  <div class="setting-icon">
+                    <mat-icon>help</mat-icon>
+                  </div>
+                  <div class="setting-info">
+                    <h4>Ayuda y Soporte</h4>
+                    <p>Centro de ayuda y contacto con soporte</p>
+                    <button class="setting-btn" (click)="showHelp()">
+                      Ver ayuda
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          }
+
+        </main>
+
+        <!-- FOOTER -->
+        <app-footer 
+          [position]="'fixed'"
+          [bottom]="'0'"
+          [zIndex]="100"
+          [compact]="true"
+          [showSocial]="true"
+          [showNav]="false"
+          [showLegal]="true"
+          [showVersion]="true"     
+          [showCopyright]="true"   
+          [noMargin]="true">
+        </app-footer>
+
+      </div>
+    </div>
   </div>
 </div>

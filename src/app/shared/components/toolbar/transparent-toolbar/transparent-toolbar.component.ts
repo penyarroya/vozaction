@@ -502,7 +502,20 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
     this.updateResolvedConfig();
   }
 
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   if (changes['config'] || changes['userMenuItems'] || changes['navLinks']) {
+  //     this.updateResolvedConfig();
+  //   }
+  // }
+
+
+  //
   ngOnChanges(changes: SimpleChanges): void {
+    // ✅ Si currentTimeDisplay cambió, actualizar la configuración
+    if (changes['currentTimeDisplay']) {
+      this.updateResolvedConfig();
+    }
+    
     if (changes['config'] || changes['userMenuItems'] || changes['navLinks']) {
       this.updateResolvedConfig();
     }

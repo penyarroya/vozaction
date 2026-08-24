@@ -1692,13 +1692,6 @@ export class VoiceService implements OnDestroy {
     });
   }
 
-
-
-
-
-
-
-
   // ============================================================
   // 🔥 NUEVO MÉTODO: Procesar wake word parcial
   // ============================================================
@@ -1733,35 +1726,6 @@ export class VoiceService implements OnDestroy {
   // MANEJO DE ERRORES Y FINALIZACIÓN
   // ============================================================
 
-  // private handleError(event: SpeechRecognitionErrorEvent): void {
-  //   this.ngZone.run(() => {
-  //     console.log('🔍 [VoiceService] handleError:', { error: event.error, timestamp: new Date().toISOString() });
-  //     this.logger.error('Error en reconocimiento:', event.error);
-  //     this.errorSubject.next(event.error);
-
-  //     // Si hay error, el micrófono no está listo
-  //     this.readySubject.next(false);
-  //     this.recognitionActive = false;
-
-  //     if (event.error === 'no-speech' || event.error === 'audio-capture') {
-  //       this.handleRecoverableError();
-  //     } else if (event.error === 'not-allowed') {
-  //       this.logger.error('❌ Permiso de micrófono denegado');
-  //       this.stopListening();
-  //       this.errorSubject.next('Permiso de micrófono denegado');
-  //     } else {
-  //       this.logger.error('❌ Error crítico, deteniendo reconocimiento');
-  //       this.stopListening();
-  //       this.errorSubject.next(`Error crítico: ${event.error}`);
-  //     }
-  //   });
-  // }
-
-
-
-
-
-
   private handleError(event: SpeechRecognitionErrorEvent): void {
     this.ngZone.run(() => {
       // ✅ Ignorar silencio: no mostrar error ni hacer nada
@@ -1793,36 +1757,7 @@ export class VoiceService implements OnDestroy {
     });
   }
 
-
-
-
-
   //
-  // private handleRecoverableError(): void {
-  //   this.reconnectAttempts++;
-    
-  //   if (this.reconnectAttempts <= this.MAX_RECONNECT_ATTEMPTS) {
-  //     const delay = Math.min(500 * Math.pow(1.2, this.reconnectAttempts), 5000);
-  //     if (this.enableLogs) {
-  //       this.logger.log(`⏳ Reintentando en ${delay}ms (${this.reconnectAttempts}/${this.MAX_RECONNECT_ATTEMPTS})`);
-  //     }
-      
-  //     this.reconnectTimeout = setTimeout(() => {
-  //       if (this.isListening && !this.isStarting) {
-  //         this.restart();
-  //       }
-  //     }, delay);
-  //   } else {
-  //     this.logger.warn('⚠️ Máximos intentos de reconexión alcanzados');
-  //     this.stopListening();
-  //     this.reconnectAttempts = 0;
-  //     this.errorSubject.next('No se pudo restablecer la conexión del micrófono');
-  //   }
-  // }
-
-
-
-
   private handleRecoverableError(): void {
     // ✅ Siempre reintentar, sin límite. El micrófono nunca se apaga por errores.
     const delay = Math.min(500 * Math.pow(1.2, this.reconnectAttempts), 5000);
@@ -2178,17 +2113,6 @@ export class VoiceService implements OnDestroy {
   // CONTROL DE BIENVENIDA
   // ============================================================
 
-  // hasWelcomeBeenShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home'): boolean {
-  //   return this.welcomeFlags[page];
-  // }
-
-  // markWelcomeAsShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home'): void {
-  //   this.welcomeFlags[page] = true;
-  //   if (this.enableLogs) {
-  //     this.logger.log(`📌 Welcome marcado para: ${page}`);
-  //   }
-  // }
-
   // ✅ DESPUÉS:
   hasWelcomeBeenShown(page: 'welcome' | 'about' | 'login' | 'init' | 'register' | 'notfound' | 'home' | 'dashboard'): boolean {
     return this.welcomeFlags[page];
@@ -2234,6 +2158,8 @@ export class VoiceService implements OnDestroy {
     return this.cachedVoice;
   }
 
+
+  //
   speak(
     text: string, 
     lang: string = 'es-ES', 
@@ -2261,6 +2187,13 @@ export class VoiceService implements OnDestroy {
         return;
       }
 
+      // ✅ SILENCIAR EL MICRÓFONO ANTES DE HABLAR
+      const wasListening = this.isListening;
+      if (wasListening) {
+        console.log('🔍 [VoiceService] → speak() silenciando micrófono durante TTS');
+        this.stopListening();
+      }
+
       window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(text);
@@ -2275,9 +2208,15 @@ export class VoiceService implements OnDestroy {
       }
       
       utterance.onend = () => {
-        if (this.enableLogs) {
-          this.logger.debug(`🗣️ Síntesis completada: "${text}"`);
-        }
+        console.log('🔍 [VoiceService] → speak() onend, reactivando micrófono');
+        // ✅ REACTIVAR DESPUÉS DE 1.5 SEGUNDOS
+        setTimeout(() => {
+          if (!this.recognitionActive) {
+            console.log('🔍 [VoiceService] → speak() llamando a startListening()');
+            this.startListening();
+            console.log('🎤 Micrófono reactivado después de speak');
+          }
+        }, 1500);
         resolve();
       };
       
@@ -2298,80 +2237,6 @@ export class VoiceService implements OnDestroy {
   }
 
   //
-  // public speakAlways(text: string): Promise<void> {
-  //   console.log('🔍 [VoiceService] speakAlways() llamado:', {
-  //     text: text.substring(0, 50) + '...',
-  //     wasListening: this.isListening,
-  //     isMuted: this.isMuted,
-  //     timestamp: new Date().toISOString()
-  //   });
-    
-  //   return new Promise((resolve, reject) => {
-  //     if (!window.speechSynthesis) {
-  //       this.logger.warn('Speech Synthesis no soportada');
-  //       reject(new Error('Speech Synthesis no soportada'));
-  //       return;
-  //     }
-
-  //     const wasListening = this.isListening;
-      
-  //     if (wasListening) {
-  //       console.log('🔍 [VoiceService] → speakAlways() deteniendo reconocimiento');
-  //       this.stopListening();
-  //     }
-
-  //     window.speechSynthesis.cancel();
-      
-  //     const utterance = new SpeechSynthesisUtterance(text);
-  //     utterance.lang = 'es-ES';
-  //     utterance.rate = 0.9;
-  //     utterance.pitch = 1.05;
-  //     utterance.volume = 1;
-      
-  //     const voice = this.getNaturalVoice('es-ES');
-  //     if (voice) {
-  //       utterance.voice = voice;
-  //     }
-      
-  //     utterance.onend = () => {
-  //       console.log('🔍 [VoiceService] → speakAlways() onend, reactivando reconocimiento');
-  //       setTimeout(() => {
-  //         if (!this.recognitionActive) {
-  //           console.log('🔍 [VoiceService] → speakAlways() llamando a startListening()');
-  //           this.startListening();
-  //           console.log('🎤 Reconocimiento reactivado después de speakAlways');
-  //         }
-  //       }, 800);
-  //       resolve();
-  //     };
-      
-  //     utterance.onerror = (event) => {
-  //       if (event.error === 'interrupted') {
-  //         console.log('🔍 [VoiceService] → speakAlways() interrumpido');
-  //         setTimeout(() => {
-  //           if (!this.recognitionActive) {
-  //             console.log('🔍 [VoiceService] → speakAlways() (interrupted) llamando a startListening()');
-  //             this.startListening();
-  //             console.log('🎤 Reconocimiento reactivado después de interrupción');
-  //           }
-  //         }, 800);
-  //         resolve();
-  //         return;
-  //       }
-  //       this.logger.warn('Error en síntesis de voz:', event);
-  //       reject(event);
-  //     };
-      
-  //     window.speechSynthesis.speak(utterance);
-  //     if (this.enableLogs) {
-  //       this.logger.log(`🗣️ Hablando (siempre): "${text}"`);
-  //     }
-  //   });
-  // }
-
-
-
-
   public speakAlways(text: string): Promise<void> {
     console.log('🔍 [VoiceService] speakAlways() llamado:', {
       text: text.substring(0, 50) + '...',
@@ -2386,8 +2251,13 @@ export class VoiceService implements OnDestroy {
         return;
       }
 
-      // ✅ Mantener el reconocimiento activo
-      // Solo cancelar la síntesis anterior
+      // ✅ SILENCIAR EL MICRÓFONO ANTES DE HABLAR
+      const wasListening = this.isListening;
+      if (wasListening) {
+        console.log('🔍 [VoiceService] → speakAlways() silenciando micrófono durante TTS');
+        this.stopListening();
+      }
+
       window.speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(text);
@@ -2402,13 +2272,27 @@ export class VoiceService implements OnDestroy {
       }
       
       utterance.onend = () => {
-        console.log('🔍 [VoiceService] → speakAlways() onend');
+        console.log('🔍 [VoiceService] → speakAlways() onend, reactivando micrófono');
+        // ✅ REACTIVAR EL MICRÓFONO DESPUÉS DE 1.5 SEGUNDOS
+        setTimeout(() => {
+          if (!this.recognitionActive) {
+            console.log('🔍 [VoiceService] → speakAlways() llamando a startListening()');
+            this.startListening();
+            console.log('🎤 Micrófono reactivado después de speakAlways');
+          }
+        }, 1500);
         resolve();
       };
       
       utterance.onerror = (event) => {
         if (event.error === 'interrupted') {
           console.log('🔍 [VoiceService] → speakAlways() interrumpido');
+          setTimeout(() => {
+            if (!this.recognitionActive) {
+              console.log('🔍 [VoiceService] → speakAlways() (interrupted) llamando a startListening()');
+              this.startListening();
+            }
+          }, 1500);
           resolve();
           return;
         }
@@ -2422,9 +2306,6 @@ export class VoiceService implements OnDestroy {
       }
     });
   }
-
-
-
 
   // ============================================================
   // MÉTODOS PARA ENVIAR RESPUESTAS

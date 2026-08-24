@@ -3,13 +3,11 @@
 //   apiGateway: 'http://localhost:8080',
 //   healthUrl: 'http://localhost:8080/actuator/health',
 //   authEndpoint: '/api/auth',
-//   enableLogs: true,
+//   apiV1: '/api/v1',              // ✅ NUEVA: base para endpoints de la API v1 (usuarios, etc.)
 //   voiceEndpoint: '/voice',
+//   enableLogs: true,
 //   initPageUrl: '/init-page'
 // };
-
-
-
 
 
 
@@ -22,8 +20,8 @@ export const environment = {
   apiGateway: 'http://localhost:8080',
   healthUrl: 'http://localhost:8080/actuator/health',
   authEndpoint: '/api/auth',
-  apiV1: '/api/v1',              // ✅ NUEVA: base para endpoints de la API v1 (usuarios, etc.)
-  voiceEndpoint: '/voice',
+  apiV1: '/api/v1',
+  voiceEndpoint: '/api/voice',
   enableLogs: true,
   initPageUrl: '/init-page'
 };

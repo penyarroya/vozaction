@@ -297,7 +297,9 @@
         <div class="brand-icon"><mat-icon>mic</mat-icon></div>
         <div class="brand-text">
           <span class="brand-name">Voz<span class="highlight">Acción</span></span>
-          <span class="brand-badge" *ngIf="isAuthenticated()">v1.0</span>
+          @if (isAuthenticated()) {
+            <span class="brand-badge">v1.0</span>
+          }
         </div>
       </a>
     }
@@ -367,7 +369,7 @@
     }
 
     <!-- ========================================================== -->
-    <!-- AVATAR DE USUARIO / LOGIN (CON RECREACIÓN DEL MENÚ)       -->
+    <!-- AVATAR DE USUARIO / LOGIN                                 -->
     <!-- ========================================================== -->
     @if (resolvedConfig().showUserAvatar) {
       @if (isAuthenticated()) {
@@ -385,7 +387,7 @@
             <mat-icon class="profile-arrow">expand_more</mat-icon>
           </button>
 
-          <!-- MENÚ DE ESCRITORIO (se crea solo si hay ítems) -->
+          <!-- MENÚ DE ESCRITORIO -->
           <mat-menu #userMenu="matMenu" class="profile-menu">
             <div class="menu-header">
               <div class="menu-avatar">
@@ -431,9 +433,6 @@
     }
 
     <!-- Botón Menú Móvil -->
-    <!-- <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Menú móvil">
-      <mat-icon>menu</mat-icon>
-    </button> -->
     <button class="mobile-menu-btn" (click)="onMobileMenuClick()" aria-label="Menú de navegación">
       <mat-icon>menu</mat-icon>
     </button>
