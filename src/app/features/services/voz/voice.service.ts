@@ -984,6 +984,8 @@
 //     });
 //   }
 
+
+
 //   public speakAlways(text: string): Promise<void> {
 //     console.log('🔍 [VoiceService] speakAlways() llamado:', {
 //       text: text.substring(0, 50) + '...',
@@ -1054,6 +1056,11 @@
 //       }
 //     });
 //   }
+
+
+
+
+
 
 //   // ============================================================
 //   // MÉTODOS PARA ENVIAR RESPUESTAS
@@ -1240,6 +1247,7 @@ import { VoiceCommandResponse } from '../../models/voz/VoiceCommandResponse-mode
 import { environment } from '../../../../environments/environment';
 import { LoggerService } from '../../../shared/services/loggers/logger.service';
 import { VoiceContextService } from '../../../features/services/voz/voice-context.service';
+import { SYSTEM_PHRASES_LOWER } from '../../../core/constants/system-phrases.constants';
 
 @Injectable({ providedIn: 'root' })
 export class VoiceService implements OnDestroy {
@@ -1284,6 +1292,13 @@ export class VoiceService implements OnDestroy {
   private lastWakeWordTime = 0;
   private readonly WAKE_DEBOUNCE_TIME = 2000;
 
+  private headphonesMessageShown = false; // ← NUEVA BANDERA
+  private headphonesCheckInterval: any = null; 
+
+
+  private noHeadphonesMessageShown = false;
+  private noHeadphonesMessageTimeout: any = null;
+
   private welcomeFlags = {
     welcome: false,
     about: false,
@@ -1305,7 +1320,33 @@ export class VoiceService implements OnDestroy {
   private lastProcessedTime = 0;
   private restartCount = 0;
 
+
+
+  // constructor() {
+  //   this.initRecognition();
+  //   this.loadVoices();
+    
+  //   this.isMuted = true;
+  //   this.mutedSubject.next(true);
+  //   this.listeningSubject.next(false);
+  //   this.readySubject.next(false);
+    
+  //   if (this.enableLogs) {
+  //     this.logger.log('🎤 VoiceService inicializado en modo silencio');
+  //   }
+
+  //   setTimeout(() => {
+  //     this.startListening();
+  //   }, 0);
+  // }
+
+
+
+
+
   constructor() {
+    console.log('🔍 [VoiceService] CONSTRUCTOR INICIADO');
+    
     this.initRecognition();
     this.loadVoices();
     
@@ -1318,12 +1359,29 @@ export class VoiceService implements OnDestroy {
       this.logger.log('🎤 VoiceService inicializado en modo silencio');
     }
 
+    console.log('🔍 [VoiceService] Llamando a monitorHeadphones()...');
+    this.monitorHeadphones();
+    
+    // ✅ Avisar al inicio si no hay auriculares
     setTimeout(() => {
-      this.startListening();
-    }, 0);
+      this.checkHeadphonesOnStart();
+    }, 1500);
   }
 
+  
+
+  // ngOnDestroy(): void {
+  //   this.destroy();
+  // }
+
+
   ngOnDestroy(): void {
+    // ✅ Limpiar intervalo de monitoreo de auriculares
+    if (this.headphonesCheckInterval) {
+      clearInterval(this.headphonesCheckInterval);
+      this.headphonesCheckInterval = null;
+    }
+    
     this.destroy();
   }
 
@@ -1361,9 +1419,18 @@ export class VoiceService implements OnDestroy {
     this.recognition.onend = this.handleEnd.bind(this);
 
     // onstart se dispara cuando el hardware está realmente activo
+    // this.recognition.onstart = () => {
+    //   this.ngZone.run(() => {
+    //     this.recognitionActive = true;
+    //     this.readySubject.next(true);
+    //     console.log('🎤 Micrófono realmente activo (onstart)');
+    //   });
+    // };
+
     this.recognition.onstart = () => {
       this.ngZone.run(() => {
         this.recognitionActive = true;
+        this.isListening = true; // ✅ NUEVO
         this.readySubject.next(true);
         console.log('🎤 Micrófono realmente activo (onstart)');
       });
@@ -1378,319 +1445,701 @@ export class VoiceService implements OnDestroy {
   // MANEJO DE EVENTOS
   // ============================================================
   
+  // private handleResult(event: SpeechRecognitionEvent): void {
+
+  //   if (window.speechSynthesis.speaking) {
+  //     console.log('🔇 [VoiceService] Sistema hablando, ignorando resultado');
+  //     return;
+  //   }
+
+  //   if (!event.results || event.results.length === 0) return;
+
+  //   const result = event.results[event.results.length - 1];
+  //   if (!result || !result[0]) return;
+
+  //   const transcript = result[0].transcript.toLowerCase().trim();
+
+  //   if (this.enableLogs) {
+  //     console.log('🎤 Reconocido:', transcript, 'Final:', result.isFinal);
+  //   }
+
+  //   // ============================================================
+  //   // 🔥 FILTRAR RESULTADOS PARCIALES (SOLO WAKE WORDS Y NÚMEROS)
+  //   // ============================================================
+  //   if (!result.isFinal) {
+  //     const hasWakeWord = this.WAKE_WORDS.some(w => 
+  //       transcript.includes(w) || transcript === w
+  //     );
+  //     const hasDigits = /\d/.test(transcript);
+  //     const numberWords = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+  //     const hasNumberWord = numberWords.some(w => transcript.includes(w));
+
+  //     // ✅ PALABRAS CLAVE DE CAMPOS DE FORMULARIO (GLOBAL)
+  //     const keyCommands = [
+  //       'usuario', 'contraseña', 'clave', 'password', 'pass',
+  //       'nombre', 'email', 'correo', 'apellidos', 'fullname',
+  //       'confirmar', 'registrar', 'recuperar',
+  //       'privacidad', 'condiciones'
+  //     ];
+  //     const hasKeyCommand = keyCommands.some(w => 
+  //       transcript === w || transcript.includes(w)
+  //     );
+
+  //     if (hasWakeWord) {
+  //       if (this.enableLogs) {
+  //         console.log(`🔊 Wake word parcial detectada: "${transcript}"`);
+  //       }
+  //       this.processWakeWord(transcript);
+  //     } else if (hasDigits || hasNumberWord || hasKeyCommand) {
+  //       if (this.enableLogs) {
+  //         console.log(`🔢 Resultado parcial (numérico o comando clave): "${transcript}"`);
+  //       }
+  //       // Continúa al procesamiento normal (NO retorna)
+  //     } else {
+  //       if (this.enableLogs) {
+  //         console.log(`⏳ Resultado parcial ignorado: "${transcript}"`);
+  //       }
+  //       return;
+  //     }
+  //   }
+
+  //   // ============================================================
+  //   // A PARTIR DE AQUÍ, TODOS LOS RESULTADOS (PARCIALES Y FINALES)
+  //   // ============================================================
+
+  //   // FILTRO DE RUIDO DE TECLADO/MOUSE
+  //   const noisePatterns = [
+  //     /^[a-z]$/i,
+  //     /^[a-z]{1,3}$/i,
+  //     /^(click|clic|tick|tac|clap|tap|pop|beep)$/i,
+  //     /^[cC][lL][iI][cC][kK]/,
+  //     /^[tT][iI][cC]/,
+  //     /^[cC][lL][aA][pP]/,
+  //     /^[mM][oO][uU][sS][eE]/,
+  //     /^[kK][eE][yY]/,
+  //     /^[a-zA-Z]\s+[a-zA-Z]$/,
+  //     /^[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]$/,
+  //     /^[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]$/,
+  //   ];
+
+  //   const shortValidCommands = ['hola', 'leer', 'ayuda', 'login', 'back', 'help', 'si', 'no', 'ok', 'vale', 'fin', 'ir'];
+
+  //   if (!shortValidCommands.includes(transcript) && noisePatterns.some(pattern => pattern.test(transcript))) {
+  //     if (this.enableLogs) {
+  //       console.log(`⏭️ Ruido de teclado/mouse ignorado: "${transcript}"`);
+  //     }
+  //     return;
+  //   }
+
+  //   // FILTRO PARA EVITAR DUPLICADOS (CON EXCEPCIÓN PARA DÍGITOS Y NÚMEROS)
+  //   const now = Date.now();
+  //   const validCommands = [
+  //     'login', 'acerca', 'hola', 'asistente', 'silenciar', 'activar',
+  //     'ayuda', 'código', 'verificar', 'volver', 'atrás', 'regresar', 'cancelar',
+  //     'usuario', 'nombre', 'email', 'correo',
+  //     'contraseña', 'clave', 'password', 'pass',
+  //     'enviar', 'logear', 'acceder', 'entrar', 'ingresar',
+  //     'limpiar', 'borrar', 'resetear',
+  //     'mostrar', 'ocultar', 'ver',
+  //     'registro', 'registrar', 'recuperar', 'olvidé',  
+  //     'privacidad', 'condiciones', 'términos',
+  //     'fin', 'listo', 'terminar', 'finalizar', 'ok', 'vale', 'hecho',
+  //     'completar', 'cancel', 'abortar',
+  //     'confirmar', 'confirm', 'aceptar', 'validar',
+  //     'leer', 'información',
+  //     'iniciar sesion',    
+  //     'inicio de sesion',
+  //     'privacidad', 'condiciones', 'términos',   
+  //   ];
+
+  //   const isValidCommand = validCommands.some(cmd => transcript.includes(cmd));
+
+  //   // 🔥 EXCEPCIÓN: si el texto contiene dígitos o palabras numéricas, NO aplicar control de duplicados
+  //   const hasDigits = /\d/.test(transcript);
+  //   const numberWords = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+  //   const hasNumberWord = numberWords.some(w => transcript.includes(w));
+
+  //   if (!isValidCommand && !hasDigits && !hasNumberWord && transcript === this.lastProcessedTranscript && now - this.lastProcessedTime < 3000) {
+  //     if (this.enableLogs) {
+  //       console.log(`⏭️ Comando duplicado ignorado: "${transcript}"`);
+  //     }
+  //     return;
+  //   }
+  //   this.lastProcessedTranscript = transcript;
+  //   this.lastProcessedTime = now;
+
+  //   this.ngZone.run(() => {
+
+  //     // COMANDOS DIRECTOS (SILENCIAR MICRÓFONO)
+  //     const lower = transcript.toLowerCase();
+  //     if (/\bsilenciar\b/.test(lower) || 
+  //         lower.includes('silenciar micrófono') || 
+  //         lower.includes('silenciar micro') || 
+  //         lower.includes('silencia micrófono')) {
+  //       if (!this.isMuted) {
+  //         this.mute();
+  //         if (this.enableLogs) this.logger.log('🔇 Silenciado por comando de voz');
+  //       } else {
+  //         if (this.enableLogs) this.logger.log('ℹ️ Micrófono ya está muteado');
+  //       }
+  //       return;
+  //     }
+
+  //     // WAKE WORD DETECTION (hola / asistente)
+  //     const hasWakeWord = this.WAKE_WORDS.some(w =>
+  //       new RegExp(`\\b${w}\\b`, 'i').test(transcript)
+  //     );
+
+  //     if (hasWakeWord) {
+  //       if (this.enableLogs) {
+  //         console.log(`🔊 Wake word detectada: "${transcript}"`);
+  //         this.logger.log(`🔊 Wake word detectada: "${transcript}"`);
+  //       }
+
+  //       const command = transcript.replace(
+  //         /^(hola\s+|oye\s+|hey\s+|eh\s+)?(voz|asistente)\s*/i,
+  //         ''
+  //       ).trim();
+
+  //       const isJustHola = transcript === 'hola' || transcript === 'hola hola';
+        
+  //       if (isJustHola) {
+  //         if (this.enableLogs) {
+  //           this.logger.log('👋 Saludo detectado: "hola"');
+  //         }
+  //         if (this.isMuted) {
+  //           const ahora = Date.now();
+  //           if (ahora - this.lastWakeWordTime > this.WAKE_DEBOUNCE_TIME) {
+  //             this.lastWakeWordTime = ahora;
+  //             this.unmute();
+  //             this.wakeWordSubject.next(transcript);
+  //           } else {
+  //             if (this.enableLogs) {
+  //               this.logger.log('⏳ Saludo ignorado por debounce (demasiado rápido)');
+  //             }
+  //           }
+  //         }
+  //         return;
+  //       }
+
+  //       if (this.isMuted) {
+  //         if (this.enableLogs) {
+  //           this.logger.log('🔊 Wake word detectada, activando micrófono');
+  //         }
+  //         this.unmute();
+  //         this.wakeWordSubject.next(transcript);
+
+  //         if (command.length > 0) {
+  //           if (this.enableLogs) {
+  //             this.logger.log(`📤 Comando extraído: "${command}"`);
+  //           }
+  //           setTimeout(() => {
+  //             this.transcriptSubject.next(command);
+  //             // 🔥 Emisión con isFinal
+  //             this.transcriptWithFinalSubject.next({ text: command, isFinal: result.isFinal });
+  //           }, 150);
+  //         }
+  //         return;
+  //       }
+
+  //       if (command.length > 0) {
+  //         if (this.enableLogs) {
+  //           this.logger.log(`✅ Comando procesado (con wake word): "${command}"`);
+  //         }
+  //         this.transcriptSubject.next(command);
+  //         // 🔥 Emisión con isFinal
+  //         this.transcriptWithFinalSubject.next({ text: command, isFinal: result.isFinal });
+  //       }
+  //       return;
+  //     }
+
+  //     // SI ESTÁ MUTEADO Y NO HAY WAKE WORD, IGNORAR (CON LISTA DE EXCEPCIONES)
+  //     if (this.isMuted) {
+  //       const allowedWhenMuted = [
+  //         'ayuda', 'help',
+  //         'código', 'codigo',
+  //         'verificar', 'validar',
+  //         'leer',
+  //         'mostrar',
+  //         'registrar',
+  //         'hola',
+  //         'asistente',
+  //         'volver', 'atrás', 'regresar', 'back'
+  //       ];
+        
+  //       const isAllowed = allowedWhenMuted.some(cmd => 
+  //         transcript === cmd || transcript.includes(cmd)
+  //       );
+        
+  //       if (!isAllowed) {
+  //         if (this.enableLogs) {
+  //           this.logger.debug(`🔇 Muteado, ignorando: "${transcript}"`);
+  //         }
+  //         return;
+  //       }
+  //     }
+
+  //     // ============================================================
+  //     // 🔥 FILTROS DE RUIDO AVANZADOS (CON EXCEPCIÓN PARA NÚMEROS)
+  //     // ============================================================
+  //     const shortValidCommands2 = ['hola', 'leer', 'ayuda', 'login', 'back', 'help', 'si', 'no', 'ok', 'vale', 'fin', 'ir'];
+  //     const numberWords = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+  //     const hasNumberWord = numberWords.some(w => transcript.includes(w));
+
+  //     if (shortValidCommands2.includes(transcript) || /\d/.test(transcript) || hasNumberWord) {
+  //       // Dejamos pasar sin aplicar más filtros
+  //     } else {
+  //       if (!transcript || transcript.length < 4) {
+  //         if (this.enableLogs) {
+  //           this.logger.debug(`⏭️ Muy corto: "${transcript}"`);
+  //         }
+  //         return;
+  //       }
+
+  //       if (!/[aeiouáéíóú]/.test(transcript)) {
+  //         if (this.enableLogs) {
+  //           this.logger.debug(`⏭️ Sin vocales: "${transcript}"`);
+  //         }
+  //         return;
+  //       }
+
+  //       const vowels = transcript.match(/[aeiouáéíóú]/g) || [];
+  //       if (new Set(vowels).size < 2) {
+  //         if (this.enableLogs) {
+  //           this.logger.debug(`⏭️ Muy pocas vocales: "${transcript}"`);
+  //         }
+  //         return;
+  //       }
+  //     }
+
+  //     // PROCESAR COMANDOS
+  //     const filterResult = this.filterService.filterTranscript(
+  //       transcript,
+  //       this.isMuted
+  //     );
+
+  //     if (!filterResult.valid) {
+  //       if (this.enableLogs) {
+  //         this.logger.debug(
+  //           `⏭️ Ignorado (${filterResult.reason}): "${transcript}"`
+  //         );
+  //       }
+  //       return;
+  //     }
+
+  //     const knownCommands = [
+  //       'login', 'iniciar', 'acceder', 'entrar', 'quienes', 'somos',
+  //       'acerca', 'ayuda', 'opciones', 'silenciar', 'activar',
+  //       'atrás', 'volver', 'cerrar', 'salir', 'back',
+  //       'usuario', 'contraseña', 'enviar', 'limpiar',
+  //       'clave', 'password', 'pass', 'user',
+  //       'nombre', 'email', 'correo', 'confirmar',
+  //       'nombre propio', 'apellidos', 'registrar',
+  //       'fullname', 'lastname',
+  //       'código', 'codigo', 'verificar', 'validar',
+  //       'confirmar código', 'leer', 'mostrar', 'aceptar',
+  //       'fin', 'recuperar', 
+  //       'olvidé',
+  //       'privacidad', 'condiciones', 'términos'  
+  //     ];
+
+  //     const hasCommand = knownCommands.some(cmd =>
+  //       transcript.includes(cmd)
+  //     );
+
+  //     if (!hasCommand && transcript.split(' ').length < 2) {
+  //       if (this.enableLogs) {
+  //         this.logger.debug(`⏭️ Sin comando conocido: "${transcript}"`);
+  //       }
+  //       return;
+  //     }
+
+  //     if (this.enableLogs) {
+  //       this.logger.log('✅ Comando procesado:', transcript);
+  //     }
+
+  //     // Emisión principal
+  //     this.transcriptSubject.next(transcript);
+  //     // 🔥 Emisión con isFinal
+  //     this.transcriptWithFinalSubject.next({ text: transcript, isFinal: result.isFinal });
+  //   });
+  // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   private handleResult(event: SpeechRecognitionEvent): void {
-    if (!event.results || event.results.length === 0) return;
-
-    const result = event.results[event.results.length - 1];
-    if (!result || !result[0]) return;
-
-    const transcript = result[0].transcript.toLowerCase().trim();
-
-    if (this.enableLogs) {
-      console.log('🎤 Reconocido:', transcript, 'Final:', result.isFinal);
-    }
-
-    // ============================================================
-    // 🔥 FILTRAR RESULTADOS PARCIALES (SOLO WAKE WORDS Y NÚMEROS)
-    // ============================================================
-    if (!result.isFinal) {
-      const hasWakeWord = this.WAKE_WORDS.some(w => 
-        transcript.includes(w) || transcript === w
-      );
-      const hasDigits = /\d/.test(transcript);
-      const numberWords = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
-      const hasNumberWord = numberWords.some(w => transcript.includes(w));
-
-      // ✅ PALABRAS CLAVE DE CAMPOS DE FORMULARIO (GLOBAL)
-      const keyCommands = [
-        'usuario', 'contraseña', 'clave', 'password', 'pass',
-        'nombre', 'email', 'correo', 'apellidos', 'fullname',
-        'confirmar', 'registrar', 'recuperar',
-        'privacidad', 'condiciones'
-      ];
-      const hasKeyCommand = keyCommands.some(w => 
-        transcript === w || transcript.includes(w)
-      );
-
-      if (hasWakeWord) {
-        if (this.enableLogs) {
-          console.log(`🔊 Wake word parcial detectada: "${transcript}"`);
+  // ✅ IGNORAR SI EL SISTEMA ESTÁ HABLANDO (PERO NO SI ES "hola")
+  if (window.speechSynthesis.speaking) {
+    // Intentar obtener el transcript para verificar si es "hola"
+    try {
+      const result = event.results[event.results.length - 1];
+      if (result && result[0]) {
+        const transcript = result[0].transcript.toLowerCase().trim();
+        // ✅ PERMITIR "hola" incluso si el sistema está hablando
+        if (transcript === 'hola' || transcript.includes('hola')) {
+          console.log('🔊 [VoiceService] "hola" detectado durante el habla, procesando...');
+          // No retornar, continuar con el procesamiento
+        } else {
+          console.log('🔇 [VoiceService] Sistema hablando, ignorando resultado');
+          return;
         }
-        this.processWakeWord(transcript);
-      } else if (hasDigits || hasNumberWord || hasKeyCommand) {
-        if (this.enableLogs) {
-          console.log(`🔢 Resultado parcial (numérico o comando clave): "${transcript}"`);
-        }
-        // Continúa al procesamiento normal (NO retorna)
       } else {
-        if (this.enableLogs) {
-          console.log(`⏳ Resultado parcial ignorado: "${transcript}"`);
-        }
+        console.log('🔇 [VoiceService] Sistema hablando, ignorando resultado');
         return;
       }
-    }
-
-    // ============================================================
-    // A PARTIR DE AQUÍ, TODOS LOS RESULTADOS (PARCIALES Y FINALES)
-    // ============================================================
-
-    // FILTRO DE RUIDO DE TECLADO/MOUSE
-    const noisePatterns = [
-      /^[a-z]$/i,
-      /^[a-z]{1,3}$/i,
-      /^(click|clic|tick|tac|clap|tap|pop|beep)$/i,
-      /^[cC][lL][iI][cC][kK]/,
-      /^[tT][iI][cC]/,
-      /^[cC][lL][aA][pP]/,
-      /^[mM][oO][uU][sS][eE]/,
-      /^[kK][eE][yY]/,
-      /^[a-zA-Z]\s+[a-zA-Z]$/,
-      /^[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]$/,
-      /^[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]$/,
-    ];
-
-    const shortValidCommands = ['hola', 'leer', 'ayuda', 'login', 'back', 'help', 'si', 'no', 'ok', 'vale', 'fin', 'ir'];
-
-    if (!shortValidCommands.includes(transcript) && noisePatterns.some(pattern => pattern.test(transcript))) {
-      if (this.enableLogs) {
-        console.log(`⏭️ Ruido de teclado/mouse ignorado: "${transcript}"`);
-      }
+    } catch {
+      console.log('🔇 [VoiceService] Sistema hablando, ignorando resultado');
       return;
     }
+  }
 
-    // FILTRO PARA EVITAR DUPLICADOS (CON EXCEPCIÓN PARA DÍGITOS Y NÚMEROS)
-    const now = Date.now();
-    const validCommands = [
-      'login', 'acerca', 'hola', 'asistente', 'silenciar', 'activar',
-      'ayuda', 'código', 'verificar', 'volver', 'atrás', 'regresar', 'cancelar',
-      'usuario', 'nombre', 'email', 'correo',
-      'contraseña', 'clave', 'password', 'pass',
-      'enviar', 'logear', 'acceder', 'entrar', 'ingresar',
-      'limpiar', 'borrar', 'resetear',
-      'mostrar', 'ocultar', 'ver',
-      'registro', 'registrar', 'recuperar', 'olvidé',  
-      'privacidad', 'condiciones', 'términos',
-      'fin', 'listo', 'terminar', 'finalizar', 'ok', 'vale', 'hecho',
-      'completar', 'cancel', 'abortar',
-      'confirmar', 'confirm', 'aceptar', 'validar',
-      'leer', 'información',
-      'iniciar sesion',    
-      'inicio de sesion',
-      'privacidad', 'condiciones', 'términos',   
-    ];
+  if (!event.results || event.results.length === 0) return;
 
-    const isValidCommand = validCommands.some(cmd => transcript.includes(cmd));
+  const result = event.results[event.results.length - 1];
+  if (!result || !result[0]) return;
 
-    // 🔥 EXCEPCIÓN: si el texto contiene dígitos o palabras numéricas, NO aplicar control de duplicados
+  const transcript = result[0].transcript.toLowerCase().trim();
+
+  // ❌ ELIMINAR ESTO COMPLETAMENTE:
+  // if (SYSTEM_PHRASES_LOWER.some(phrase => transcript.includes(phrase))) {
+  //   console.log('🔇 [VoiceService] Frase del sistema detectada, ignorando:', transcript);
+  //   return;
+  // }
+
+  if (this.enableLogs) {
+    console.log('🎤 Reconocido:', transcript, 'Final:', result.isFinal);
+  }
+
+  // ============================================================
+  // 🔥 FILTRAR RESULTADOS PARCIALES (SOLO WAKE WORDS Y NÚMEROS)
+  // ============================================================
+  if (!result.isFinal) {
+    const hasWakeWord = this.WAKE_WORDS.some(w => 
+      transcript.includes(w) || transcript === w
+    );
     const hasDigits = /\d/.test(transcript);
     const numberWords = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
     const hasNumberWord = numberWords.some(w => transcript.includes(w));
 
-    if (!isValidCommand && !hasDigits && !hasNumberWord && transcript === this.lastProcessedTranscript && now - this.lastProcessedTime < 3000) {
+    // ✅ PALABRAS CLAVE DE CAMPOS DE FORMULARIO (GLOBAL)
+    const keyCommands = [
+      'usuario', 'contraseña', 'clave', 'password', 'pass',
+      'nombre', 'email', 'correo', 'apellidos', 'fullname',
+      'confirmar', 'registrar', 'recuperar',
+      'privacidad', 'condiciones'
+    ];
+    const hasKeyCommand = keyCommands.some(w => 
+      transcript === w || transcript.includes(w)
+    );
+
+    if (hasWakeWord) {
       if (this.enableLogs) {
-        console.log(`⏭️ Comando duplicado ignorado: "${transcript}"`);
+        console.log(`🔊 Wake word parcial detectada: "${transcript}"`);
+      }
+      this.processWakeWord(transcript);
+    } else if (hasDigits || hasNumberWord || hasKeyCommand) {
+      if (this.enableLogs) {
+        console.log(`🔢 Resultado parcial (numérico o comando clave): "${transcript}"`);
+      }
+      // Continúa al procesamiento normal (NO retorna)
+    } else {
+      if (this.enableLogs) {
+        console.log(`⏳ Resultado parcial ignorado: "${transcript}"`);
       }
       return;
     }
-    this.lastProcessedTranscript = transcript;
-    this.lastProcessedTime = now;
+  }
 
-    this.ngZone.run(() => {
+  // ============================================================
+  // A PARTIR DE AQUÍ, TODOS LOS RESULTADOS (PARCIALES Y FINALES)
+  // ============================================================
 
-      // COMANDOS DIRECTOS (SILENCIAR MICRÓFONO)
-      const lower = transcript.toLowerCase();
-      if (/\bsilenciar\b/.test(lower) || 
-          lower.includes('silenciar micrófono') || 
-          lower.includes('silenciar micro') || 
-          lower.includes('silencia micrófono')) {
-        if (!this.isMuted) {
-          this.mute();
-          if (this.enableLogs) this.logger.log('🔇 Silenciado por comando de voz');
-        } else {
-          if (this.enableLogs) this.logger.log('ℹ️ Micrófono ya está muteado');
+  // FILTRO DE RUIDO DE TECLADO/MOUSE
+  const noisePatterns = [
+    /^[a-z]$/i,
+    /^[a-z]{1,3}$/i,
+    /^(click|clic|tick|tac|clap|tap|pop|beep)$/i,
+    /^[cC][lL][iI][cC][kK]/,
+    /^[tT][iI][cC]/,
+    /^[cC][lL][aA][pP]/,
+    /^[mM][oO][uU][sS][eE]/,
+    /^[kK][eE][yY]/,
+    /^[a-zA-Z]\s+[a-zA-Z]$/,
+    /^[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]$/,
+    /^[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]\s+[a-zA-Z]$/,
+  ];
+
+  const shortValidCommands = ['hola', 'leer', 'ayuda', 'login', 'back', 'help', 'si', 'no', 'ok', 'vale', 'fin', 'ir'];
+
+  if (!shortValidCommands.includes(transcript) && noisePatterns.some(pattern => pattern.test(transcript))) {
+    if (this.enableLogs) {
+      console.log(`⏭️ Ruido de teclado/mouse ignorado: "${transcript}"`);
+    }
+    return;
+  }
+
+  // FILTRO PARA EVITAR DUPLICADOS (CON EXCEPCIÓN PARA DÍGITOS Y NÚMEROS)
+  const now = Date.now();
+  const validCommands = [
+    'login', 'acerca', 'hola', 'asistente', 'silenciar', 'activar',
+    'ayuda', 'código', 'verificar', 'volver', 'atrás', 'regresar', 'cancelar',
+    'usuario', 'nombre', 'email', 'correo',
+    'contraseña', 'clave', 'password', 'pass',
+    'enviar', 'logear', 'acceder', 'entrar', 'ingresar',
+    'limpiar', 'borrar', 'resetear',
+    'mostrar', 'ocultar', 'ver',
+    'registro', 'registrar', 'recuperar', 'olvidé',  
+    'privacidad', 'condiciones', 'términos',
+    'fin', 'listo', 'terminar', 'finalizar', 'ok', 'vale', 'hecho',
+    'completar', 'cancel', 'abortar',
+    'confirmar', 'confirm', 'aceptar', 'validar',
+    'leer', 'información',
+    'iniciar sesion',    
+    'inicio de sesion',
+    'privacidad', 'condiciones', 'términos',   
+  ];
+
+  const isValidCommand = validCommands.some(cmd => transcript.includes(cmd));
+
+  // 🔥 EXCEPCIÓN: si el texto contiene dígitos o palabras numéricas, NO aplicar control de duplicados
+  const hasDigits = /\d/.test(transcript);
+  const numberWords = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+  const hasNumberWord = numberWords.some(w => transcript.includes(w));
+
+  if (!isValidCommand && !hasDigits && !hasNumberWord && transcript === this.lastProcessedTranscript && now - this.lastProcessedTime < 3000) {
+    if (this.enableLogs) {
+      console.log(`⏭️ Comando duplicado ignorado: "${transcript}"`);
+    }
+    return;
+  }
+  this.lastProcessedTranscript = transcript;
+  this.lastProcessedTime = now;
+
+  this.ngZone.run(() => {
+
+    // COMANDOS DIRECTOS (SILENCIAR MICRÓFONO)
+    const lower = transcript.toLowerCase();
+    if (/\bsilenciar\b/.test(lower) || 
+        lower.includes('silenciar micrófono') || 
+        lower.includes('silenciar micro') || 
+        lower.includes('silencia micrófono')) {
+      if (!this.isMuted) {
+        this.mute();
+        if (this.enableLogs) this.logger.log('🔇 Silenciado por comando de voz');
+      } else {
+        if (this.enableLogs) this.logger.log('ℹ️ Micrófono ya está muteado');
+      }
+      return;
+    }
+
+    // WAKE WORD DETECTION (hola / asistente)
+    const hasWakeWord = this.WAKE_WORDS.some(w =>
+      new RegExp(`\\b${w}\\b`, 'i').test(transcript)
+    );
+
+    if (hasWakeWord) {
+      if (this.enableLogs) {
+        console.log(`🔊 Wake word detectada: "${transcript}"`);
+        this.logger.log(`🔊 Wake word detectada: "${transcript}"`);
+      }
+
+      const command = transcript.replace(
+        /^(hola\s+|oye\s+|hey\s+|eh\s+)?(voz|asistente)\s*/i,
+        ''
+      ).trim();
+
+      const isJustHola = transcript === 'hola' || transcript === 'hola hola';
+      
+      if (isJustHola) {
+        if (this.enableLogs) {
+          this.logger.log('👋 Saludo detectado: "hola"');
+        }
+        if (this.isMuted) {
+          const ahora = Date.now();
+          if (ahora - this.lastWakeWordTime > this.WAKE_DEBOUNCE_TIME) {
+            this.lastWakeWordTime = ahora;
+            this.unmute();
+            this.wakeWordSubject.next(transcript);
+          } else {
+            if (this.enableLogs) {
+              this.logger.log('⏳ Saludo ignorado por debounce (demasiado rápido)');
+            }
+          }
         }
         return;
       }
 
-      // WAKE WORD DETECTION (hola / asistente)
-      const hasWakeWord = this.WAKE_WORDS.some(w =>
-        new RegExp(`\\b${w}\\b`, 'i').test(transcript)
-      );
-
-      if (hasWakeWord) {
+      if (this.isMuted) {
         if (this.enableLogs) {
-          console.log(`🔊 Wake word detectada: "${transcript}"`);
-          this.logger.log(`🔊 Wake word detectada: "${transcript}"`);
+          this.logger.log('🔊 Wake word detectada, activando micrófono');
         }
-
-        const command = transcript.replace(
-          /^(hola\s+|oye\s+|hey\s+|eh\s+)?(voz|asistente)\s*/i,
-          ''
-        ).trim();
-
-        const isJustHola = transcript === 'hola' || transcript === 'hola hola';
-        
-        if (isJustHola) {
-          if (this.enableLogs) {
-            this.logger.log('👋 Saludo detectado: "hola"');
-          }
-          if (this.isMuted) {
-            const ahora = Date.now();
-            if (ahora - this.lastWakeWordTime > this.WAKE_DEBOUNCE_TIME) {
-              this.lastWakeWordTime = ahora;
-              this.unmute();
-              this.wakeWordSubject.next(transcript);
-            } else {
-              if (this.enableLogs) {
-                this.logger.log('⏳ Saludo ignorado por debounce (demasiado rápido)');
-              }
-            }
-          }
-          return;
-        }
-
-        if (this.isMuted) {
-          if (this.enableLogs) {
-            this.logger.log('🔊 Wake word detectada, activando micrófono');
-          }
-          this.unmute();
-          this.wakeWordSubject.next(transcript);
-
-          if (command.length > 0) {
-            if (this.enableLogs) {
-              this.logger.log(`📤 Comando extraído: "${command}"`);
-            }
-            setTimeout(() => {
-              this.transcriptSubject.next(command);
-              // 🔥 Emisión con isFinal
-              this.transcriptWithFinalSubject.next({ text: command, isFinal: result.isFinal });
-            }, 150);
-          }
-          return;
-        }
+        this.unmute();
+        this.wakeWordSubject.next(transcript);
 
         if (command.length > 0) {
           if (this.enableLogs) {
-            this.logger.log(`✅ Comando procesado (con wake word): "${command}"`);
+            this.logger.log(`📤 Comando extraído: "${command}"`);
           }
-          this.transcriptSubject.next(command);
-          // 🔥 Emisión con isFinal
-          this.transcriptWithFinalSubject.next({ text: command, isFinal: result.isFinal });
+          setTimeout(() => {
+            this.transcriptSubject.next(command);
+            this.transcriptWithFinalSubject.next({ text: command, isFinal: result.isFinal });
+          }, 150);
         }
         return;
       }
 
-      // SI ESTÁ MUTEADO Y NO HAY WAKE WORD, IGNORAR (CON LISTA DE EXCEPCIONES)
-      if (this.isMuted) {
-        const allowedWhenMuted = [
-          'ayuda', 'help',
-          'código', 'codigo',
-          'verificar', 'validar',
-          'leer',
-          'mostrar',
-          'registrar',
-          'hola',
-          'asistente',
-          'volver', 'atrás', 'regresar', 'back'
-        ];
-        
-        const isAllowed = allowedWhenMuted.some(cmd => 
-          transcript === cmd || transcript.includes(cmd)
-        );
-        
-        if (!isAllowed) {
-          if (this.enableLogs) {
-            this.logger.debug(`🔇 Muteado, ignorando: "${transcript}"`);
-          }
-          return;
-        }
-      }
-
-      // ============================================================
-      // 🔥 FILTROS DE RUIDO AVANZADOS (CON EXCEPCIÓN PARA NÚMEROS)
-      // ============================================================
-      const shortValidCommands2 = ['hola', 'leer', 'ayuda', 'login', 'back', 'help', 'si', 'no', 'ok', 'vale', 'fin', 'ir'];
-      const numberWords = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
-      const hasNumberWord = numberWords.some(w => transcript.includes(w));
-
-      if (shortValidCommands2.includes(transcript) || /\d/.test(transcript) || hasNumberWord) {
-        // Dejamos pasar sin aplicar más filtros
-      } else {
-        if (!transcript || transcript.length < 4) {
-          if (this.enableLogs) {
-            this.logger.debug(`⏭️ Muy corto: "${transcript}"`);
-          }
-          return;
-        }
-
-        if (!/[aeiouáéíóú]/.test(transcript)) {
-          if (this.enableLogs) {
-            this.logger.debug(`⏭️ Sin vocales: "${transcript}"`);
-          }
-          return;
-        }
-
-        const vowels = transcript.match(/[aeiouáéíóú]/g) || [];
-        if (new Set(vowels).size < 2) {
-          if (this.enableLogs) {
-            this.logger.debug(`⏭️ Muy pocas vocales: "${transcript}"`);
-          }
-          return;
-        }
-      }
-
-      // PROCESAR COMANDOS
-      const filterResult = this.filterService.filterTranscript(
-        transcript,
-        this.isMuted
-      );
-
-      if (!filterResult.valid) {
+      if (command.length > 0) {
         if (this.enableLogs) {
-          this.logger.debug(
-            `⏭️ Ignorado (${filterResult.reason}): "${transcript}"`
-          );
+          this.logger.log(`✅ Comando procesado (con wake word): "${command}"`);
         }
-        return;
+        this.transcriptSubject.next(command);
+        this.transcriptWithFinalSubject.next({ text: command, isFinal: result.isFinal });
       }
+      return;
+    }
 
-      const knownCommands = [
-        'login', 'iniciar', 'acceder', 'entrar', 'quienes', 'somos',
-        'acerca', 'ayuda', 'opciones', 'silenciar', 'activar',
-        'atrás', 'volver', 'cerrar', 'salir', 'back',
-        'usuario', 'contraseña', 'enviar', 'limpiar',
-        'clave', 'password', 'pass', 'user',
-        'nombre', 'email', 'correo', 'confirmar',
-        'nombre propio', 'apellidos', 'registrar',
-        'fullname', 'lastname',
-        'código', 'codigo', 'verificar', 'validar',
-        'confirmar código', 'leer', 'mostrar', 'aceptar',
-        'fin', 'recuperar', 
-        'olvidé',
-        'privacidad', 'condiciones', 'términos'  
+    // SI ESTÁ MUTEADO Y NO HAY WAKE WORD, IGNORAR (CON LISTA DE EXCEPCIONES)
+    if (this.isMuted) {
+      const allowedWhenMuted = [
+        'ayuda', 'help',
+        'código', 'codigo',
+        'verificar', 'validar',
+        'leer',
+        'mostrar',
+        'registrar',
+        'hola',
+        'asistente',
+        'volver', 'atrás', 'regresar', 'back'
       ];
-
-      const hasCommand = knownCommands.some(cmd =>
-        transcript.includes(cmd)
+      
+      const isAllowed = allowedWhenMuted.some(cmd => 
+        transcript === cmd || transcript.includes(cmd)
       );
-
-      if (!hasCommand && transcript.split(' ').length < 2) {
+      
+      if (!isAllowed) {
         if (this.enableLogs) {
-          this.logger.debug(`⏭️ Sin comando conocido: "${transcript}"`);
+          this.logger.debug(`🔇 Muteado, ignorando: "${transcript}"`);
+        }
+        return;
+      }
+    }
+
+    // ============================================================
+    // 🔥 FILTROS DE RUIDO AVANZADOS (CON EXCEPCIÓN PARA NÚMEROS)
+    // ============================================================
+    const shortValidCommands2 = ['hola', 'leer', 'ayuda', 'login', 'back', 'help', 'si', 'no', 'ok', 'vale', 'fin', 'ir'];
+    const numberWords = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+    const hasNumberWord = numberWords.some(w => transcript.includes(w));
+
+    if (shortValidCommands2.includes(transcript) || /\d/.test(transcript) || hasNumberWord) {
+      // Dejamos pasar sin aplicar más filtros
+    } else {
+      if (!transcript || transcript.length < 4) {
+        if (this.enableLogs) {
+          this.logger.debug(`⏭️ Muy corto: "${transcript}"`);
         }
         return;
       }
 
-      if (this.enableLogs) {
-        this.logger.log('✅ Comando procesado:', transcript);
+      if (!/[aeiouáéíóú]/.test(transcript)) {
+        if (this.enableLogs) {
+          this.logger.debug(`⏭️ Sin vocales: "${transcript}"`);
+        }
+        return;
       }
 
-      // Emisión principal
-      this.transcriptSubject.next(transcript);
-      // 🔥 Emisión con isFinal
-      this.transcriptWithFinalSubject.next({ text: transcript, isFinal: result.isFinal });
-    });
-  }
+      const vowels = transcript.match(/[aeiouáéíóú]/g) || [];
+      if (new Set(vowels).size < 2) {
+        if (this.enableLogs) {
+          this.logger.debug(`⏭️ Muy pocas vocales: "${transcript}"`);
+        }
+        return;
+      }
+    }
+
+    // PROCESAR COMANDOS
+    const filterResult = this.filterService.filterTranscript(
+      transcript,
+      this.isMuted
+    );
+
+    if (!filterResult.valid) {
+      if (this.enableLogs) {
+        this.logger.debug(
+          `⏭️ Ignorado (${filterResult.reason}): "${transcript}"`
+        );
+      }
+      return;
+    }
+
+    const knownCommands = [
+      'login', 'iniciar', 'acceder', 'entrar', 'quienes', 'somos',
+      'acerca', 'ayuda', 'opciones', 'silenciar', 'activar',
+      'atrás', 'volver', 'cerrar', 'salir', 'back',
+      'usuario', 'contraseña', 'enviar', 'limpiar',
+      'clave', 'password', 'pass', 'user',
+      'nombre', 'email', 'correo', 'confirmar',
+      'nombre propio', 'apellidos', 'registrar',
+      'fullname', 'lastname',
+      'código', 'codigo', 'verificar', 'validar',
+      'confirmar código', 'leer', 'mostrar', 'aceptar',
+      'fin', 'recuperar', 
+      'olvidé',
+      'privacidad', 'condiciones', 'términos'  
+    ];
+
+    const hasCommand = knownCommands.some(cmd =>
+      transcript.includes(cmd)
+    );
+
+    if (!hasCommand && transcript.split(' ').length < 2) {
+      if (this.enableLogs) {
+        this.logger.debug(`⏭️ Sin comando conocido: "${transcript}"`);
+      }
+      return;
+    }
+
+    if (this.enableLogs) {
+      this.logger.log('✅ Comando procesado:', transcript);
+    }
+
+    // Emisión principal
+    this.transcriptSubject.next(transcript);
+    this.transcriptWithFinalSubject.next({ text: transcript, isFinal: result.isFinal });
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ============================================================
   // 🔥 NUEVO MÉTODO: Procesar wake word parcial
@@ -1777,6 +2226,45 @@ export class VoiceService implements OnDestroy {
 
 
 
+  // private handleEnd(): void {
+  //   console.log('🔍 [VoiceService] handleEnd:', {
+  //     isListening: this.isListening,
+  //     isStarting: this.isStarting,
+  //     recognitionActive: this.recognitionActive,
+  //     timestamp: new Date().toISOString()
+  //   });
+    
+  //   // ✅ RESETEAR isStarting (¡CLAVE!)
+  //   this.isStarting = false;
+    
+  //   if (this.enableLogs) {
+  //     this.logger.log('🔴 Reconocimiento finalizado');
+  //   }
+    
+  //   this.recognitionActive = false;
+  //   this.readySubject.next(false);
+  //   this.listeningSubject.next(false);
+    
+  //   if (this.isListening && !this.isStarting) {
+  //     if (this.enableLogs) {
+  //       this.logger.log('🔄 Reiniciando reconocimiento...');
+  //     }
+  //     this.restartCount++;
+  //     console.log(`🔍 [VoiceService] → Llamando a restart() (#${this.restartCount}) (auto-restart)`);
+      
+  //     this.autoRestartSubject.next(true);
+  //     this.restart();
+      
+  //     setTimeout(() => {
+  //       this.autoRestartSubject.next(false);
+  //       console.log('🔍 [VoiceService] → autoRestartSubject resetado a false');
+  //     }, 1000);
+  //   }
+  // }
+
+
+
+
   private handleEnd(): void {
     console.log('🔍 [VoiceService] handleEnd:', {
       isListening: this.isListening,
@@ -1785,8 +2273,8 @@ export class VoiceService implements OnDestroy {
       timestamp: new Date().toISOString()
     });
     
-    // ✅ RESETEAR isStarting (¡CLAVE!)
     this.isStarting = false;
+    this.isListening = false; // ✅ NUEVO (importante)
     
     if (this.enableLogs) {
       this.logger.log('🔴 Reconocimiento finalizado');
@@ -1812,6 +2300,9 @@ export class VoiceService implements OnDestroy {
       }, 1000);
     }
   }
+
+
+
 
   private restart(): void {
     console.log('🔍 [VoiceService] restart() llamado:', {
@@ -1856,11 +2347,124 @@ export class VoiceService implements OnDestroy {
     }
   }
 
+
+  
+  /**
+   * Detecta si hay auriculares conectados al dispositivo
+   */
+  private async isHeadphonesConnected(): Promise<boolean> {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        return false;
+      }
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
+      
+      // ✅ SOLO confiar en la etiqueta, NO en el número de dispositivos
+      const keywords = ['headphone', 'earphone', 'headset', 'auricular', 'bluetooth'];
+      const hasHeadphones = audioOutputs.some(d => {
+        if (!d.label) return false;
+        const labelLower = d.label.toLowerCase();
+        return keywords.some(keyword => labelLower.includes(keyword));
+      });
+      
+      console.log('🔍 [VoiceService] Audio outputs:', audioOutputs.length);
+      audioOutputs.forEach(d => console.log('  -', d.label));
+      console.log('🔍 [VoiceService] ¿Tiene auriculares?', hasHeadphones);
+      
+      return hasHeadphones;
+    } catch (error) {
+      console.error('❌ [VoiceService] Error:', error);
+      return false;
+    }
+  }
+
+
+
+
+  /**
+   * Verifica auriculares al inicio y avisa si no hay
+   */
+  private async checkHeadphonesOnStart(): Promise<void> {
+    const hasHeadphones = await this.isHeadphonesConnected();
+    if (!hasHeadphones) {
+      console.log('🔇 [VoiceService] No hay auriculares al inicio');
+      this.speakAlways('Bienvenido a VozAcción. Para usar los comandos de voz, necesitas conectar auriculares. El micrófono permanecerá desactivado hasta que los conectes.');
+    }
+  }
+
+
+
+
   // ============================================================
   // CONTROL DEL MICRÓFONO
   // ============================================================
 
-  startListening(): void {
+  // startListening(): void {
+  //   console.log('🔍 [VoiceService] startListening() llamado:', {
+  //     isStarting: this.isStarting,
+  //     recognitionActive: this.recognitionActive,
+  //     isMuted: this.isMuted,
+  //     timestamp: new Date().toISOString()
+  //   });
+    
+  //   if (this.isStarting) {
+  //     this.logger.log('🎤 Inicio en curso, omitiendo');
+  //     return;
+  //   }
+
+  //   if (this.recognitionActive) {
+  //     this.logger.log('🎤 Reconocimiento ya activo');
+  //     return;
+  //   }
+
+  //   if (!this.recognition) {
+  //     this.logger.error('Speech recognition no disponible');
+  //     this.errorSubject.next('Speech recognition no disponible');
+  //     return;
+  //   }
+
+  //   this.isStarting = true;
+
+  //   // Emitir listeningSubject para la UI (cambio visual inmediato)
+  //   this.listeningSubject.next(true);
+  //   // NO emitir readySubject aquí (se hará en onstart)
+
+  //   try {
+  //     if (this.reconnectTimeout) {
+  //       clearTimeout(this.reconnectTimeout);
+  //       this.reconnectTimeout = null;
+  //     }
+
+  //     this.recognition.start();
+  //     // readySubject se emitirá en onstart cuando el hardware esté listo
+  //   } catch (e: any) {
+  //     this.isStarting = false;
+      
+  //     if (e.name === 'InvalidStateError') {
+  //       this.logger.warn('Reconocimiento ya iniciado, reiniciando...');
+  //       this.recognitionActive = true;
+  //       this.isListening = true;
+  //       // Si ya estaba activo, emitimos readySubject
+  //       this.readySubject.next(true);
+  //     } else {
+  //       this.logger.warn('Error al iniciar reconocimiento:', e);
+  //       this.errorSubject.next('Error al activar el micrófono');
+  //       this.listeningSubject.next(false);
+  //       this.readySubject.next(false);
+  //     }
+  //   }
+  // }
+
+
+
+
+
+
+
+
+  async startListening(): Promise<void> {
     console.log('🔍 [VoiceService] startListening() llamado:', {
       isStarting: this.isStarting,
       recognitionActive: this.recognitionActive,
@@ -1868,6 +2472,32 @@ export class VoiceService implements OnDestroy {
       timestamp: new Date().toISOString()
     });
     
+    // ✅ 1. PRIMERO: VERIFICAR AURICULARES
+    const hasHeadphones = await this.isHeadphonesConnected();
+    if (!hasHeadphones) {
+      console.log('🔇 [VoiceService] No hay auriculares conectados');
+      
+      // ✅ Evitar repetición si ya se mostró el mensaje recientemente
+      if (!this.noHeadphonesMessageShown) {
+        this.noHeadphonesMessageShown = true;
+        this.speakAlways('Para usar el reconocimiento de voz, conecta auriculares. El micrófono no se activará hasta que los conectes.');
+        
+        // Resetea la bandera después de 5 segundos
+        if (this.noHeadphonesMessageTimeout) {
+          clearTimeout(this.noHeadphonesMessageTimeout);
+        }
+        this.noHeadphonesMessageTimeout = setTimeout(() => {
+          this.noHeadphonesMessageShown = false;
+          console.log('🔄 [VoiceService] Bandera de mensaje sin auriculares reseteda');
+        }, 5000);
+      } else {
+        console.log('🔇 [VoiceService] Mensaje ya mostrado, omitiendo repetición');
+      }
+      
+      return; // ❌ NO activar micrófono
+    }
+    
+    // ✅ 2. SI HAY AURICULARES, CONTINUAR
     if (this.isStarting) {
       this.logger.log('🎤 Inicio en curso, omitiendo');
       return;
@@ -1885,10 +2515,7 @@ export class VoiceService implements OnDestroy {
     }
 
     this.isStarting = true;
-
-    // Emitir listeningSubject para la UI (cambio visual inmediato)
     this.listeningSubject.next(true);
-    // NO emitir readySubject aquí (se hará en onstart)
 
     try {
       if (this.reconnectTimeout) {
@@ -1897,7 +2524,6 @@ export class VoiceService implements OnDestroy {
       }
 
       this.recognition.start();
-      // readySubject se emitirá en onstart cuando el hardware esté listo
     } catch (e: any) {
       this.isStarting = false;
       
@@ -1905,7 +2531,6 @@ export class VoiceService implements OnDestroy {
         this.logger.warn('Reconocimiento ya iniciado, reiniciando...');
         this.recognitionActive = true;
         this.isListening = true;
-        // Si ya estaba activo, emitimos readySubject
         this.readySubject.next(true);
       } else {
         this.logger.warn('Error al iniciar reconocimiento:', e);
@@ -1916,119 +2541,277 @@ export class VoiceService implements OnDestroy {
     }
   }
 
+
+
+
+
+
+  
   /**
-   * Reinicia completamente el reconocimiento de voz
+   * Monitorea la conexión de auriculares
+   * Si se conectan auriculares, activa el micrófono automáticamente
    */
-  public restartRecognition(): void {
-    console.log('🔄 [VoiceService] Reiniciando reconocimiento...');
-    this.stopListening();
-    setTimeout(() => {
-      this.startListening();
-    }, 300);
-  }
-
-  stopListening(): void {
-    console.log('🔍 [VoiceService] stopListening() llamado:', {
-      isStarting: this.isStarting,
-      recognitionActive: this.recognitionActive,
-      timestamp: new Date().toISOString()
-    });
+  // private monitorHeadphones(): void {
+  //   console.log('🔍 [VoiceService] monitorHeadphones() iniciado');
     
-    this.isStarting = false;
+  //   if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+  //     console.log('⚠️ [VoiceService] No se puede monitorear auriculares en este navegador');
+  //     return;
+  //   }
 
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-      this.reconnectTimeout = null;
+  //   // Verificar cada 5 segundos (más espacio entre comprobaciones)
+  //   setInterval(async () => {
+  //     const hasHeadphones = await this.isHeadphonesConnected();
+      
+  //     // ✅ Si hay auriculares Y el micrófono NO está activo Y estamos muteados
+  //     if (hasHeadphones && !this.recognitionActive && this.isMuted) {
+  //       // ✅ Solo mostrar el mensaje si NO se ha mostrado antes
+  //       if (!this.headphonesMessageShown) {
+  //         console.log('🎧 [VoiceService] Auriculares conectados (primer aviso)');
+  //         this.speakAlways('Micrófono desactivado. Di "hola" para activarlo.');
+  //         this.headphonesMessageShown = true; // Marcar como mostrado
+  //       } else {
+  //         console.log('🔇 [VoiceService] Mensaje ya mostrado, omitiendo repetición');
+  //       }
+  //     } else {
+  //       // ✅ Si ya no hay auriculares o el micrófono se activó, resetear la bandera
+  //       if (this.headphonesMessageShown && (!hasHeadphones || this.recognitionActive)) {
+  //         this.headphonesMessageShown = false;
+  //         console.log('🔄 [VoiceService] Bandera de mensaje reseteda');
+  //       }
+  //     }
+  //   }, 5000); // 🔥 Cambiar a 5 segundos
+  // }
+
+
+
+
+
+
+
+  private monitorHeadphones(): void {
+    console.log('🔍 [VoiceService] monitorHeadphones() iniciado');
+    
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+      console.log('⚠️ [VoiceService] No se puede monitorear auriculares en este navegador');
+      return;
     }
 
-    if (this.recognition && this.recognitionActive) {
-      try {
-        this.recognition.stop();
-        this.recognitionActive = false;
-        this.isListening = false;
-        this.reconnectAttempts = 0;
-        
-        // ✅ Solo emitir false si realmente se detiene
-        this.listeningSubject.next(false);
-        this.readySubject.next(false);
-        
-        if (this.enableLogs) {
-          this.logger.log('🔇 Micrófono desactivado');
+    this.headphonesCheckInterval = setInterval(async () => {
+      const hasHeadphones = await this.isHeadphonesConnected();
+      
+      // ============================================================
+      // 🔥 CASO 1: Auriculares CONECTADOS y micrófono inactivo
+      // ============================================================
+      if (hasHeadphones && !this.recognitionActive && this.isMuted) {
+        if (!this.headphonesMessageShown) {
+          console.log('🎧 [VoiceService] Auriculares conectados (primer aviso)');
+          this.speakAlways('Micrófono desactivado. Di "hola" para activarlo.');
+          this.headphonesMessageShown = true;
+          this.noHeadphonesMessageShown = false; // Resetear bandera de "sin auriculares"
+          console.log('🎤 [VoiceService] Activando micrófono para escuchar "hola" (muteado)');
+          this.startListening();
+        } else {
+          console.log('🔇 [VoiceService] Mensaje ya mostrado, omitiendo repetición');
         }
-      } catch (e) {
-        this.logger.warn('Error al desactivar micrófono:', e);
+      }
+      
+      // ============================================================
+      // 🔥 CASO 2: Auriculares DESCONECTADOS
+      // ============================================================
+      else if (!hasHeadphones) {
+        // ✅ Reseteamos la bandera para que se pueda mostrar el mensaje de "sin auriculares"
+        // si alguien intenta activar el micrófono
+        this.noHeadphonesMessageShown = false;
+        if (this.noHeadphonesMessageTimeout) {
+          clearTimeout(this.noHeadphonesMessageTimeout);
+          this.noHeadphonesMessageTimeout = null;
+        }
+        
+        if (this.headphonesMessageShown || this.recognitionActive) {
+          console.log('🔇 [VoiceService] Auriculares desconectados');
+          if (this.recognitionActive) {
+            this.mute();
+            this.speakAlways('Los auriculares se han desconectado. El micrófono se ha desactivado. Conecta auriculares para usarlo de nuevo.');
+          } else {
+            this.speakAlways('Los auriculares se han desconectado. El micrófono permanece desactivado. Conecta auriculares para usarlo de nuevo.');
+          }
+          this.headphonesMessageShown = false;
+        }
+      }
+      
+      // ============================================================
+      // 🔥 CASO 3: Auriculares CONECTADOS y micrófono activo
+      // ============================================================
+      else if (hasHeadphones && this.recognitionActive) {
+        // ✅ No hacer nada especial, solo mantener la bandera
+        if (this.headphonesMessageShown) {
+          console.log('🔇 [VoiceService] Micrófono activo, no se repite mensaje');
+        }
+      }
+      
+    }, 5000);
+  }
+
+
+
+    /**
+     * Reinicia completamente el reconocimiento de voz
+     */
+    public restartRecognition(): void {
+      console.log('🔄 [VoiceService] Reiniciando reconocimiento...');
+      this.stopListening();
+      setTimeout(() => {
+        this.startListening();
+      }, 300);
+    }
+
+    stopListening(): void {
+      console.log('🔍 [VoiceService] stopListening() llamado:', {
+        isStarting: this.isStarting,
+        recognitionActive: this.recognitionActive,
+        timestamp: new Date().toISOString()
+      });
+      
+      this.isStarting = false;
+
+      if (this.reconnectTimeout) {
+        clearTimeout(this.reconnectTimeout);
+        this.reconnectTimeout = null;
+      }
+
+      if (this.recognition && this.recognitionActive) {
+        try {
+          this.recognition.stop();
+          this.recognitionActive = false;
+          this.isListening = false;
+          this.reconnectAttempts = 0;
+          
+          // ✅ Solo emitir false si realmente se detiene
+          this.listeningSubject.next(false);
+          this.readySubject.next(false);
+          
+          if (this.enableLogs) {
+            this.logger.log('🔇 Micrófono desactivado');
+          }
+        } catch (e) {
+          this.logger.warn('Error al desactivar micrófono:', e);
+          this.recognitionActive = false;
+          this.isListening = false;
+          this.listeningSubject.next(false);
+          this.readySubject.next(false);
+        }
+      } else {
         this.recognitionActive = false;
         this.isListening = false;
         this.listeningSubject.next(false);
         this.readySubject.next(false);
       }
-    } else {
-      this.recognitionActive = false;
-      this.isListening = false;
-      this.listeningSubject.next(false);
-      this.readySubject.next(false);
     }
-  }
 
 
 
 
-  //============================================================
-  /**
-   * Limpia el transcript actual sin abortar el reconocimiento
-   * Esto permite que el micrófono siga escuchando después de la navegación
-   */
-  clearTranscript(): void {
-    console.log('🧹 [VoiceService] Limpiando transcript');
-    // ✅ Limpiar el texto del transcript
-    this.currentTranscript = '';
-    // ✅ Enviar un texto vacío para resetear el subject
-    this.transcriptSubject.next('');
-    console.log('🧹 [VoiceService] Transcript limpiado (reconocimiento activo)');
-  }
+    //============================================================
+    /**
+     * Limpia el transcript actual sin abortar el reconocimiento
+     * Esto permite que el micrófono siga escuchando después de la navegación
+     */
+    clearTranscript(): void {
+      console.log('🧹 [VoiceService] Limpiando transcript');
+      // ✅ Limpiar el texto del transcript
+      this.currentTranscript = '';
+      // ✅ Enviar un texto vacío para resetear el subject
+      this.transcriptSubject.next('');
+      console.log('🧹 [VoiceService] Transcript limpiado (reconocimiento activo)');
+    }
 
 
-  /**
-   * Aborta completamente el reconocimiento (solo para casos extremos)
-   */
-  abortRecognition(): void {
-    console.log('🛑 [VoiceService] Abortando reconocimiento');
-    if (this.recognition) {
-      try {
-        this.recognition.abort();
-      } catch (e) {
-        // Ignorar errores
+    /**
+     * Aborta completamente el reconocimiento (solo para casos extremos)
+     */
+    abortRecognition(): void {
+      console.log('🛑 [VoiceService] Abortando reconocimiento');
+      if (this.recognition) {
+        try {
+          this.recognition.abort();
+        } catch (e) {
+          // Ignorar errores
+        }
       }
     }
-  }
 
-  // ============================================================
-  // MUTE / UNMUTE
-  // ============================================================
+    // ============================================================
+    // MUTE / UNMUTE
+    // ============================================================
 
-  mute(): void {
-    console.log('🔍 [VoiceService] mute() llamado:', {
-      isMuted: this.isMuted,
-      timestamp: new Date().toISOString()
-    });
-    
-    this.isMuted = true;
-    this.mutedSubject.next(true);
-    
-    this.speakAlways('Micrófono desactivado. Di "hola" para activarlo.');
-    
-    if (this.enableLogs) {
-      this.logger.log('🔇 Micrófono desactivado (reconocimiento activo)');
+    mute(): void {
+      console.log('🔍 [VoiceService] mute() llamado:', {
+        isMuted: this.isMuted,
+        timestamp: new Date().toISOString()
+      });
+      
+      this.isMuted = true;
+      this.mutedSubject.next(true);
+      
+      this.speakAlways('Micrófono desactivado. Di "hola" para activarlo.');
+      
+      if (this.enableLogs) {
+        this.logger.log('🔇 Micrófono desactivado (reconocimiento activo)');
+      }
     }
-  }
 
-  unmute(): void {
+
+
+  // unmute(): void {
+  //   console.log('🔍 [VoiceService] unmute() llamado:', {
+  //     isMuted: this.isMuted,
+  //     recognitionActive: this.recognitionActive,
+  //     isListening: this.isListening,
+  //     timestamp: new Date().toISOString()
+  //   });
+    
+  //   if (!this.isMuted) {
+  //     console.log('🎤 Micrófono ya activo');
+  //     return;
+  //   }
+
+  //   console.log('🎤 FORZANDO activación del micrófono');
+
+  //   this.isMuted = false;
+  //   this.mutedSubject.next(false);
+
+  //   if (!this.recognitionActive || !this.isListening) {
+  //     console.log('🔍 [VoiceService] → unmute() llamando a startListening()');
+  //     this.startListening();
+  //     // listeningSubject ya se emite en startListening, no duplicamos
+  //     console.log('🎤 Micrófono reactivado correctamente');
+  //   } else {
+  //     console.log('🎤 Micrófono ya estaba activo');
+  //   }
+  // }
+
+
+
+
+
+
+
+  async unmute(): Promise<void> {
     console.log('🔍 [VoiceService] unmute() llamado:', {
       isMuted: this.isMuted,
       recognitionActive: this.recognitionActive,
       isListening: this.isListening,
       timestamp: new Date().toISOString()
     });
+    
+    // ✅ VERIFICAR AURICULARES
+    const hasHeadphones = await this.isHeadphonesConnected();
+    if (!hasHeadphones) {
+      console.log('🔇 [VoiceService] No hay auriculares, no se puede desmutear');
+      this.speakAlways('No hay auriculares conectados. Conecta auriculares para usar el reconocimiento de voz.');
+      return;
+    }
     
     if (!this.isMuted) {
       console.log('🎤 Micrófono ya activo');
@@ -2043,12 +2826,15 @@ export class VoiceService implements OnDestroy {
     if (!this.recognitionActive || !this.isListening) {
       console.log('🔍 [VoiceService] → unmute() llamando a startListening()');
       this.startListening();
-      // listeningSubject ya se emite en startListening, no duplicamos
       console.log('🎤 Micrófono reactivado correctamente');
     } else {
       console.log('🎤 Micrófono ya estaba activo');
     }
   }
+
+
+
+
 
   toggleMute(): void {
     console.log('🔍 [VoiceService] toggleMute() llamado:', {
@@ -2159,13 +2945,90 @@ export class VoiceService implements OnDestroy {
   }
 
 
+
+
   //
-  speak(
-    text: string, 
-    lang: string = 'es-ES', 
-    rate: number = 0.9, 
-    pitch: number = 1.05
-  ): Promise<void> {
+  // speak(
+  //   text: string, 
+  //   lang: string = 'es-ES', 
+  //   rate: number = 0.9, 
+  //   pitch: number = 1.05
+  // ): Promise<void> {
+  //   console.log('🔍 [VoiceService] speak() llamado:', {
+  //     text: text.substring(0, 50) + '...',
+  //     isMuted: this.isMuted,
+  //     timestamp: new Date().toISOString()
+  //   });
+    
+  //   return new Promise((resolve, reject) => {
+  //     if (this.isMuted) {
+  //       if (this.enableLogs) {
+  //         this.logger.debug(`🔇 Muteado, mensaje ignorado: "${text}"`);
+  //       }
+  //       resolve();
+  //       return;
+  //     }
+
+  //     if (!window.speechSynthesis) {
+  //       this.logger.warn('Speech Synthesis no soportada');
+  //       reject(new Error('Speech Synthesis no soportada'));
+  //       return;
+  //     }
+
+  //     // ✅ SILENCIAR EL MICRÓFONO ANTES DE HABLAR
+  //     const wasListening = this.isListening;
+  //     if (wasListening) {
+  //       console.log('🔍 [VoiceService] → speak() silenciando micrófono durante TTS');
+  //       this.stopListening();
+  //     }
+
+  //     window.speechSynthesis.cancel();
+      
+  //     const utterance = new SpeechSynthesisUtterance(text);
+  //     utterance.lang = lang;
+  //     utterance.rate = rate;
+  //     utterance.pitch = pitch;
+  //     utterance.volume = 1;
+      
+  //     const voice = this.getNaturalVoice(lang);
+  //     if (voice) {
+  //       utterance.voice = voice;
+  //     }
+      
+  //     utterance.onend = () => {
+  //       console.log('🔍 [VoiceService] → speak() onend, reactivando micrófono');
+  //       // ✅ REACTIVAR DESPUÉS DE 1.5 SEGUNDOS
+  //       setTimeout(() => {
+  //         if (!this.recognitionActive) {
+  //           console.log('🔍 [VoiceService] → speak() llamando a startListening()');
+  //           this.startListening();
+  //           console.log('🎤 Micrófono reactivado después de speak');
+  //         }
+  //       }, 200);
+  //       resolve();
+  //     };
+      
+  //     utterance.onerror = (event) => {
+  //       if (event.error === 'interrupted') {
+  //         resolve();
+  //         return;
+  //       }
+  //       this.logger.warn('Error en síntesis de voz:', event);
+  //       reject(event);
+  //     };
+      
+  //     window.speechSynthesis.speak(utterance);
+  //     if (this.enableLogs) {
+  //       this.logger.log(`🗣️ Hablando: "${text}"`);
+  //     }
+  //   });
+  // }
+
+
+
+
+
+  speak(text: string, lang: string = 'es-ES', rate: number = 0.9, pitch: number = 1.05): Promise<void> {
     console.log('🔍 [VoiceService] speak() llamado:', {
       text: text.substring(0, 50) + '...',
       isMuted: this.isMuted,
@@ -2187,12 +3050,8 @@ export class VoiceService implements OnDestroy {
         return;
       }
 
-      // ✅ SILENCIAR EL MICRÓFONO ANTES DE HABLAR
-      const wasListening = this.isListening;
-      if (wasListening) {
-        console.log('🔍 [VoiceService] → speak() silenciando micrófono durante TTS');
-        this.stopListening();
-      }
+      // ✅ ELIMINADO: no se detiene el micrófono
+      // ✅ ELIMINADO: no se reactiva después de hablar
 
       window.speechSynthesis.cancel();
       
@@ -2208,16 +3067,8 @@ export class VoiceService implements OnDestroy {
       }
       
       utterance.onend = () => {
-        console.log('🔍 [VoiceService] → speak() onend, reactivando micrófono');
-        // ✅ REACTIVAR DESPUÉS DE 1.5 SEGUNDOS
-        setTimeout(() => {
-          if (!this.recognitionActive) {
-            console.log('🔍 [VoiceService] → speak() llamando a startListening()');
-            this.startListening();
-            console.log('🎤 Micrófono reactivado después de speak');
-          }
-        }, 1500);
-        resolve();
+        console.log('🔍 [VoiceService] → speak() onend, micrófono permanece activo');
+        resolve(); // ✅ Solo resolver, sin reactivar
       };
       
       utterance.onerror = (event) => {
@@ -2236,7 +3087,160 @@ export class VoiceService implements OnDestroy {
     });
   }
 
+
+
+
+  // speak(text: string, lang: string = 'es-ES', rate: number = 0.9, pitch: number = 1.05): Promise<void> {
+  //   console.log('🔍 [VoiceService] speak() llamado:', {
+  //     text: text.substring(0, 50) + '...',
+  //     isMuted: this.isMuted,
+  //     timestamp: new Date().toISOString()
+  //   });
+    
+  //   return new Promise((resolve, reject) => {
+  //     if (this.isMuted) {
+  //       if (this.enableLogs) {
+  //         this.logger.debug(`🔇 Muteado, mensaje ignorado: "${text}"`);
+  //       }
+  //       resolve();
+  //       return;
+  //     }
+
+  //     if (!window.speechSynthesis) {
+  //       this.logger.warn('Speech Synthesis no soportada');
+  //       reject(new Error('Speech Synthesis no soportada'));
+  //       return;
+  //     }
+
+  //     const wasListening = this.isListening;
+  //     if (wasListening) {
+  //       console.log('🔍 [VoiceService] → speak() silenciando micrófono durante TTS');
+  //       this.stopListening();
+        
+  //       // ✅ LIMPIAR TRANSCRIPT
+  //       this.clearTranscript();
+  //     }
+
+  //     window.speechSynthesis.cancel();
+      
+  //     const utterance = new SpeechSynthesisUtterance(text);
+  //     utterance.lang = lang;
+  //     utterance.rate = rate;
+  //     utterance.pitch = pitch;
+  //     utterance.volume = 1;
+      
+  //     const voice = this.getNaturalVoice(lang);
+  //     if (voice) {
+  //       utterance.voice = voice;
+  //     }
+      
+  //     utterance.onend = () => {
+  //       console.log('🔍 [VoiceService] → speak() onend, reactivando micrófono');
+  //       setTimeout(() => {
+  //         if (!this.recognitionActive && !this.isMuted) {
+  //           console.log('🔍 [VoiceService] → speak() llamando a startListening()');
+  //           this.startListening();
+  //           console.log('🎤 Micrófono reactivado después de speak');
+  //         }
+  //       }, 300);
+  //       resolve();
+  //     };
+      
+  //     utterance.onerror = (event) => {
+  //       if (event.error === 'interrupted') {
+  //         resolve();
+  //         return;
+  //       }
+  //       this.logger.warn('Error en síntesis de voz:', event);
+  //       reject(event);
+  //     };
+      
+  //     window.speechSynthesis.speak(utterance);
+  //     if (this.enableLogs) {
+  //       this.logger.log(`🗣️ Hablando: "${text}"`);
+  //     }
+  //   });
+  // }
+
+
+
+
+
   //
+  // public speakAlways(text: string): Promise<void> {
+  //   console.log('🔍 [VoiceService] speakAlways() llamado:', {
+  //     text: text.substring(0, 50) + '...',
+  //     isMuted: this.isMuted,
+  //     timestamp: new Date().toISOString()
+  //   });
+    
+  //   return new Promise((resolve, reject) => {
+  //     if (!window.speechSynthesis) {
+  //       this.logger.warn('Speech Synthesis no soportada');
+  //       reject(new Error('Speech Synthesis no soportada'));
+  //       return;
+  //     }
+
+  //     // ✅ SILENCIAR EL MICRÓFONO ANTES DE HABLAR
+  //     const wasListening = this.isListening;
+  //     if (wasListening) {
+  //       console.log('🔍 [VoiceService] → speakAlways() silenciando micrófono durante TTS');
+  //       this.stopListening();
+  //     }
+
+  //     window.speechSynthesis.cancel();
+      
+  //     const utterance = new SpeechSynthesisUtterance(text);
+  //     utterance.lang = 'es-ES';
+  //     utterance.rate = 0.9;
+  //     utterance.pitch = 1.05;
+  //     utterance.volume = 1;
+      
+  //     const voice = this.getNaturalVoice('es-ES');
+  //     if (voice) {
+  //       utterance.voice = voice;
+  //     }
+      
+  //     utterance.onend = () => {
+  //       console.log('🔍 [VoiceService] → speakAlways() onend, reactivando micrófono');
+  //       // ✅ REACTIVAR EL MICRÓFONO DESPUÉS DE 1.5 SEGUNDOS
+  //       setTimeout(() => {
+  //         if (!this.recognitionActive) {
+  //           console.log('🔍 [VoiceService] → speakAlways() llamando a startListening()');
+  //           this.startListening();
+  //           console.log('🎤 Micrófono reactivado después de speakAlways');
+  //         }
+  //       }, 200);
+  //       resolve();
+  //     };
+      
+  //     utterance.onerror = (event) => {
+  //       if (event.error === 'interrupted') {
+  //         console.log('🔍 [VoiceService] → speakAlways() interrumpido');
+  //         setTimeout(() => {
+  //           if (!this.recognitionActive) {
+  //             console.log('🔍 [VoiceService] → speakAlways() (interrupted) llamando a startListening()');
+  //             this.startListening();
+  //           }
+  //         }, 1500);
+  //         resolve();
+  //         return;
+  //       }
+  //       this.logger.warn('Error en síntesis de voz:', event);
+  //       reject(event);
+  //     };
+      
+  //     window.speechSynthesis.speak(utterance);
+  //     if (this.enableLogs) {
+  //       this.logger.log(`🗣️ Hablando (siempre): "${text}"`);
+  //     }
+  //   });
+  // }
+
+
+
+
+
   public speakAlways(text: string): Promise<void> {
     console.log('🔍 [VoiceService] speakAlways() llamado:', {
       text: text.substring(0, 50) + '...',
@@ -2251,12 +3255,31 @@ export class VoiceService implements OnDestroy {
         return;
       }
 
-      // ✅ SILENCIAR EL MICRÓFONO ANTES DE HABLAR
-      const wasListening = this.isListening;
-      if (wasListening) {
-        console.log('🔍 [VoiceService] → speakAlways() silenciando micrófono durante TTS');
-        this.stopListening();
+      // 🔥 FORZAR DETENCIÓN DEL MICRÓFONO (incluso si isListening es false)
+      console.log('🔍 [VoiceService] → speakAlways() FORZANDO detención del micrófono');
+      
+      // ✅ Detener el reconocimiento si existe
+      if (this.recognition) {
+        try {
+          if (this.recognitionActive) {
+            this.recognition.stop();
+            this.recognitionActive = false;
+          }
+          // ✅ ABORTAR para asegurar que se detiene
+          this.recognition.abort();
+          console.log('🔍 [VoiceService] → speakAlways() micrófono detenido por abort()');
+        } catch (e) {
+          console.log('⚠️ Error al detener micrófono:', e);
+        }
       }
+      
+      this.isListening = false;
+      this.recognitionActive = false;
+      this.listeningSubject.next(false);
+      this.readySubject.next(false);
+      
+      // ✅ Limpiar transcript
+      this.clearTranscript();
 
       window.speechSynthesis.cancel();
       
@@ -2273,14 +3296,13 @@ export class VoiceService implements OnDestroy {
       
       utterance.onend = () => {
         console.log('🔍 [VoiceService] → speakAlways() onend, reactivando micrófono');
-        // ✅ REACTIVAR EL MICRÓFONO DESPUÉS DE 1.5 SEGUNDOS
         setTimeout(() => {
-          if (!this.recognitionActive) {
+          if (!this.recognitionActive && !this.isMuted) {
             console.log('🔍 [VoiceService] → speakAlways() llamando a startListening()');
             this.startListening();
             console.log('🎤 Micrófono reactivado después de speakAlways');
           }
-        }, 1500);
+        }, 2000);
         resolve();
       };
       
@@ -2288,11 +3310,11 @@ export class VoiceService implements OnDestroy {
         if (event.error === 'interrupted') {
           console.log('🔍 [VoiceService] → speakAlways() interrumpido');
           setTimeout(() => {
-            if (!this.recognitionActive) {
+            if (!this.recognitionActive && !this.isMuted) {
               console.log('🔍 [VoiceService] → speakAlways() (interrupted) llamando a startListening()');
               this.startListening();
             }
-          }, 1500);
+          }, 2000);
           resolve();
           return;
         }
@@ -2306,6 +3328,7 @@ export class VoiceService implements OnDestroy {
       }
     });
   }
+
 
   // ============================================================
   // MÉTODOS PARA ENVIAR RESPUESTAS

@@ -2170,41 +2170,255 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     console.log(`✅ Valor actualizado: "${control.value}"`);
   }
 
-  private stopDictation(finalValue?: string, silent = false): void {
-    if (this.isDestroyed) return;
-    this.log(`🔴 stopDictation (silent: ${silent})`);
-    const target = this.dictationTarget;
-    if (target) {
-      const formControlName = target === 'username' ? 'usernameOrEmail' : 'password';
-      const control = this.loginForm.get(formControlName);
-      let value = finalValue !== undefined ? finalValue : control?.value || '';
-      value = value.trimEnd();
 
-      if (value && value.length > 0) {
-        this.updateFormAndInputDirectly(target, value);
-        if (!silent) {
-          this.voiceService.speak(`Listo, ${target === 'username' ? 'usuario' : 'contraseña'} completado.`);
-        }
-      } else {
-        if (!silent) {
-          this.voiceService.speak(`No se reconoció ${target === 'username' ? 'el usuario' : 'la contraseña'}.`);
+
+  // private stopDictation(finalValue?: string, silent = false): void {
+  //   if (this.isDestroyed) return;
+  //   this.log(`🔴 stopDictation (silent: ${silent})`);
+  //   const target = this.dictationTarget;
+  //   if (target) {
+  //     const formControlName = target === 'username' ? 'usernameOrEmail' : 'password';
+  //     const control = this.loginForm.get(formControlName);
+  //     let value = finalValue !== undefined ? finalValue : control?.value || '';
+  //     value = value.trimEnd();
+
+  //     if (value && value.length > 0) {
+  //       this.updateFormAndInputDirectly(target, value);
+  //       if (!silent) {
+  //         this.voiceService.speak(`Listo, ${target === 'username' ? 'usuario' : 'contraseña'} completado.`);
+  //       }
+  //     } else {
+  //       if (!silent) {
+  //         this.voiceService.speak(`No se reconoció ${target === 'username' ? 'el usuario' : 'la contraseña'}.`);
+  //       }
+  //     }
+
+  //     if (target === 'username' && this.passwordInput && !silent) {
+  //       setTimeout(() => {
+  //         if (!this.isDestroyed) {
+  //           this.passwordInput.nativeElement.focus({ preventScroll: true });
+  //           this.cdr.markForCheck();
+  //         }
+  //       }, 300);
+  //     }
+  //   }
+  //   this.dictationMode = false;
+  //   this.dictationTarget = null;
+  //   this.dictationBuffer = '';
+  //   this.cdr.markForCheck();
+  // }
+
+
+
+
+
+
+
+  // private stopDictation(finalValue?: string, silent = false): void {
+  //   if (this.isDestroyed) return;
+  //   this.log(`🔴 stopDictation (silent: ${silent})`);
+  //   const target = this.dictationTarget;
+  //   if (target) {
+  //     const formControlName = target === 'username' ? 'usernameOrEmail' : 'password';
+  //     const control = this.loginForm.get(formControlName);
+  //     let value = finalValue !== undefined ? finalValue : control?.value || '';
+  //     value = value.trimEnd();
+
+  //     if (value && value.length > 0) {
+  //       this.updateFormAndInputDirectly(target, value);
+
+  //       // ✅ Validación para usuario
+  //       if (target === 'username') {
+  //         control?.markAsTouched();
+  //         control?.updateValueAndValidity();
+  //         if (control?.invalid) {
+  //           // ❌ Usuario inválido: borrar, avisar y resetear
+  //           this.updateFormAndInputDirectly(target, '');
+  //           this.dictationBuffer = '';
+  //           const errors = this.getUsernameErrors();
+  //           const msg = errors || 'El usuario no es válido. Debe tener al menos 3 caracteres y solo letras, números o guiones bajos.';
+  //           this.voiceService.speak(`Error: ${msg}. Voy a borrarlo. Di "usuario" para intentarlo de nuevo.`);
+  //           setTimeout(() => this.focusInput('username'), 500);
+  //           this.dictationMode = false;
+  //           this.dictationTarget = null;
+  //           this.dictationBuffer = '';
+  //           this.cdr.markForCheck();
+  //           return;
+  //         } else {
+  //           // ✅ Usuario válido
+  //           if (!silent) {
+  //             this.voiceService.speak(`Listo, usuario completado y válido.`);
+  //           }
+  //         }
+  //       }
+
+  //       // ✅ Validación para contraseña
+  //       if (target === 'password') {
+  //         control?.markAsTouched();
+  //         control?.updateValueAndValidity();
+  //         if (control?.invalid) {
+  //           // ❌ Contraseña inválida: borrar, avisar y resetear
+  //           this.updateFormAndInputDirectly(target, '');
+  //           this.dictationBuffer = '';
+  //           const errors = this.getPasswordErrors();
+  //           const msg = errors || 'La contraseña no cumple los requisitos. Debe tener al menos 9 caracteres, mayúscula, minúscula, número y símbolo.';
+  //           this.voiceService.speak(`Error: ${msg}. Voy a borrarla. Di "contraseña" para intentarlo de nuevo.`);
+  //           setTimeout(() => this.focusInput('password'), 500);
+  //           this.dictationMode = false;
+  //           this.dictationTarget = null;
+  //           this.dictationBuffer = '';
+  //           this.cdr.markForCheck();
+  //           return;
+  //         } else {
+  //           // ✅ Contraseña válida
+  //           if (!silent) {
+  //             this.voiceService.speak(`Listo, contraseña completada y válida.`);
+  //           }
+  //         }
+  //       }
+  //     } else {
+  //       if (!silent) {
+  //         this.voiceService.speak(`No se reconoció ${target === 'username' ? 'el usuario' : 'la contraseña'}.`);
+  //       }
+  //     }
+
+  //     if (target === 'username' && this.passwordInput && !silent) {
+  //       setTimeout(() => {
+  //         if (!this.isDestroyed) {
+  //           this.passwordInput.nativeElement.focus({ preventScroll: true });
+  //           this.cdr.markForCheck();
+  //         }
+  //       }, 300);
+  //     }
+  //   }
+  //   this.dictationMode = false;
+  //   this.dictationTarget = null;
+  //   this.dictationBuffer = '';
+  //   this.cdr.markForCheck();
+  // }
+
+
+
+
+
+
+
+
+
+  private stopDictation(finalValue?: string, silent = false): void {
+  if (this.isDestroyed) return;
+  this.log(`🔴 stopDictation (silent: ${silent})`);
+  const target = this.dictationTarget;
+  if (target) {
+    const formControlName = target === 'username' ? 'usernameOrEmail' : 'password';
+    const control = this.loginForm.get(formControlName);
+    let value = finalValue !== undefined ? finalValue : control?.value || '';
+    value = value.trimEnd();
+
+    if (value && value.length > 0) {
+      this.updateFormAndInputDirectly(target, value);
+
+      // ✅ Validación para usuario
+      if (target === 'username') {
+        control?.markAsTouched();
+        control?.updateValueAndValidity();
+        if (control?.invalid) {
+          // ❌ Usuario inválido: NO borrar, solo avisar
+          const errors = this.getUsernameErrors();
+          const msg = errors || 'El usuario no es válido. Debe tener al menos 3 caracteres y solo letras, números, . _ @ ! ? - y sin espacios.';
+          this.voiceService.speak(`Error: ${msg}. Puedes corregirlo manualmente o decir "usuario" para intentarlo de nuevo.`);
+          // Enfocar el campo para que el usuario pueda corregir manualmente
+          setTimeout(() => this.focusInput('username'), 500);
+          // Salir del modo dictado, pero mantener el texto
+          this.dictationMode = false;
+          this.dictationTarget = null;
+          this.dictationBuffer = '';
+          this.cdr.markForCheck();
+          return;
+        } else {
+          // ✅ Usuario válido
+          if (!silent) {
+            this.voiceService.speak(`Listo, usuario completado y válido.`);
+          }
         }
       }
 
-      if (target === 'username' && this.passwordInput && !silent) {
-        setTimeout(() => {
-          if (!this.isDestroyed) {
-            this.passwordInput.nativeElement.focus({ preventScroll: true });
-            this.cdr.markForCheck();
+      // ✅ Validación para contraseña
+      if (target === 'password') {
+        control?.markAsTouched();
+        control?.updateValueAndValidity();
+        if (control?.invalid) {
+          // ❌ Contraseña inválida: NO borrar, solo avisar
+          const errors = this.getPasswordErrors();
+          const msg = errors || 'La contraseña no cumple los requisitos. Debe tener al menos 9 caracteres, mayúscula, minúscula, número y símbolo.';
+          this.voiceService.speak(`Error: ${msg}. Puedes corregirlo manualmente o decir "contraseña" para intentarlo de nuevo.`);
+          // Enfocar el campo para que el usuario pueda corregir manualmente
+          setTimeout(() => this.focusInput('password'), 500);
+          // Salir del modo dictado, pero mantener el texto
+          this.dictationMode = false;
+          this.dictationTarget = null;
+          this.dictationBuffer = '';
+          this.cdr.markForCheck();
+          return;
+        } else {
+          // ✅ Contraseña válida
+          if (!silent) {
+            this.voiceService.speak(`Listo, contraseña completada y válida.`);
           }
-        }, 300);
+        }
+      }
+    } else {
+      if (!silent) {
+        this.voiceService.speak(`No se reconoció ${target === 'username' ? 'el usuario' : 'la contraseña'}.`);
       }
     }
-    this.dictationMode = false;
-    this.dictationTarget = null;
-    this.dictationBuffer = '';
-    this.cdr.markForCheck();
+
+    if (target === 'username' && this.passwordInput && !silent) {
+      setTimeout(() => {
+        if (!this.isDestroyed) {
+          this.passwordInput.nativeElement.focus({ preventScroll: true });
+          this.cdr.markForCheck();
+        }
+      }, 300);
+    }
   }
+  this.dictationMode = false;
+  this.dictationTarget = null;
+  this.dictationBuffer = '';
+  this.cdr.markForCheck();
+}
+
+
+
+
+
+
+
+
+  //
+  private getUsernameErrors(): string | null {
+    const ctrl = this.usernameOrEmailCtrl;
+    if (!ctrl.dirty && !ctrl.touched) return null;
+    const value = ctrl.value || '';
+
+    if (ctrl.hasError('required')) return 'El usuario o email es obligatorio';
+    if (ctrl.hasError('minlength')) return 'Debe tener al menos 3 caracteres';
+    if (ctrl.hasError('maxlength')) return 'No puede tener más de 50 caracteres';
+
+    if (ctrl.hasError('invalidUsername')) {
+      // 🔥 Detectar si parece un email con expresión regular
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailPattern.test(value)) {
+        return 'El email no tiene un formato válido. Ejemplo: usuario@dominio.com';
+      }
+      return 'El usuario solo puede contener letras, números, . _ @ ! ? - y sin espacios.';
+    }
+    return null;
+  }
+
+
+
+
 
   private handleAction(response: VoiceCommandResponse): void {
     if (this.isDestroyed) return;

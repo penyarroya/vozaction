@@ -95,6 +95,14 @@
 
 
 
+
+
+
+
+
+
+
+
 // src/app/features/welcome/welcome.component.ts
 import { Component, signal, OnInit, OnDestroy, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -138,6 +146,70 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
 
 
+//   ngOnInit(): void {
+//     console.log('✅ WelcomeComponent inicializado (con voz contextual)');
+
+//     this.loadImages();
+
+//     // const context = {
+//     //   activationMessage: 'Bienvenido a VozAcción. Puedes decir "Acerca de" o "iniciar sesión".',
+//     //   availableCommands: ['acerca de', 'quiénes somos', 'login', 'iniciar sesión', 'inicio']
+//     // };
+//     const context = {
+//       activationMessage: 'Bienvenido a VozAcción. Puedes decir "Acerca de" o "iniciar sesión".',
+//       availableCommands: ['acerca de', 'quiénes somos', 'login', 'iniciar sesión', 'inicio'],
+//       preventBackend: true  // ✅ AÑADIR ESTA LÍNEA
+//     };
+// this.voiceContext.setContext(context);
+//     this.voiceContext.setContext(context);
+
+//     this.voiceService
+//       .getTranscript()
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe((text: string) => {
+//         this.ngZone.run(() => {
+//           if (this.isDestroyed || !text) return;
+//           this.handleVoiceCommand(text);
+//         });
+//       });
+
+//     this.voiceService.ready$
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe((ready) => {
+//         if (!ready && !this.isDestroyed) {
+//           console.log('🔄 [Welcome] Reconocimiento caído, reactivando...');
+//           setTimeout(() => {
+//             if (!this.isDestroyed) {
+//               this.voiceService.startListening();
+//             }
+//           }, 500);
+//         }
+//       });
+
+//     setTimeout(() => {
+//       if (!this.isDestroyed) {
+//         if (!this.voiceService.isRecognitionActive()) {
+//           console.log('🎤 [Welcome] Reconocimiento inactivo, iniciando...');
+//           this.voiceService.startListening();
+//         }
+
+//         if (this.voiceService.isCurrentlyMuted() && !this.activationMessageShown) {
+//           this.activationMessageShown = true;
+//           console.log('🔇 [Welcome] Micrófono muteado, mensaje de activación');
+//           this.voiceService.speakAlways('Micrófono desactivado. Di "hola" para activarlo.');
+//         } else if (!this.voiceService.isCurrentlyMuted() && !this.welcomeShown) {
+//           this.welcomeShown = true;
+//           console.log('🎤 [Welcome] Micrófono activo, mensaje de bienvenida');
+//           this.voiceService.speakWhenReady(context.activationMessage);
+//         }
+//       }
+//     }, 800);
+//   }
+
+
+
+
+
   ngOnInit(): void {
     console.log('✅ WelcomeComponent inicializado (con voz contextual)');
 
@@ -145,7 +217,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
     const context = {
       activationMessage: 'Bienvenido a VozAcción. Puedes decir "Acerca de" o "iniciar sesión".',
-      availableCommands: ['acerca de', 'quiénes somos', 'login', 'iniciar sesión', 'inicio']
+      availableCommands: ['acerca de', 'quiénes somos', 'login', 'iniciar sesión', 'inicio'],
+      preventBackend: true
     };
     this.voiceContext.setContext(context);
 
@@ -159,38 +232,51 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         });
       });
 
-    this.voiceService.ready$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((ready) => {
-        if (!ready && !this.isDestroyed) {
-          console.log('🔄 [Welcome] Reconocimiento caído, reactivando...');
-          setTimeout(() => {
-            if (!this.isDestroyed) {
-              this.voiceService.startListening();
-            }
-          }, 500);
-        }
-      });
+    // ❌ ELIMINAR ESTA SUSCRIPCIÓN (ya no reactivamos)
+    // this.voiceService.ready$
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe((ready) => {
+    //     if (!ready && !this.isDestroyed) {
+    //       console.log('🔄 [Welcome] Reconocimiento caído, reactivando...');
+    //       setTimeout(() => {
+    //         if (!this.isDestroyed) {
+    //           this.voiceService.startListening();
+    //         }
+    //       }, 500);
+    //     }
+    //   });
 
+    // ❌ ELIMINAR ESTE setTimeout (ya no iniciamos el micrófono)
+    // setTimeout(() => {
+    //   if (!this.isDestroyed) {
+    //     if (!this.voiceService.isRecognitionActive()) {
+    //       console.log('🎤 [Welcome] Reconocimiento inactivo, iniciando...');
+    //       this.voiceService.startListening();
+    //     }
+    //
+    //     if (this.voiceService.isCurrentlyMuted() && !this.activationMessageShown) {
+    //       this.activationMessageShown = true;
+    //       console.log('🔇 [Welcome] Micrófono muteado, mensaje de activación');
+    //       this.voiceService.speakAlways('Micrófono desactivado. Di "hola" para activarlo.');
+    //     } else if (!this.voiceService.isCurrentlyMuted() && !this.welcomeShown) {
+    //       this.welcomeShown = true;
+    //       console.log('🎤 [Welcome] Micrófono activo, mensaje de bienvenida');
+    //       this.voiceService.speakWhenReady(context.activationMessage);
+    //     }
+    //   }
+    // }, 800);
+
+    // ✅ SOLO mostrar mensaje de bienvenida si el micrófono está activo
     setTimeout(() => {
-      if (!this.isDestroyed) {
-        if (!this.voiceService.isRecognitionActive()) {
-          console.log('🎤 [Welcome] Reconocimiento inactivo, iniciando...');
-          this.voiceService.startListening();
-        }
-
-        if (this.voiceService.isCurrentlyMuted() && !this.activationMessageShown) {
-          this.activationMessageShown = true;
-          console.log('🔇 [Welcome] Micrófono muteado, mensaje de activación');
-          this.voiceService.speakAlways('Micrófono desactivado. Di "hola" para activarlo.');
-        } else if (!this.voiceService.isCurrentlyMuted() && !this.welcomeShown) {
-          this.welcomeShown = true;
-          console.log('🎤 [Welcome] Micrófono activo, mensaje de bienvenida');
-          this.voiceService.speakWhenReady(context.activationMessage);
-        }
+      if (!this.isDestroyed && !this.voiceService.isCurrentlyMuted() && !this.welcomeShown) {
+        this.welcomeShown = true;
+        console.log('🎤 [Welcome] Micrófono activo, mensaje de bienvenida');
+        this.voiceService.speakWhenReady(context.activationMessage);
       }
     }, 800);
   }
+
+
 
   
 
@@ -241,8 +327,14 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
   private handleVoiceCommand(text: string): void {
     if (this.isDestroyed) return;
+    
+    // ✅ NUEVO: NO procesar si el sistema está hablando
+    if (window.speechSynthesis.speaking) {
+      console.log('🔇 [Welcome] Sistema hablando, ignorando comando:', text);
+      return;
+    }
+    
     const lower = text.toLowerCase().trim();
-
     console.log(`📝 [Welcome] Comando recibido: "${lower}"`);
 
     // Prevenir duplicados
@@ -317,7 +409,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     // ============================================================
     console.log(`⏭️ [Welcome] Comando no reconocido: "${lower}"`);
   }
-
 
 
 
