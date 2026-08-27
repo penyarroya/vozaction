@@ -35,49 +35,7 @@ export class AuthService {
     console.log('🏗️ AuthService constructor - currentUser:', this.currentUser());
   }
 
-  // private getInitialUser(): LoginResponse | null {
-  //   if (!isPlatformBrowser(this.platformId)) return null;
-
-  //   const isTabActive = sessionStorage.getItem(this.TAB_SESSION_KEY);
-  //   if (!isTabActive) {
-  //     sessionStorage.setItem(this.TAB_SESSION_KEY, 'true');
-  //     return null;
-  //   }
-    
-  //   const savedUser = localStorage.getItem(this.USER_INFO_KEY);
-  //   if (!savedUser) return null;
-
-  //   try {
-  //     const storedUser = JSON.parse(savedUser);
-      
-  //     const user: LoginResponse = {
-  //       id: storedUser.id,
-  //       username: storedUser.username,
-  //       email: '',
-  //       roles: storedUser.roles || [],
-  //       type: 'Bearer',
-  //       token: '',
-  //       refreshToken: null
-  //     };
-      
-  //     console.log('✅ Sesión restaurada con roles:', user.roles);
-  //     return user;
-  //   } catch (e) {
-  //     console.error('Error parseando usuario:', e);
-  //     return null;
-  //   }
-  // }
-
-
-
-
-
-
-
-
-
-  // auth.service.ts
-
+  //
   private getInitialUser(): LoginResponse | null {
     if (!isPlatformBrowser(this.platformId)) return null;
 
@@ -112,11 +70,7 @@ export class AuthService {
     }
   }
 
-
-
-
-
-
+  //
   getUserId(): number | null {
     const user = this.currentUser();
     return user ? user.id : null;
@@ -126,14 +80,6 @@ export class AuthService {
     const user = this.currentUser();
     return user ? user.username : 'Usuario';
   }
-
-  // ✅ NUEVO: Obtener email del usuario
-  // getUserEmail(): string | null {
-  //   const user = this.currentUser();
-  //   return user ? user.email : null;
-  // }
-
-
 
   //
   getUserEmail(): string | null {
@@ -153,28 +99,6 @@ export class AuthService {
     
     return null;
   }
-
-
-
-  // login(credentials: LoginRequest): Observable<LoginResponse> {
-  //   return this.http.post<LoginResponse>(`${this.AUTH_URL}/login`, credentials, this.httpOptions)
-  //     .pipe(
-  //       tap((response) => {
-  //         console.log('✅ Login exitoso');
-          
-  //         if (isPlatformBrowser(this.platformId)) {
-  //           sessionStorage.setItem(this.TAB_SESSION_KEY, 'true');
-  //         }
-          
-  //         this.updateLocalSession(response);
-  //       }),
-  //       catchError((error) => this.handleError(error))
-  //     );
-  // }
-
-
-
-
 
   //
   login(credentials: LoginRequest): Observable<LoginResponse> {
@@ -199,12 +123,7 @@ export class AuthService {
       );
   }
 
-
-
-
-
-
-
+  //
   logout(): Observable<void> {
     return this.http.post<void>(`${this.AUTH_URL}/logout`, {}, this.httpOptions)
       .pipe(
@@ -215,18 +134,7 @@ export class AuthService {
         })
       );
   }
-
-  // checkSession(): Observable<LoginResponse | null> {
-  //   return this.http.get<LoginResponse>(`${this.AUTH_URL}/user-info`, this.httpOptions)
-  //     .pipe(
-  //       tap(user => this.updateLocalSession(user)),
-  //       catchError(() => {
-  //         this.fullLocalLogout();
-  //         return of(null);
-  //       })
-  //     );
-  // }
-
+  
   // En src/app/core/services/auth.service.ts
   cancelPendingRegistration(email: string): Observable<any> {
     return this.http.delete(`${this.API_V1_URL}/users/register/pending`, {
@@ -234,49 +142,6 @@ export class AuthService {
       ...this.httpOptions
     });
   }
-
-  /**
-   * Verifica la sesión actual con el servidor
-   * ✅ Maneja 401 silenciosamente (NO limpia la sesión)
-   */
-  // checkSession(): Observable<LoginResponse | null> {
-  //   // Si no hay token/ sesión local, no llamar al servidor
-  //   const localUser = this.currentUser();
-  //   if (!localUser) {
-  //     console.log('ℹ️ [checkSession] No hay sesión local, omitiendo verificación');
-  //     return of(null);
-  //   }
-
-  //   console.log('🔄 [checkSession] Verificando sesión con el servidor...');
-    
-  //   return this.http.get<LoginResponse>(`${this.AUTH_URL}/user-info`, this.httpOptions)
-  //     .pipe(
-  //       tap((user) => {
-  //         if (user) {
-  //           console.log('✅ [checkSession] Sesión válida');
-  //           this.updateLocalSession(user);
-  //         }
-  //       }),
-  //       catchError((error: HttpErrorResponse) => {
-  //         // 🔴 401 es NORMAL cuando no hay sesión activa
-  //         if (error.status === 401) {
-  //           console.log('ℹ️ [checkSession] No hay sesión activa (comportamiento esperado)');
-  //           // ⚠️ NO llamar a fullLocalLogout() aquí
-  //           return of(null);
-  //         }
-          
-  //         // Para otros errores, loggear pero no limpiar sesión
-  //         console.error('❌ [checkSession] Error verificando sesión:', error.status);
-  //         return of(null);
-  //       })
-  //     );
-  // }
-
-
-
-
-
-
 
   /**
    * Verifica la sesión actual con el servidor
@@ -324,9 +189,6 @@ export class AuthService {
       );
   }
 
-
-
-
   /**
    * 🔥 NUEVO: Forzar verificación de sesión (con limpieza en 401)
    * Útil para cuando el usuario hace clic en "Verificar sesión" manualmente
@@ -352,31 +214,6 @@ export class AuthService {
       );
   }
 
-
-
-
-
-  // private updateLocalSession(user: LoginResponse): void {
-  //   console.log('💾 Guardando sesión local (id, username y roles)');
-  //   this.currentUser.set(user);
-    
-  //   if (isPlatformBrowser(this.platformId)) {
-  //     const sessionData = {
-  //       id: user.id,
-  //       username: user.username,
-  //       roles: user.roles
-  //     };
-  //     localStorage.setItem(this.USER_INFO_KEY, JSON.stringify(sessionData));
-  //   }
-  // }
-
-
-
-
-
-
-
-
   //
   private updateLocalSession(user: LoginResponse): void {
     console.log('💾 Guardando sesión local (id, username, email y roles)');
@@ -399,12 +236,26 @@ export class AuthService {
   }
 
 
-
-
-
-
-
-
+  /**
+   * 🔥 NUEVO: Reinicia el estado del AuthService sin hacer logout del servidor
+   * Útil para cuando el sistema se reinicia (MaintenanceComponent)
+   */
+  public restartAuthService(): void {
+    console.log('🔄 [AuthService] Reiniciando estado de autenticación...');
+    
+    // ✅ Resetear el usuario actual (sin llamar al servidor)
+    this.currentUser.set(null);
+    
+    // ✅ Limpiar solo la sesión local (NO llamar a logout del servidor)
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.USER_INFO_KEY);
+      localStorage.removeItem('userEmail');
+      // 🔥 NO eliminamos TAB_SESSION_KEY para mantener la pestaña activa
+      // sessionStorage.removeItem(this.TAB_SESSION_KEY);
+    }
+    
+    console.log('✅ [AuthService] Estado reiniciado correctamente');
+  }
 
 
   public fullLocalLogout(): void {

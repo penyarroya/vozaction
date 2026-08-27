@@ -1,0 +1,21 @@
+{
+  "title": "Centro de Ayuda Digital",
+  "showLogo": true,
+  "showThemeToggle": true,
+  "showMicToggle": true,
+  "showUserAvatar": true,
+  "showBackButton": false,
+  "showHelp": true,
+  "showNotifications": false,
+  "unreadNotifications": 0,
+  "navLinks": [
+    { "label": "Dashboard", "route": "/dashboard-v2", "icon": "dashboard", "roles": ["USER"] }
+  ],
+  "userMenuItems": [
+    { "label": "Mi Perfil", "icon": "person", "route": "/profile", "roles": ["USER"] },
+    { "label": "Configuración", "icon": "settings", "route": "/settings", "roles": ["USER"] },
+    { "label": "Configuración de Voz", "icon": "settings_voice", "route": "/voice-settings", "roles": ["USER"] },
+    { "isDivider": true },
+    { "label": "Cerrar Sesión", "icon": "logout", "class": "logout-item", "actionId": "logout" }
+  ]
+}

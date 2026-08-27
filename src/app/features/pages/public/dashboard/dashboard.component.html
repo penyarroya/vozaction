@@ -695,69 +695,6 @@
           <!-- ========================================================== -->
           <!-- 5. CALENDARIO                                              -->
           <!-- ========================================================== -->
-          <!-- @if (activeSection === 'calendar') {
-            <section class="content-section">
-              <div class="section-header">
-                <h1>
-                  <mat-icon>calendar_month</mat-icon>
-                  Calendario Académico
-                </h1>
-                <p class="section-description">Próximas clases y eventos</p>
-              </div>
-
-              <div class="calendar-grid">
-                <div class="calendar-container">
-                  <div class="calendar-placeholder">
-                    <div class="calendar-header">
-                      <button class="calendar-nav">‹</button>
-                      <span>{{ currentDate | date:'MMMM yyyy' }}</span>
-                      <button class="calendar-nav">›</button>
-                    </div>
-                    <div class="calendar-grid-days">
-                      <div class="day-header">Lun</div>
-                      <div class="day-header">Mar</div>
-                      <div class="day-header">Mié</div>
-                      <div class="day-header">Jue</div>
-                      <div class="day-header">Vie</div>
-                      <div class="day-header">Sáb</div>
-                      <div class="day-header">Dom</div>
-                      @for (day of calendarDays; track day.number) {
-                        <div class="day" [class.has-event]="day.hasEvent">
-                          {{ day.number }}
-                        </div>
-                      }
-                    </div>
-                  </div>
-                </div>
-
-                <div class="upcoming-events">
-                  <h4>📅 Próximos Eventos</h4>
-                  @for (course of myCourses; track course.id) {
-                    @if (course.nextClass) {
-                      <div class="event-item">
-                        <div class="event-date">
-                          {{ course.nextClass | date:'dd' }}
-                          <span>{{ course.nextClass | date:'MMM' }}</span>
-                        </div>
-                        <div class="event-info">
-                          <h5>{{ course.title }}</h5>
-                          <p>{{ course.instructor }}</p>
-                          <span>{{ course.nextClass | date:'HH:mm' }}</span>
-                        </div>
-                      </div>
-                    }
-                  }
-                </div>
-              </div>
-            </section>
-          } -->
-
-
-
-
-          <!-- ========================================================== -->
-          <!-- 5. CALENDARIO                                              -->
-          <!-- ========================================================== -->
           @if (activeSection === 'calendar') {
             <section class="content-section">
               <div class="section-header">
@@ -828,14 +765,6 @@
               </div>
             </section>
           }
-
-
-
-
-
-
-
-
 
           <!-- ========================================================== -->
           <!-- 6. MENSAJES                                                -->

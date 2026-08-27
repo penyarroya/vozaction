@@ -1,0 +1,5 @@
+{
+  "sidebarItems": [
+    { "id": "dashboard", "label": "Panel Principal", "icon": "dashboard", "roles": ["USER"] }
+  ]
+}

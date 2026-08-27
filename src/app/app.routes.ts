@@ -160,17 +160,6 @@ export const routes: Routes = [
     title: 'Recuperar Contraseña - VozAcction',
     data: { showTheme: false }
   },
-
-  // =========================================================================
-  // RUTAS PRIVADAS (requieren autenticación)
-  // =========================================================================
-  // {
-  //   path: 'home',  // ✅ AHORA ES PRIVADA - Tu Dashboard
-  //   component: HomeComponent,
-  //   canActivate: [authGuard], // ✅ REQUIERE AUTENTICACIÓN
-  //   title: 'Panel de Control - VozAcction',
-  //   data: { showTheme: true }
-  // },
   {
     path: 'dashboard',
     loadComponent: () => import('./features/pages/public/dashboard/dashboard.component').then(m => m.DashboardComponent),
@@ -178,7 +167,13 @@ export const routes: Routes = [
     title: 'Panel de Control - VozAcction',
     data: { showTheme: false }
   },
-
+  {
+    path: 'dashboard-v2',
+    loadComponent: () => import('./features/pages/public/dashboard-v2/dashboard-v2.component').then(m => m.DashboardV2Component),
+    canActivate: [authGuard],  // ← AÑADIR
+    title: 'Panel de Control - VozAcction',
+    data: { showTheme: false }
+  },
   // =========================================================================
   // REDIRECCIONES
   // =========================================================================
