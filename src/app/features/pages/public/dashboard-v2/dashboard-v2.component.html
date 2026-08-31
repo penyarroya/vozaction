@@ -1,5 +1,3 @@
-<!-- src/app/features/pages/public/dashboard-v2/dashboard-v2.component.html -->
-
 <div class="dashboard-wrapper" [class.dark]="isDarkTheme">
   
   <!-- HEADER / TOOLBAR -->
@@ -172,7 +170,8 @@
             </section>
           }
 
-          <!-- ========================================================== -->
+          
+            <!-- ========================================================== -->
           <!-- 3. CONFIGURACIÓN                                            -->
           <!-- ========================================================== -->
           @if (!isLoading && activeSection === 'settings') {
@@ -183,6 +182,7 @@
               </div>
 
               <div class="settings-grid">
+                <!-- TEMA -->
                 <div class="setting-card">
                   <div class="setting-icon"><mat-icon>dark_mode</mat-icon></div>
                   <div class="setting-info">
@@ -194,13 +194,14 @@
                   </div>
                 </div>
 
+                <!-- ✅ MICRÓFONO - ACTUALIZADO -->
                 <div class="setting-card">
                   <div class="setting-icon"><mat-icon>mic</mat-icon></div>
                   <div class="setting-info">
                     <h4>Micrófono</h4>
                     <p>Activar o desactivar comandos de voz</p>
                     <button class="setting-btn" (click)="toggleMic()">
-                      {{ isMicActive ? '🔴 Desactivar' : '🟢 Activar' }}
+                      {{ micButtonText }}
                     </button>
                   </div>
                 </div>

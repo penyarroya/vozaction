@@ -2637,8 +2637,8 @@
 
 
 // src/app/features/auth/register/register.component.ts
-import { Component, signal, inject, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, AfterViewInit, Renderer2, OnInit, NgZone } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, inject, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, AfterViewInit, Renderer2, OnInit, NgZone, ChangeDetectionStrategy } from '@angular/core';
+
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { finalize, Subject, Subscription, takeUntil } from 'rxjs';
@@ -2663,14 +2663,14 @@ import { FieldCleanupService } from '../../services/voz/field-cleanup.service';
   selector: 'app-register',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     DisableAutofillDirective,
     ...MaterialModules,
-    AutoFocusDirective,
-  ],
+    AutoFocusDirective
+],
   templateUrl: './register.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -2829,112 +2829,6 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   
   //
-  // ngOnInit(): void {
-  //   console.log('✅ RegisterComponent inicializado (con voz)');
-
-  //   if (this.voiceService.isCurrentlyMuted()) {
-  //     console.log('🎤 [Register] Micrófono MUTEADO - el usuario debe activarlo con "hola" o manualmente.');
-  //   } else {
-  //     console.log('🎤 [Register] Micrófono ACTIVO - el reconocimiento ya está funcionando.');
-  //   }
-
-  //   // ✅ Suscribirse al estado del muteo para actualizar isMicActive
-  //   this.mutedSubscription = this.voiceService.getMutedState().subscribe(muted => {
-  //     this.isMicActive.set(!muted);
-  //     this.cdr.markForCheck();
-  //   });
-
-  //   const context = {
-  //     activationMessage: this.WELCOME_MESSAGE,
-  //     availableCommands: [
-  //       'usuario', 'email', 'correo', 'contraseña', 'confirmar',
-  //       'nombre', 'apellidos', 'registrar', 'enviar', 'limpiar',
-  //       'volver', 'ayuda', 'código', 'verificar', 'leer campos',
-  //       'pegar código', 'copiar código',
-  //       'iniciar sesión'
-  //     ],
-  //     preventBackend: true
-  //   };
-  //   this.voiceContext.setContext(context);
-
-  //   this.voiceService
-  //     .getTranscriptWithFinal()
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe({
-  //       next: (transcript: { text: string; isFinal: boolean }) => {
-  //         const text = transcript.text;
-  //         const isFinal = transcript.isFinal;
-  //         if (!text) return;
-
-  //         console.log(`📝 [Register] Transcript recibido: "${text}" (Final: ${isFinal})`);
-
-  //         this.ngZone.run(() => {
-  //           if (this.isDestroyed) return;
-  //           this.handleVoiceCommand(text, isFinal);
-  //         });
-  //       },
-  //       error: (err) => {
-  //         console.error('❌ [Register] Error en transcript:', err);
-  //       }
-  //     });
-
-  //   this.voiceService.ready$
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe((ready) => {
-  //       if (ready) {
-  //         this.noSpeechAttempts = 0;
-  //         return;
-  //       }
-
-  //       if (!ready && !this.isDestroyed) {
-  //         this.noSpeechAttempts++;
-  //         if (this.noSpeechAttempts >= this.MAX_NO_SPEECH_ATTEMPTS) {
-  //           console.warn('🔇 Demasiados errores de no-speech, dejando de reintentar');
-  //           this.noSpeechAttempts = 0;
-  //           return;
-  //         }
-
-  //         console.log(`🔄 [Register] Reconocimiento caído, reintento ${this.noSpeechAttempts}...`);
-  //         setTimeout(() => {
-  //           if (!this.isDestroyed) {
-  //             this.voiceService.startListening();
-  //           }
-  //         }, 500);
-  //       }
-  //     });
-
-  //   // ✅ Solo reproducir mensaje de bienvenida si NO estamos en modo verificación
-  //   setTimeout(() => {
-  //     if (!this.isDestroyed && !this.voiceService.isCurrentlyMuted() && !this.isVerifying()) {
-  //       this.voiceService.speakAlways(this.WELCOME_MESSAGE);
-  //     }
-  //   }, 1000);
-
-  //   this.registerFieldsForCleanup();
-
-  //   this.registerForm.valueChanges
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe(() => {
-  //       if (this.isFormCompleteAndValid() && !this.formCompleteNotified) {
-  //         this.formCompleteNotified = true;
-  //         this.voiceService.speak('Todos los campos están completos. Di "registrar" para crear la cuenta, o "leer campos" para comprobar el contenido.');
-  //       } else if (!this.isFormCompleteAndValid()) {
-  //         this.formCompleteNotified = false;
-  //       }
-  //     });
-
-  //   this.resetOtpVisuals();
-  // }
-
-
-
-
-
-
-
-
-
-
   ngOnInit(): void {
     console.log('✅ RegisterComponent inicializado (con voz)');
 
@@ -3039,17 +2933,6 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.resetOtpVisuals();
   }
-
-
-
-
-
-
-
-
-
-
-
 
   //
   ngAfterViewInit(): void {
@@ -3405,8 +3288,6 @@ export class RegisterComponent implements OnInit, OnDestroy, AfterViewInit {
 
     console.log('🔍 Register - Comando no reconocido:', lower);
   }
-
-
 
   // ============================================================
   // LEER TODOS LOS CAMPOS - VERSIÓN MEJORADA CON PAUSAS

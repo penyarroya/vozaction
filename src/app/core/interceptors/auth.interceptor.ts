@@ -1,41 +1,19 @@
-// import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-// import { inject } from '@angular/core';
-// import { AuthService } from '../services/auth.service';
-// import { catchError, throwError } from 'rxjs';
-
-// export const authInterceptor: HttpInterceptorFn = (req, next) => {
-//   const authService = inject(AuthService);
-
-//   // Dejamos pasar la petición (el navegador le pondrá las cookies automáticamente)
-//   return next(req).pipe(
-//     catchError((error: HttpErrorResponse) => {
-//       // Si el API Gateway responde 401, significa que la cookie expiró o es inválida
-//       if (error.status === 401) {
-//         console.warn('🔴 Sesión expirada (401 detectado por el Interceptor). Limpiando estado local.');
-//         authService.fullLocalLogout();
-//       }
-//       return throwError(() => error);
-//     })
-//   );
-// };
-
-
-
-
 // src/app/core/interceptor/auth.interceptor.ts
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { catchError, throwError } from 'rxjs';
+import { catchError, throwError, switchMap } from 'rxjs';
+import { Router } from '@angular/router';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
+  const router = inject(Router);
 
-  // 🟢 ENDPOINTS PÚBLICOS - No requieren autenticación
+  // 🟢 ENDPOINTS PÚBLICOS
   const publicEndpoints = [
     '/auth/login',
     '/auth/register',
-    '/auth/user-info',    // ← ¡ESTE ES EL CLAVE!
+    '/auth/user-info',
     '/auth/refresh',
     '/auth/forgot-password',
     '/auth/reset-password',
@@ -43,22 +21,37 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/actuator/info'
   ];
 
-  // Verificar si la URL actual es un endpoint público
   const isPublic = publicEndpoints.some(endpoint => req.url.includes(endpoint));
 
-  // Si es público, pasar sin interceptar errores 401
+  // ✅ CLONAR CON withCredentials: true (CRUCIAL PARA COOKIES)
+  const reqWithCreds = req.clone({
+    withCredentials: true
+  });
+
   if (isPublic) {
-    return next(req);
+    return next(reqWithCreds);
   }
 
-  // Para endpoints protegidos, pasar la petición
-  return next(req).pipe(
+  return next(reqWithCreds).pipe(
     catchError((error: HttpErrorResponse) => {
-      // SOLO manejar 401 en endpoints NO públicos
-      if (error.status === 401) {
-        console.warn('🔴 Sesión expirada en endpoint protegido:', req.url);
-        authService.fullLocalLogout();
+      if (error.status === 401 && !req.url.includes('/refresh')) {
+        console.warn('🔴 Access token expirado, intentando refresh...');
+        
+        return authService.refreshToken().pipe(
+          switchMap(() => {
+            console.log('✅ Token renovado, reintentando petición:', req.url);
+            // ✅ Reintentar CON withCredentials
+            return next(reqWithCreds);
+          }),
+          catchError((refreshError) => {
+            console.warn('🔴 Refresh token expirado, redirigiendo a login');
+            authService.fullLocalLogout();
+            router.navigate(['/login']);
+            return throwError(() => refreshError);
+          })
+        );
       }
+      
       return throwError(() => error);
     })
   );

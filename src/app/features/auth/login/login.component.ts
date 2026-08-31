@@ -1,6 +1,19 @@
 // src/app/features/auth/login/login.component.ts
-import { Component, signal, inject, OnDestroy, ViewChild, ElementRef, OnInit, ChangeDetectorRef, AfterViewInit, Renderer2, NgZone } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { 
+  Component, 
+  signal, 
+  inject, 
+  OnDestroy, 
+  ViewChild, 
+  ElementRef, 
+  OnInit, 
+  ChangeDetectorRef, 
+  AfterViewInit, 
+  Renderer2, 
+  NgZone,
+  ChangeDetectionStrategy  // ← Añadir esta línea
+} from '@angular/core';
+
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { finalize, Subscription, Subject, takeUntil } from 'rxjs';
@@ -30,7 +43,6 @@ import { FieldCleanupService } from '../../services/voz/field-cleanup.service';
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     RouterModule,
     MatCardModule,
@@ -44,6 +56,7 @@ import { FieldCleanupService } from '../../services/voz/field-cleanup.service';
     FocusTrapDirective,
   ],
   templateUrl: './login.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush, // ✅ CORREGIDO
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -122,82 +135,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-
-  
-  // ngOnInit(): void {
-  //   console.log('✅ LoginComponent ngOnInit');
-
-  //   this.voiceContext.setContext({
-  //     activationMessage: this.WELCOME_MESSAGE,
-  //     availableCommands: [
-  //       'usuario', 'contraseña', 'enviar', 'limpiar', 'mostrar contraseña', 
-  //       'ocultar contraseña', 'registro', 'recuperar', 'volver', 
-  //       'silenciar micrófono', 'ayuda', 'leer campos',
-  //       'privacidad', 'condiciones' 
-  //     ],
-  //     preventBackend: true
-  //   });
-
-  //   this.subscribeToVoiceTranscript();
-  //   this.subscribeToOrchestrator();
-
-  //   if (environment.enableLogs) {
-  //     this.orchestrator.configure({ defaultTimeout: 10000, autoResetDelay: 3000, maxRetries: 2 });
-  //   }
-
-  //   this.voiceService.ready$
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe((ready) => {
-  //       if (!ready && !this.isDestroyed) {
-  //         console.log('🔄 [Login] Reconocimiento caído, reactivando...');
-  //         setTimeout(() => {
-  //           if (!this.isDestroyed) {
-  //             this.voiceService.startListening();
-  //           }
-  //         }, 500);
-  //       }
-  //     });
-
-  //   setTimeout(() => {
-  //     if (!this.isDestroyed && !this.voiceService.isRecognitionActive()) {
-  //       console.log('🎤 [Login] Reconocimiento inactivo, iniciando...');
-  //       this.voiceService.startListening();
-  //     }
-  //   }, 1000);
-
-  //   this.speakWelcomeIfActive();
-
-  //   // Registrar campos para limpieza universal
-  //   this.registerFieldsForCleanup();
-  // }
-
-  // ngAfterViewInit(): void {
-  //   console.log('👀 LoginComponent AfterViewInit');
-  //   this.setupFocusListeners();
-  //   this.cdr.markForCheck();
-  // }
-
-  // private log(...args: any[]): void { if (environment.enableLogs) console.log(...args); }
-  // private logError(...args: any[]): void { if (environment.enableLogs) console.error(...args); }
-
-  // private speakWelcomeIfActive(): void {
-  //   if (!this.voiceService.isCurrentlyMuted()) {
-  //     this.welcomeTimeout = setTimeout(() => {
-  //       if (!this.isDestroyed) {
-  //         this.voiceService.speakAlways(this.WELCOME_MESSAGE);
-  //       }
-  //     }, 1500);
-  //   }
-  // }
-
-
-
-
-
-
-
-  // login.component.ts
-
+  //
   ngOnInit(): void {
     console.log('✅ LoginComponent ngOnInit');
 
@@ -239,12 +177,13 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     }, 1000);
 
+    // ✅ Solo habla si NO está muteado
     this.speakWelcomeIfActive();
 
     // Registrar campos para limpieza universal
     this.registerFieldsForCleanup();
 
-    // ✅ NUEVO: COMPROBAR ESTADO DEL MICRÓFONO AL ENTRAR
+    // ✅ COMPROBAR ESTADO DEL MICRÓFONO AL ENTRAR (SIN MOLESTAR)
     setTimeout(() => {
       if (!this.isDestroyed) {
         const isMicActive = this.voiceService.isRecognitionActive();
@@ -252,17 +191,16 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
         
         console.log(`🎤 [Login] Estado del micrófono: ${isMicActive ? '✅ ACTIVO' : '❌ INACTIVO'}, Muteado: ${isMuted}`);
         
+        // ✅ SOLO mostrar mensaje SI el micrófono está activo Y NO está muteado
         if (isMicActive && !isMuted) {
-          // ✅ Micrófono activo - avisar
           this.voiceService.speakAlways('Micrófono activo. Puedes usar comandos de voz para rellenar el formulario.');
-        } else if (isMuted) {
-          // 🔇 Micrófono muteado - avisar
-          this.voiceService.speakAlways('El micrófono está desactivado. Di "hola" para activarlo.');
         }
+        // ❌ Si está muteado, NO decir nada - el usuario eligió modo manual
       }
-    }, 2000); // ⬅️ 2 segundos para dar tiempo a que todo se inicialice
+    }, 2000);
   }
 
+  //
   ngAfterViewInit(): void {
     console.log('👀 LoginComponent AfterViewInit');
     this.setupFocusListeners();
@@ -293,13 +231,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-
-
-
-
-
-
-
+  //
   private subscribeToVoiceTranscript(): void {
     console.log('🔊 Login - Suscribiendo a transcript');
     this.voiceService.getTranscript()
@@ -688,21 +620,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    // if (synonyms.register.some(s => lower.includes(s))) {
-    //   console.log('🔍 Login: navegando a registro');
-    //   // ✅ LIMPIAR EL TRANSCRIPT ANTES DE NAVEGAR
-    //   this.voiceService.clearTranscript();
-    //   this.voiceService.speak('Navegando a registro');
-    //   setTimeout(() => {
-    //     if (!this.isDestroyed) {
-    //       this.router.navigate(['/register']);
-    //     }
-    //   }, 300);
-    //   return;
-    // }
-
-
-
     if (synonyms.register.some(s => lower.includes(s))) {
       console.log('🔍 Login: navegando a registro');
       this.voiceService.speak('Navegando a registro');
@@ -719,9 +636,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       }, 300);
       return;
     }
-
-
-
 
     if (synonyms.forgot.some(s => lower.includes(s))) {
       // ✅ LIMPIAR ANTES DE NAVEGAR
@@ -953,24 +867,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     this.log(`🎤 Dictado activado para: ${target}`);
   }
 
-
-
-  // private focusInput(target: 'username' | 'password'): void {
-  //   if (this.isDestroyed) return;
-  //   const inputElement = target === 'username' ? this.usernameInput?.nativeElement : this.passwordInput?.nativeElement;
-  //   if (inputElement) {
-  //     setTimeout(() => {
-  //       if (!this.isDestroyed) {
-  //         inputElement.focus({ preventScroll: true });
-  //         inputElement.select();
-  //         this.cdr.markForCheck();
-  //       }
-  //     }, 100);
-  //   }
-  // }
-
-
-
   //
   private focusInput(target: 'username' | 'password'): void {
     if (this.isDestroyed) return;
@@ -990,9 +886,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-
-
-
+  //
   private handleDictation(text: string): void {
     if (this.isDestroyed) return;
     const target = this.dictationTarget!;
@@ -1097,96 +991,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   //
-  //private stopDictation(finalValue?: string, silent = false): void {
-  //   if (this.isDestroyed) return;
-  //   this.log(`🔴 stopDictation (silent: ${silent})`);
-  //   const target = this.dictationTarget;
-  //   if (target) {
-  //     const formControlName = target === 'username' ? 'usernameOrEmail' : 'password';
-  //     const control = this.loginForm.get(formControlName);
-  //     let value = finalValue !== undefined ? finalValue : control?.value || '';
-  //     value = value.trimEnd();
-
-  //     if (value && value.length > 0) {
-  //       this.updateFormAndInputDirectly(target, value);
-
-  //       // ✅ Validación para usuario
-  //       if (target === 'username') {
-  //         control?.markAsTouched();
-  //         control?.updateValueAndValidity();
-  //         if (control?.invalid) {
-  //           // ❌ Usuario inválido: NO borrar, solo avisar
-  //           const errors = this.getUsernameErrors();
-  //           const msg = errors || 'El usuario no es válido. Debe tener al menos 3 caracteres y solo letras, números, . _ @ ! ? - y sin espacios.';
-  //           this.voiceService.speak(`Error: ${msg}. Puedes corregirlo manualmente o decir "usuario" para intentarlo de nuevo.`);
-  //           // Enfocar el campo para que el usuario pueda corregir manualmente
-  //           setTimeout(() => this.focusInput('username'), 500);
-  //           // Salir del modo dictado, pero mantener el texto
-  //           this.dictationMode = false;
-  //           this.dictationTarget = null;
-  //           this.dictationBuffer = '';
-  //           this.cdr.markForCheck();
-  //           return;
-  //         } else {
-  //           // ✅ Usuario válido
-  //           if (!silent) {
-  //             this.voiceService.speak(`Listo, usuario completado y válido.`);
-  //           }
-  //         }
-  //       }
-
-  //       // ✅ Validación para contraseña
-  //       if (target === 'password') {
-  //         control?.markAsTouched();
-  //         control?.updateValueAndValidity();
-  //         if (control?.invalid) {
-  //           // ❌ Contraseña inválida: NO borrar, solo avisar
-  //           const errors = this.getPasswordErrors();
-  //           const msg = errors || 'La contraseña no cumple los requisitos. Debe tener al menos 9 caracteres, mayúscula, minúscula, número y símbolo.';
-  //           this.voiceService.speak(`Error: ${msg}. Puedes corregirlo manualmente o decir "contraseña" para intentarlo de nuevo.`);
-  //           // Enfocar el campo para que el usuario pueda corregir manualmente
-  //           setTimeout(() => this.focusInput('password'), 500);
-  //           // Salir del modo dictado, pero mantener el texto
-  //           this.dictationMode = false;
-  //           this.dictationTarget = null;
-  //           this.dictationBuffer = '';
-  //           this.cdr.markForCheck();
-  //           return;
-  //         } else {
-  //           // ✅ Contraseña válida
-  //           if (!silent) {
-  //             this.voiceService.speak(`Listo, contraseña completada y válida.`);
-  //           }
-  //         }
-  //       }
-  //     } else {
-  //       if (!silent) {
-  //         this.voiceService.speak(`No se reconoció ${target === 'username' ? 'el usuario' : 'la contraseña'}.`);
-  //       }
-  //     }
-
-  //     if (target === 'username' && this.passwordInput && !silent) {
-  //       setTimeout(() => {
-  //         if (!this.isDestroyed) {
-  //           this.passwordInput.nativeElement.focus({ preventScroll: true });
-  //           this.cdr.markForCheck();
-  //         }
-  //       }, 300);
-  //     }
-  //   }
-  //   this.dictationMode = false;
-  //   this.dictationTarget = null;
-  //   this.dictationBuffer = '';
-  //   this.cdr.markForCheck();
-  // }
-
-
-
-
-
-
-
-
   private stopDictation(finalValue?: string, silent = false): void {
     if (this.isDestroyed) return;
     this.log(`🔴 stopDictation (silent: ${silent})`);
@@ -1295,12 +1099,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     this.cdr.markForCheck();
   }
 
-
-
-
-
-
-
   //
   private getUsernameErrors(): string | null {
     const ctrl = this.usernameOrEmailCtrl;
@@ -1322,10 +1120,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
     return null;
   }
 
-
-
-
-
+  //
   private handleAction(response: VoiceCommandResponse): void {
     if (this.isDestroyed) return;
     const action = response.action;
@@ -1397,87 +1192,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
   // ============================================================
   // LOGIN
   // ============================================================
-
-  // onLogin(): void {
-  //   if (this.isDestroyed) return;
-  //   if (this.dictationMode) this.stopDictation(undefined, true);
-
-  //   if (this.loginForm.invalid || this.isLoading()) {
-  //     this.loginForm.markAllAsTouched();
-  //     let errorMsg = 'El formulario tiene errores. ';
-  //     if (this.usernameOrEmailCtrl.invalid) {
-  //       if (this.usernameOrEmailCtrl.hasError('required')) {
-  //         errorMsg += 'El usuario es obligatorio. ';
-  //       } else if (this.usernameOrEmailCtrl.hasError('minlength')) {
-  //         errorMsg += 'El usuario debe tener al menos 3 caracteres. ';
-  //       }
-  //     }
-  //     if (this.passwordCtrl.invalid) {
-  //       const passwordErrors = this.getPasswordErrors();
-  //       if (passwordErrors) {
-  //         errorMsg += passwordErrors;
-  //       } else {
-  //         errorMsg += 'La contraseña no cumple los requisitos. ';
-  //       }
-  //     }
-  //     this.voiceService.speak(errorMsg);
-  //     this.cdr.markForCheck();
-  //     return;
-  //   }
-
-  //   this.isLoading.set(true);
-  //   this.errorMessage.set(null);
-  //   this.cdr.markForCheck();
-
-  //   const credentials: LoginRequest = {
-  //     usernameOrEmail: this.loginForm.get('usernameOrEmail')?.value || '',
-  //     password: this.loginForm.get('password')?.value || ''
-  //   };
-
-  //   console.log('🔐 Enviando login:', credentials);
-  //   this.authService.login(credentials)
-  //     .pipe(finalize(() => {
-  //       if (!this.isDestroyed) { this.isLoading.set(false); this.cdr.markForCheck(); }
-  //     }))
-  //     .subscribe({
-  //       next: () => {
-  //         if (!this.isDestroyed) {
-  //           console.log('✅ Login exitoso');
-  //           // ✅ LIMPIAR ANTES DE NAVEGAR
-  //           this.voiceService.clearTranscript();
-  //           this.voiceService.speak('¡Bienvenido!');
-  //           // this.router.navigate(['/dashboard']);
-  //           this.router.navigate([this.DEFAULT_REDIRECT]);
-  //         }
-  //       },
-  //       error: (err) => {
-  //         if (!this.isDestroyed) {
-  //           this.logError('Error en login:', err);
-  //           let msg: string;
-  //           if (err.status === 401 || err.status === 403) {
-  //             msg = 'Usuario o contraseña incorrectos.';
-  //           } else if (err.status === 0) {
-  //             msg = 'Error de conexión. Verifica tu internet.';
-  //           } else if (err.status === 500) {
-  //             msg = 'Error en el servidor. Intenta más tarde.';
-  //           } else {
-  //             msg = 'Error inesperado. Intenta de nuevo.';
-  //           }
-  //           this.errorMessage.set(msg);
-  //           this.voiceService.speak(msg);
-  //           this.focusUsernameInput();
-  //           this.cdr.markForCheck();
-  //         }
-  //       },
-  //     });
-  // }
-
-
-
-
-
-
-  // login.component.ts
 
   onLogin(): void {
     if (this.isDestroyed) return;
@@ -1599,9 +1313,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-
-
-
+  //
   getPasswordErrors(): string | null {
     const ctrl = this.passwordCtrl;
     if (!ctrl.dirty && !ctrl.touched) return null;

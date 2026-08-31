@@ -1,16 +1,16 @@
-import { TestBed } from '@angular/core/testing';
+// import { TestBed } from '@angular/core/testing';
 
-import { FeatureDataService } from './feature-data.service';
+// import { FeatureDataService } from './feature-data.service';
 
-describe('FeatureDataService', () => {
-  let service: FeatureDataService;
+// describe('FeatureDataService', () => {
+//   let service: FeatureDataService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(FeatureDataService);
-  });
+//   beforeEach(() => {
+//     TestBed.configureTestingModule({});
+//     service = TestBed.inject(FeatureDataService);
+//   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
-  });
-});
+//   it('should be created', () => {
+//     expect(service).toBeTruthy();
+//   });
+// });

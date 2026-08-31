@@ -612,13 +612,14 @@
 
 
 
-import { 
-  Component, 
-  inject, 
-  signal, 
-  input, 
-  effect, 
-  ViewEncapsulation
+import {
+  Component,
+  inject,
+  signal,
+  input,
+  effect,
+  ViewEncapsulation,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -643,6 +644,7 @@ export type MicState = 'idle' | 'listening' | 'error';
   ],
   templateUrl: './app-voice-toggle.component.html',
   styleUrl: './app-voice-toggle.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.Emulated
 })
 export class VoiceToggleComponent {

@@ -2693,11 +2693,11 @@ export class VoiceService implements OnDestroy {
     this.filterService.reset();
     
     if (this.recognition) {
-      this.recognition.onresult = null;
-      this.recognition.onerror = null;
-      this.recognition.onend = null;
-      this.recognition.onstart = null;
-      this.recognition = null;
+      this.recognition.onresult = null as any;
+      this.recognition.onerror = null as any;
+      this.recognition.onend = null as any;
+      this.recognition.onstart = null as any;
+      this.recognition = null as any;
     }
     
     if (this.enableLogs) {

@@ -1,10 +1,15 @@
-
 export interface LoginResponse {
-  token: string;
-  refreshToken: string | null;
-  type: string;        // En Java es "Bearer" por defecto
-  id: number;          // Long en Java equivale a number en TS
+  id: number;
   username: string;
   email: string;
-  roles: string[];     // List<String> se traduce como un array de strings
+  roles: string[];
+  permissions?: string[];        // Opcional
+  expiresIn?: number;            // Opcional
+  sessionId?: string;            // Opcional
+  // ✅ CAMBIAR token → accessToken (para que coincida con la respuesta del backend)
+  accessToken: string;
+  refreshToken: string | null;
+  // Mantener por compatibilidad si es necesario
+  token?: string;                // Opcional, para compatibilidad
+  type?: string;                 // Opcional
 }

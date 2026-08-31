@@ -1,7 +1,7 @@
 // src/app/shared/components/footer/footer.component.ts
 
-import { Component, Input, inject, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, inject, computed, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -32,13 +32,13 @@ export interface FooterLegalLink {
   selector: 'app-footer',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     MatIconModule,
     MatButtonModule,
     MatTooltipModule
-  ],
+],
   templateUrl: './footer.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent {

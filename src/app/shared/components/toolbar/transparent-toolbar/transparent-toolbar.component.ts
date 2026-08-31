@@ -1,6 +1,6 @@
 // // src/app/shared/components/transparent-toolbar/transparent-toolbar.component.ts
 
-// import { Component, inject, Input, Output, EventEmitter, signal, computed, HostListener, ChangeDetectorRef } from '@angular/core';
+// import { Component, inject, Input, Output, EventEmitter, signal, computed, HostListener, ChangeDetectorRef, OnChanges, SimpleChanges, OnInit, ChangeDetectionStrategy } from '@angular/core';
 // import { CommonModule } from '@angular/common';
 // import { Router, RouterModule } from '@angular/router';
 // import { MatToolbarModule } from '@angular/material/toolbar';
@@ -14,41 +14,33 @@
 // import { VoiceService } from '../../../../features/services/voz/voice.service';
 // import { ThemeService } from '../../../services/themes/themes.service';
 
-// export interface ToolbarConfig {
-//   title?: string;
-//   showLogo?: boolean;
-//   showThemeToggle?: boolean;
-//   showMicToggle?: boolean;
-//   showUserAvatar?: boolean;
-//   showBackButton?: boolean;
-//   showHelp?: boolean;
-//   showSearch?: boolean;
-//   showNotifications?: boolean;
-//   navLinks?: Array<{ label: string; route: string; icon?: string }>;
-//   backgroundColor?: string;
-//   position?: 'fixed' | 'sticky' | 'relative';
-//   backgroundOpacity?: number;
-// }
-
-// // src/app/shared/components/transparent-toolbar/transparent-toolbar.component.ts
+// // ============================================================
+// // INTERFACES
+// // ============================================================
 
 // export interface NavLink {
 //   label: string;
 //   route: string;
 //   icon?: string;
+//   roles?: string[];
 // }
 
 // export interface UserMenuItem {
 //   label?: string;
 //   icon?: string;
-//   route?: string; // para routerLink
-//   action?: () => void; // función a ejecutar al hacer clic
-//   isDivider?: boolean; // si es un separador
-//   class?: string; // clase CSS adicional (ej. 'logout-item')
+//   route?: string;
+//   action?: () => void;
+//   isDivider?: boolean;
+//   class?: string;
+//   roles?: string[];
+//   actionId?: string;
 // }
 
 // export interface ToolbarConfig {
 //   title?: string;
+//   position?: 'fixed' | 'sticky' | 'relative';
+//   backgroundColor?: string;
+//   backgroundOpacity?: number;
 //   showLogo?: boolean;
 //   showThemeToggle?: boolean;
 //   showMicToggle?: boolean;
@@ -64,44 +56,6 @@
 //   currentTimeDisplay?: string;
 //   navLinks?: NavLink[];
 //   userMenuItems?: UserMenuItem[];
-//   backgroundColor?: string;
-//   position?: 'fixed' | 'sticky' | 'relative';
-//   backgroundOpacity?: number;
-// }
-
-// // src/app/shared/components/transparent-toolbar/transparent-toolbar.component.ts
-
-// export interface ToolbarConfig {
-//   // Propiedades generales
-//   title?: string;
-//   position?: 'fixed' | 'sticky' | 'relative';
-//   backgroundColor?: string;
-//   backgroundOpacity?: number;
-
-//   // Visibilidad de secciones
-//   showLogo?: boolean;
-//   showThemeToggle?: boolean;
-//   showMicToggle?: boolean;
-//   showUserAvatar?: boolean;
-//   showBackButton?: boolean;
-//   showHelp?: boolean;
-//   showSearch?: boolean;
-//   showNotifications?: boolean;
-//   showUserGreeting?: boolean;
-
-//   // Contenido del saludo (si showUserGreeting es true)
-//   greeting?: string;
-//   userNameDisplay?: string;
-//   userEmailDisplay?: string;
-//   currentTimeDisplay?: string;
-
-//   // Enlaces de navegación (para toolbar y móvil)
-//   navLinks?: NavLink[];
-
-//   // Items del menú de usuario
-//   userMenuItems?: UserMenuItem[];
-
-//   // Notificaciones (opcional)
 //   unreadNotifications?: number;
 // }
 
@@ -120,9 +74,10 @@
 //     MatBadgeModule
 //   ],
 //   templateUrl: './transparent-toolbar.component.html',
+//   changeDetection: ChangeDetectionStrategy.OnPush,
 //   styleUrls: ['./transparent-toolbar.component.scss']
 // })
-// export class TransparentToolbarComponent {
+// export class TransparentToolbarComponent implements OnChanges, OnInit {
 //   // ============================================================
 //   // INYECCIONES
 //   // ============================================================
@@ -136,8 +91,7 @@
 //   // INPUTS
 //   // ============================================================
 //   @Input() config: ToolbarConfig = {};
-//   // ✅ NUEVO INPUT: items del menú de usuario (por defecto, los actuales)
-//   @Input() userMenuItems: UserMenuItem[] = [];
+
 //   @Input() title = 'VozAcción';
 //   @Input() showLogo = true;
 //   @Input() showThemeToggle = true;
@@ -147,10 +101,18 @@
 //   @Input() showHelp = false;
 //   @Input() showSearch = false;
 //   @Input() showNotifications = false;
-//   @Input() navLinks: Array<{ label: string; route: string; icon?: string }> = [];
+//   @Input() navLinks: NavLink[] = [];
 //   @Input() backgroundColor = 'transparent';
 //   @Input() position: 'fixed' | 'sticky' | 'relative' = 'fixed';
 //   @Input() backgroundOpacity = 0.85;
+
+//   @Input() greeting = '';
+//   @Input() userNameDisplay = '';
+//   @Input() userEmailDisplay = '';
+//   @Input() currentTimeDisplay = '';
+//   @Input() showUserGreeting = false;
+
+//   @Input() userMenuItems: UserMenuItem[] = [];
 
 //   // ============================================================
 //   // OUTPUTS
@@ -164,13 +126,7 @@
 //   @Output() login = new EventEmitter<void>();
 //   @Output() logout = new EventEmitter<void>();
 //   //
-//   // ✅ NUEVOS INPUTS PARA EL SALUDO
-//   @Input() greeting: string = '';
-//   @Input() userNameDisplay: string = '';
-//   @Input() userEmailDisplay: string = '';
-//   @Input() currentTimeDisplay: string = '';
-//   @Input() showUserGreeting: boolean = false;
-  
+//   @Output() mobileMenuClick = new EventEmitter<void>();
 
 //   // ============================================================
 //   // ESTADO
@@ -185,6 +141,24 @@
 //   readonly isScrolled = signal(false);
 //   unreadNotifications = 3;
 
+//   // ✅ Roles del usuario (desde currentUser)
+//   readonly userRoles = computed(() => {
+//     const user = this.authService.currentUser();
+//     return user?.roles || [];
+//   });
+
+//   // ============================================================
+//   // SEÑAL PARA LA CONFIGURACIÓN RESUELTA (reactiva)
+//   // ============================================================
+//   private _resolvedConfig = signal<ToolbarConfig>({});
+
+//   // Exponemos la señal como propiedad de solo lectura para el HTML
+//   readonly resolvedConfig = this._resolvedConfig.asReadonly();
+
+//     onMobileMenuClick(): void {
+//     this.mobileMenuClick.emit();
+//   }
+
 //   // ============================================================
 //   // HOST LISTENERS
 //   // ============================================================
@@ -194,7 +168,100 @@
 //   }
 
 //   // ============================================================
-//   // COMPUTED PROPS
+//   // CICLO DE VIDA
+//   // ============================================================
+//   ngOnInit(): void {
+//     this.updateResolvedConfig();
+//   }
+
+//   // ngOnChanges(changes: SimpleChanges): void {
+//   //   if (changes['config'] || changes['userMenuItems'] || changes['navLinks']) {
+//   //     this.updateResolvedConfig();
+//   //   }
+//   // }
+
+
+//   //
+//   ngOnChanges(changes: SimpleChanges): void {
+//     // ✅ Si currentTimeDisplay cambió, actualizar la configuración
+//     if (changes['currentTimeDisplay']) {
+//       this.updateResolvedConfig();
+//     }
+    
+//     if (changes['config'] || changes['userMenuItems'] || changes['navLinks']) {
+//       this.updateResolvedConfig();
+//     }
+//   }
+
+//   // ============================================================
+//   // MÉTODOS PRIVADOS
+//   // ============================================================
+
+//   /**
+//    * Construye la configuración final combinando inputs y config,
+//    * aplica el filtro de roles y actualiza la señal.
+//    */
+//   private updateResolvedConfig(): void {
+//     const c = this.config || {};
+//     const result = {
+//       title: this.title !== 'VozAcción' || c.title === undefined ? this.title : c.title,
+//       position: this.position || c.position,
+//       backgroundColor: this.backgroundColor || c.backgroundColor,
+//       backgroundOpacity: this.backgroundOpacity ?? c.backgroundOpacity,
+
+//       // ✅ AHORA EL JSON TIENE PRIORIDAD SOBRE LOS INPUTS POR DEFECTO
+//       showLogo: c.showLogo ?? this.showLogo,
+//       showThemeToggle: c.showThemeToggle ?? this.showThemeToggle,
+//       showMicToggle: c.showMicToggle ?? this.showMicToggle,
+//       showUserAvatar: c.showUserAvatar ?? this.showUserAvatar,
+//       showBackButton: c.showBackButton ?? this.showBackButton,
+//       showHelp: c.showHelp ?? this.showHelp,
+//       showSearch: c.showSearch ?? this.showSearch,
+//       showNotifications: c.showNotifications ?? this.showNotifications,
+//       showUserGreeting: c.showUserGreeting ?? this.showUserGreeting,
+
+//       greeting: this.greeting || c.greeting,
+//       userNameDisplay: this.userNameDisplay || c.userNameDisplay,
+//       userEmailDisplay: this.userEmailDisplay || c.userEmailDisplay,
+//       currentTimeDisplay: this.currentTimeDisplay || c.currentTimeDisplay,
+//       navLinks: this.navLinks.length ? this.navLinks : c.navLinks || [],
+//       userMenuItems: this.userMenuItems.length ? this.userMenuItems : c.userMenuItems || [],
+//       unreadNotifications: this.unreadNotifications ?? c.unreadNotifications,
+//     };
+
+//     const userRoles = this.userRoles();
+
+//     // Filtrar por roles
+//     const filteredNavLinks = this.filterByRoles(result.navLinks, userRoles);
+//     const filteredUserMenuItems = this.filterByRoles(result.userMenuItems, userRoles);
+
+//     // Actualizar la señal
+//     this._resolvedConfig.set({
+//       ...result,
+//       navLinks: filteredNavLinks,
+//       userMenuItems: filteredUserMenuItems,
+//     });
+
+//     // ✅ FORZAR DETECCIÓN DE CAMBIOS PARA QUE EL MENÚ SE ACTUALICE
+//     this.cdr.detectChanges();
+//   }
+
+//   /**
+//    * Función auxiliar para filtrar arrays de items por roles.
+//    */
+//   private filterByRoles<T extends { roles?: string[] }>(items: T[], userRoles: string[]): T[] {
+//     if (!items || items.length === 0) return [];
+//     if (!userRoles || userRoles.length === 0) {
+//       return items.filter(item => !item.roles || item.roles.length === 0);
+//     }
+//     return items.filter(item => {
+//       if (!item.roles || item.roles.length === 0) return true;
+//       return item.roles.some(role => userRoles.includes(role));
+//     });
+//   }
+
+//   // ============================================================
+//   // GETTERS (para compatibilidad con el HTML, aunque usamos señales)
 //   // ============================================================
 //   get backgroundColorStyle(): string {
 //     if (this.backgroundColor === 'transparent') {
@@ -215,26 +282,8 @@
 //     return classes.join(' ');
 //   }
 
-//   /**
-//    * Devuelve los items del menú de usuario.
-//    * Si no se proporcionan, usa los valores por defecto (compatibilidad).
-//    */
-//   get menuItems(): UserMenuItem[] {
-//     if (this.userMenuItems && this.userMenuItems.length > 0) {
-//       return this.userMenuItems;
-//     }
-//     // Items por defecto (los actuales)
-//     return [
-//       { label: 'Mi Perfil', icon: 'person', route: '/profile' },
-//       { label: 'Configuración', icon: 'settings', route: '/settings' },
-//       { label: 'Configuración de Voz', icon: 'settings_voice', route: '/voice-settings' },
-//       { isDivider: true },
-//       { label: 'Cerrar Sesión', icon: 'logout', class: 'logout-item', action: () => this.onLogout() }
-//     ];
-//   }
-
 //   // ============================================================
-//   // MÉTODOS
+//   // MÉTODOS PÚBLICOS
 //   // ============================================================
 //   toggleTheme(): void {
 //     this.themeService.toggleTheme();
@@ -327,9 +376,10 @@
 
 
 
+
 // src/app/shared/components/transparent-toolbar/transparent-toolbar.component.ts
 
-import { Component, inject, Input, Output, EventEmitter, signal, computed, HostListener, ChangeDetectorRef, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Component, inject, Input, Output, EventEmitter, signal, computed, HostListener, ChangeDetectorRef, OnChanges, SimpleChanges, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -342,6 +392,8 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../../../core/services/auth.service';
 import { VoiceService } from '../../../../features/services/voz/voice.service';
 import { ThemeService } from '../../../services/themes/themes.service';
+// ✅ AÑADIDO: IMPORTAR SERVICIO DE PREFERENCIAS
+import { UserPreferencesService } from '../../../services/user-preferences/user-preferences.service';
 
 // ============================================================
 // INTERFACES
@@ -403,6 +455,7 @@ export interface ToolbarConfig {
     MatBadgeModule
   ],
   templateUrl: './transparent-toolbar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./transparent-toolbar.component.scss']
 })
 export class TransparentToolbarComponent implements OnChanges, OnInit {
@@ -414,6 +467,8 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
   private authService = inject(AuthService);
   private themeService = inject(ThemeService);
   private voiceService = inject(VoiceService);
+  // ✅ AÑADIDO: INYECTAR SERVICIO DE PREFERENCIAS
+  private userPreferences = inject(UserPreferencesService);
 
   // ============================================================
   // INPUTS
@@ -453,7 +508,6 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
   @Output() notificationClick = new EventEmitter<void>();
   @Output() login = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
-  //
   @Output() mobileMenuClick = new EventEmitter<void>();
 
   // ============================================================
@@ -469,21 +523,18 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
   readonly isScrolled = signal(false);
   unreadNotifications = 3;
 
-  // ✅ Roles del usuario (desde currentUser)
   readonly userRoles = computed(() => {
     const user = this.authService.currentUser();
     return user?.roles || [];
   });
 
   // ============================================================
-  // SEÑAL PARA LA CONFIGURACIÓN RESUELTA (reactiva)
+  // SEÑAL PARA LA CONFIGURACIÓN RESUELTA
   // ============================================================
   private _resolvedConfig = signal<ToolbarConfig>({});
-
-  // Exponemos la señal como propiedad de solo lectura para el HTML
   readonly resolvedConfig = this._resolvedConfig.asReadonly();
 
-    onMobileMenuClick(): void {
+  onMobileMenuClick(): void {
     this.mobileMenuClick.emit();
   }
 
@@ -502,16 +553,7 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
     this.updateResolvedConfig();
   }
 
-  // ngOnChanges(changes: SimpleChanges): void {
-  //   if (changes['config'] || changes['userMenuItems'] || changes['navLinks']) {
-  //     this.updateResolvedConfig();
-  //   }
-  // }
-
-
-  //
   ngOnChanges(changes: SimpleChanges): void {
-    // ✅ Si currentTimeDisplay cambió, actualizar la configuración
     if (changes['currentTimeDisplay']) {
       this.updateResolvedConfig();
     }
@@ -525,10 +567,6 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
   // MÉTODOS PRIVADOS
   // ============================================================
 
-  /**
-   * Construye la configuración final combinando inputs y config,
-   * aplica el filtro de roles y actualiza la señal.
-   */
   private updateResolvedConfig(): void {
     const c = this.config || {};
     const result = {
@@ -537,7 +575,6 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
       backgroundColor: this.backgroundColor || c.backgroundColor,
       backgroundOpacity: this.backgroundOpacity ?? c.backgroundOpacity,
 
-      // ✅ AHORA EL JSON TIENE PRIORIDAD SOBRE LOS INPUTS POR DEFECTO
       showLogo: c.showLogo ?? this.showLogo,
       showThemeToggle: c.showThemeToggle ?? this.showThemeToggle,
       showMicToggle: c.showMicToggle ?? this.showMicToggle,
@@ -559,24 +596,18 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
 
     const userRoles = this.userRoles();
 
-    // Filtrar por roles
     const filteredNavLinks = this.filterByRoles(result.navLinks, userRoles);
     const filteredUserMenuItems = this.filterByRoles(result.userMenuItems, userRoles);
 
-    // Actualizar la señal
     this._resolvedConfig.set({
       ...result,
       navLinks: filteredNavLinks,
       userMenuItems: filteredUserMenuItems,
     });
 
-    // ✅ FORZAR DETECCIÓN DE CAMBIOS PARA QUE EL MENÚ SE ACTUALICE
     this.cdr.detectChanges();
   }
 
-  /**
-   * Función auxiliar para filtrar arrays de items por roles.
-   */
   private filterByRoles<T extends { roles?: string[] }>(items: T[], userRoles: string[]): T[] {
     if (!items || items.length === 0) return [];
     if (!userRoles || userRoles.length === 0) {
@@ -589,7 +620,7 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
   }
 
   // ============================================================
-  // GETTERS (para compatibilidad con el HTML, aunque usamos señales)
+  // GETTERS
   // ============================================================
   get backgroundColorStyle(): string {
     if (this.backgroundColor === 'transparent') {
@@ -613,15 +644,36 @@ export class TransparentToolbarComponent implements OnChanges, OnInit {
   // ============================================================
   // MÉTODOS PÚBLICOS
   // ============================================================
+
+  /**
+   * ✅ Toggle tema CON GUARDADO DE PREFERENCIAS (MODIFICADO)
+   */
   toggleTheme(): void {
     this.themeService.toggleTheme();
-    this.themeToggled.emit(this.themeService.currentTheme());
+    const newTheme = this.themeService.currentTheme();
+    this.themeToggled.emit(newTheme);
+    
+    // ✅ AÑADIDO: GUARDAR PREFERENCIA
+    this.userPreferences.updatePreference('theme', newTheme as 'light' | 'dark').subscribe({
+      next: () => console.log('✅ Tema guardado desde toolbar:', newTheme),
+      error: (error) => console.error('❌ Error guardando tema desde toolbar:', error)
+    });
   }
 
+  /**
+   * ✅ Toggle micrófono CON GUARDADO DE PREFERENCIAS (MODIFICADO)
+   */
   toggleMic(): void {
     this.voiceService.toggleMute();
-    this.isMicActive.set(!this.voiceService.isCurrentlyMuted());
-    this.micToggled.emit(this.isMicActive());
+    const isActive = !this.voiceService.isCurrentlyMuted();
+    this.isMicActive.set(isActive);
+    this.micToggled.emit(isActive);
+    
+    // ✅ AÑADIDO: GUARDAR PREFERENCIA
+    this.userPreferences.updatePreference('micEnabled', isActive).subscribe({
+      next: () => console.log('✅ Micrófono guardado desde toolbar:', isActive),
+      error: (error) => console.error('❌ Error guardando micrófono desde toolbar:', error)
+    });
   }
 
   toggleSearch(): void {

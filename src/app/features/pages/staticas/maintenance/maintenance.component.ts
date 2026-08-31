@@ -573,12 +573,12 @@
 
 
 
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
+
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../../../environments/environment';
 import { Subscription, interval, switchMap, startWith, catchError, of } from 'rxjs';
@@ -589,8 +589,9 @@ import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-maintenance',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, CommonModule],
+  imports: [MatButtonModule, MatIconModule],
   templateUrl: './maintenance.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './maintenance.component.scss',
 })
 export class MaintenanceComponent implements OnInit, OnDestroy {

@@ -160,13 +160,13 @@ export const routes: Routes = [
     title: 'Recuperar Contraseña - VozAcction',
     data: { showTheme: false }
   },
-  {
-    path: 'dashboard',
-    loadComponent: () => import('./features/pages/public/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [authGuard],   // ✅ REQUIERE AUTENTICACIÓN
-    title: 'Panel de Control - VozAcction',
-    data: { showTheme: false }
-  },
+  // {
+  //   path: 'dashboard',
+  //   loadComponent: () => import('./features/pages/public/dashboard/dashboard.component').then(m => m.DashboardComponent),
+  //   canActivate: [authGuard],   // ✅ REQUIERE AUTENTICACIÓN
+  //   title: 'Panel de Control - VozAcction',
+  //   data: { showTheme: false }
+  // },
   {
     path: 'dashboard-v2',
     loadComponent: () => import('./features/pages/public/dashboard-v2/dashboard-v2.component').then(m => m.DashboardV2Component),

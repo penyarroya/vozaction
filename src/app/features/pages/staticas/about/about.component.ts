@@ -1,5 +1,5 @@
-import { CommonModule, Location } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy, NgZone } from '@angular/core';
+import { Location } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { MaterialModules } from '../../../../shared/materials/material.collection';
@@ -10,8 +10,9 @@ import { VoiceService } from '../../../services/voz/voice.service';
 
 @Component({
   selector: 'app-about',
-  imports: [CommonModule, RouterModule, ...MaterialModules],
+  imports: [RouterModule, ...MaterialModules],
   templateUrl: './about.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './about.component.scss',
 })
 export class AboutComponent implements OnInit, OnDestroy {

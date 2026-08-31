@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransparentToolbarComponent } from './transparent-toolbar.component';
+import { baseTestProviders } from '../../../../../test-providers';
 
 describe('TransparentToolbarComponent', () => {
   let component: TransparentToolbarComponent;
@@ -8,7 +9,8 @@ describe('TransparentToolbarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TransparentToolbarComponent]
+      imports: [TransparentToolbarComponent],
+      providers: baseTestProviders,  // ← Añadir esta línea
     })
     .compileComponents();
 

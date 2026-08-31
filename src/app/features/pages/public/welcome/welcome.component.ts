@@ -1,6 +1,6 @@
 // // src/app/features/welcome/welcome.component.ts
-// import { Component, signal, OnInit, OnDestroy, inject, NgZone } from '@angular/core';
-// import { CommonModule } from '@angular/common';
+// import { Component, signal, OnInit, OnDestroy, inject, NgZone, ChangeDetectionStrategy } from '@angular/core';
+
 // import { RouterLink, Router } from '@angular/router';
 // import { MatIconModule } from '@angular/material/icon';
 // import { MatButtonModule } from '@angular/material/button';
@@ -12,8 +12,9 @@
 // @Component({
 //   selector: 'app-welcome',
 //   standalone: true,
-//   imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule],
+//   imports: [RouterLink, MatIconModule, MatButtonModule],
 //   templateUrl: './welcome.component.html',
+//   changeDetection: ChangeDetectionStrategy.OnPush,
 //   styleUrls: ['./welcome.component.scss']
 // })
 // export class WelcomeComponent implements OnInit, OnDestroy {
@@ -23,7 +24,7 @@
 //   private voiceService = inject(VoiceService);
 //   private ngZone = inject(NgZone);
 
-//   // ✅ AÑADIR ESTAS VARIABLES
+//   // ✅ Variables para control de duplicados
 //   private lastProcessedCommand = '';
 //   private lastProcessedTime = 0;
 //   private readonly COMMAND_DEBOUNCE = 2000;
@@ -32,12 +33,10 @@
 //   totalDuration = signal<number>(0);
 
 //   private isDestroyed = false;
-//   private activationMessageShown = false;
 //   private welcomeShown = false;
 //   private destroy$ = new Subject<void>();
 
 //   private lastCommandTime = 0;
-//   //private readonly COMMAND_DEBOUNCE = 1500;
 
 //   ngOnInit(): void {
 //     console.log('✅ WelcomeComponent inicializado (con voz contextual)');
@@ -61,23 +60,84 @@
 //         });
 //       });
 
-//     // ✅ SOLO mostrar mensaje de bienvenida si el micrófono está activo
+//     // ✅ COMPROBAR ESTADO DEL MICRÓFONO AL ENTRAR
 //     setTimeout(() => {
-//       if (!this.isDestroyed && !this.voiceService.isCurrentlyMuted() && !this.welcomeShown) {
+//       if (!this.isDestroyed && !this.welcomeShown) {
 //         this.welcomeShown = true;
-//         console.log('🎤 [Welcome] Micrófono activo, mensaje de bienvenida');
-//         this.voiceService.speakWhenReady(context.activationMessage);
+//         this.checkMicrophoneStatus(context);
 //       }
 //     }, 800);
 //   }
 
 //   // ============================================================
-//   // ✅ MANEJAR COMANDOS DE VOZ - CORREGIDO
+//   // 🔥 NUEVO: COMPROBAR ESTADO DEL MICRÓFONO
+//   // ============================================================
+//   private checkMicrophoneStatus(context: any): void {
+//     const isMuted = this.voiceService.isCurrentlyMuted();
+//     const isActive = this.voiceService.isRecognitionActive();
+    
+//     console.log(`🎤 [Welcome] Estado del micrófono: ${isMuted ? '🔇 MUTEADO' : '🔊 ACTIVO'}, Reconocimiento: ${isActive ? '✅ ACTIVO' : '❌ INACTIVO'}`);
+    
+//     if (isMuted || !isActive) {
+//       console.log('🔇 [Welcome] Micrófono desactivado');
+      
+//       const headphonesMessageShown = (this.voiceService as any).headphonesMessageShown;
+      
+//       if (!headphonesMessageShown) {
+//         console.log('🔇 [Welcome] monitorHeadphones() no ha hablado, anunciando...');
+//         // ✅ CAMBIAR: speakAlways → speak
+//         this.voiceService.speak('El micrófono está desactivado. Di "hola" para activarlo.');
+//       } else {
+//         console.log('🔇 [Welcome] monitorHeadphones() ya habló, omitiendo mensaje');
+//       }
+      
+//       this.waitForWakeWord(context);
+//     } else {
+//       console.log('🎤 [Welcome] Micrófono activo, mensaje de bienvenida');
+//       this.voiceService.speakWhenReady(context.activationMessage);
+//     }
+//   }
+
+
+//   /**
+//    * Espera a que el usuario diga "hola" para activar el micrófono
+//   */
+//   private waitForWakeWord(context: any): void {
+//     console.log('👂 [Welcome] Esperando "hola" para activar micrófono...');
+    
+//     const wakeSubscription = this.voiceService
+//       .getTranscript()
+//       .pipe(takeUntil(this.destroy$))
+//       .subscribe((text: string) => {
+//         if (this.isDestroyed || !text) return;
+        
+//         const lower = text.toLowerCase().trim();
+//         if (lower === 'hola' || lower.includes('hola')) {
+//           console.log('🔊 [Welcome] "hola" detectado, activando micrófono...');
+          
+//           this.voiceService.unmute();
+          
+//           setTimeout(() => {
+//             if (!this.isDestroyed) {
+//               // ✅ CAMBIAR: speakWhenReady → speak
+//               this.voiceService.speak('Bienvenido a VozAcción. Puedes decir "Acerca de" o "iniciar sesión".');
+//             }
+//           }, 500);
+          
+//           wakeSubscription.unsubscribe();
+//         }
+//       });
+//   }
+
+
+
+//   // ============================================================
+//   // ✅ MANEJAR COMANDOS DE VOZ
 //   // ============================================================
 //   private handleVoiceCommand(text: string): void {
 //     if (this.isDestroyed) return;
     
-//     // ✅ NUEVO: NO procesar si el sistema está hablando
+//     // ✅ NO procesar si el sistema está hablando
 //     if (window.speechSynthesis.speaking) {
 //       console.log('🔇 [Welcome] Sistema hablando, ignorando comando:', text);
 //       return;
@@ -99,7 +159,7 @@
 //     // COMANDOS RECONOCIDOS EN WELCOME
 //     // ============================================================
 
-//     // 🔥 "login" / "iniciar sesión" - navega al login (PRIMERO)
+//     // 🔥 "login" / "iniciar sesión" - navega al login
 //     if (lower.includes('login') || 
 //         lower.includes('iniciar sesión') || 
 //         lower.includes('inicio sesión') || 
@@ -118,7 +178,7 @@
 //       return;
 //     }
 
-//     // 🔥 "acerca de" - navega a About (SEGUNDO)
+//     // 🔥 "acerca de" - navega a About
 //     if (lower.includes('acerca de') || lower.includes('quienes somos') || lower.includes('qué es') || lower.includes('about')) {
 //       console.log('ℹ️ [Welcome] Navegando a About...');
 //       this.router.navigate(['/about']);
@@ -159,7 +219,9 @@
 //     console.log(`⏭️ [Welcome] Comando no reconocido: "${lower}"`);
 //   }
 
-//   //
+//   // ============================================================
+//   // CARGAR IMÁGENES
+//   // ============================================================
 //   private loadImages(): void {
 //     this.http.get<string[]>('img/images.json')
 //       .pipe(finalize(() => {
@@ -184,6 +246,9 @@
 //       });
 //   }
 
+//   // ============================================================
+//   // NAVEGACIÓN
+//   // ============================================================
 //   goToLogin(): void {
 //     this.router.navigate(['/login']);
 //   }
@@ -192,6 +257,9 @@
 //     this.router.navigate(['/about']);
 //   }
 
+//   // ============================================================
+//   // DESTRUCCIÓN
+//   // ============================================================
 //   ngOnDestroy(): void {
 //     this.isDestroyed = true;
 //     this.destroy$.next();
@@ -212,9 +280,12 @@
 
 
 
+
+
 // src/app/features/welcome/welcome.component.ts
-import { Component, signal, OnInit, OnDestroy, inject, NgZone } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
+import { Component, signal, OnInit, OnDestroy, inject, NgZone, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterLink, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -222,12 +293,15 @@ import { HttpClient } from '@angular/common/http';
 import { finalize, Subject, takeUntil } from 'rxjs';
 import { VoiceContextService } from '../../../services/voz/voice-context.service';
 import { VoiceService } from '../../../services/voz/voice.service';
+// ✅ CAMBIO 1: AÑADIR IMPORTACIÓN
+import { UserPreferencesService } from '../../../../shared/services/user-preferences/user-preferences.service';
 
 @Component({
   selector: 'app-welcome',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule],
+  imports: [RouterLink, MatIconModule, MatButtonModule],
   templateUrl: './welcome.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./welcome.component.scss']
 })
 export class WelcomeComponent implements OnInit, OnDestroy {
@@ -236,6 +310,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   private voiceContext = inject(VoiceContextService);
   private voiceService = inject(VoiceService);
   private ngZone = inject(NgZone);
+  // ✅ CAMBIO 2: AÑADIR INYECCIÓN
+  private userPreferences = inject(UserPreferencesService);
 
   // ✅ Variables para control de duplicados
   private lastProcessedCommand = '';
@@ -283,13 +359,20 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   }
 
   // ============================================================
-  // 🔥 NUEVO: COMPROBAR ESTADO DEL MICRÓFONO
+  // 🔥 COMPROBAR ESTADO DEL MICRÓFONO
   // ============================================================
   private checkMicrophoneStatus(context: any): void {
+    // ✅ CAMBIO 3: LEER PREFERENCIAS
+    const prefs = this.userPreferences.getCurrentPreferences();
     const isMuted = this.voiceService.isCurrentlyMuted();
     const isActive = this.voiceService.isRecognitionActive();
     
     console.log(`🎤 [Welcome] Estado del micrófono: ${isMuted ? '🔇 MUTEADO' : '🔊 ACTIVO'}, Reconocimiento: ${isActive ? '✅ ACTIVO' : '❌ INACTIVO'}`);
+    
+    // ✅ CAMBIO 3: Si preferencia dice desactivado, muteamos
+    if (prefs.micEnabled === false && !isMuted) {
+      this.voiceService.mute();
+    }
     
     if (isMuted || !isActive) {
       console.log('🔇 [Welcome] Micrófono desactivado');
@@ -298,7 +381,6 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       
       if (!headphonesMessageShown) {
         console.log('🔇 [Welcome] monitorHeadphones() no ha hablado, anunciando...');
-        // ✅ CAMBIAR: speakAlways → speak
         this.voiceService.speak('El micrófono está desactivado. Di "hola" para activarlo.');
       } else {
         console.log('🔇 [Welcome] monitorHeadphones() ya habló, omitiendo mensaje');
@@ -330,9 +412,11 @@ export class WelcomeComponent implements OnInit, OnDestroy {
           
           this.voiceService.unmute();
           
+          // ✅ CAMBIO 4: GUARDAR PREFERENCIA AL DECIR "HOLA"
+          this.userPreferences.updatePreference('micEnabled', true).subscribe();
+          
           setTimeout(() => {
             if (!this.isDestroyed) {
-              // ✅ CAMBIAR: speakWhenReady → speak
               this.voiceService.speak('Bienvenido a VozAcción. Puedes decir "Acerca de" o "iniciar sesión".');
             }
           }, 500);
@@ -416,6 +500,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     if (lower.includes('silenciar micrófono') || lower.includes('dejar de escuchar') || lower.includes('silenciar')) {
       console.log('🔇 [Welcome] Silenciando micrófono');
       this.voiceService.mute();
+      // ✅ CAMBIO 5: GUARDAR PREFERENCIA AL SILENCIAR
+      this.userPreferences.updatePreference('micEnabled', false).subscribe();
       return;
     }
 
@@ -423,6 +509,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     if (lower.includes('activar micrófono') || lower.includes('encender micrófono') || lower.includes('desmutear') || lower.includes('escuchar')) {
       console.log('🔊 [Welcome] Activando micrófono');
       this.voiceService.unmute();
+      // ✅ CAMBIO 5: GUARDAR PREFERENCIA AL ACTIVAR
+      this.userPreferences.updatePreference('micEnabled', true).subscribe();
       return;
     }
 

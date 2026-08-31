@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ThemeToggleComponent } from './theme-toggle.component';
+import { baseTestProviders } from '../../../../test-providers';
 
 describe('ThemeToggleComponent', () => {
   let component: ThemeToggleComponent;
@@ -8,7 +9,8 @@ describe('ThemeToggleComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ThemeToggleComponent]
+      imports: [ThemeToggleComponent],
+      providers: baseTestProviders,  // ← Añadir esta línea
     })
     .compileComponents();
 
