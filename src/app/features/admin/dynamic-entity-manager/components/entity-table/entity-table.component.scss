@@ -1,0 +1,81 @@
+// src/app/features/admin/dynamic-entity-manager/components/entity-table/entity-table.component.scss
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 180px;
+  max-width: 350px;
+}
+
+.record-count {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary, #4a5568);
+  padding: 4px 16px;
+  background: var(--bg-secondary, #f7fafc);
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.table-container {
+  flex: 1;
+  overflow: auto;
+  min-height: 200px;
+  position: relative;
+}
+
+mat-table {
+  width: 100%;
+  min-width: 800px;
+}
+
+mat-cell, mat-header-cell {
+  padding: 8px 12px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 12px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--bg-secondary, #f7fafc);
+  border-radius: 12px;
+  border: 1px dashed var(--border-color, rgba(0,0,0,0.1));
+}
+
+.empty-state mat-icon {
+  font-size: 3.5rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  color: var(--text-muted, #a0aec0);
+}
+
+.empty-state p {
+  font-weight: 600;
+  color: var(--text-primary, #1a202c);
+  margin: 12px 0 4px;
+}
+
+mat-paginator {
+  flex-shrink: 0;
+  margin-top: 8px;
+}

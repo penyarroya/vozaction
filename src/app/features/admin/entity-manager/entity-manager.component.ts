@@ -38,7 +38,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
-import { environment } from '../../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment.development';
 
 
 // ============================================================
@@ -144,6 +144,9 @@ export class EntityManagerComponent implements OnInit, OnDestroy {
   // CONFIGURACIÓN DE ENTIDADES
   // ============================================================
   private getEntityConfigs(): EntityConfig[] {
+
+     console.log('📦 getEntityConfigs() - Configurando entidades...');
+
     return [
       {
         entityName: 'UserEntity',
@@ -286,9 +289,27 @@ export class EntityManagerComponent implements OnInit, OnDestroy {
     this.loadEntity();
   }
 
+  // loadEntity(): void {
+  //   this.config = this.getEntityConfig(this.selectedEntity)!;
+  //   if (!this.config) {
+  //     this.snackBar.open('Entidad no encontrada', 'Cerrar', { duration: 3000 });
+  //     return;
+  //   }
+  //   this.initTable();
+  //   this.initForm();
+  //   this.loadData();
+  // }
+
+
+
   loadEntity(): void {
+    console.log('🔍 loadEntity() - selectedEntity:', this.selectedEntity);  // 👈 AÑADE ESTO
+    
     this.config = this.getEntityConfig(this.selectedEntity)!;
+    console.log('🔍 config:', this.config);  // 👈 AÑADE ESTO
+    
     if (!this.config) {
+      console.error('❌ Config no encontrada para:', this.selectedEntity);  // 👈 AÑADE ESTO
       this.snackBar.open('Entidad no encontrada', 'Cerrar', { duration: 3000 });
       return;
     }
@@ -296,6 +317,7 @@ export class EntityManagerComponent implements OnInit, OnDestroy {
     this.initForm();
     this.loadData();
   }
+
 
   // ============================================================
   // INICIALIZACIÓN

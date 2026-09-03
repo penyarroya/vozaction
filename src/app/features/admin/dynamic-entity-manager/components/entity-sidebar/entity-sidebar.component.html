@@ -1,0 +1,123 @@
+<!-- src/app/features/admin/dynamic-entity-manager/components/entity-sidebar/entity-sidebar.component.html -->
+
+<aside 
+  class="entity-sidebar"
+  [style.width.px]="currentWidth()"
+  [style.height]="sidebarHeight()"
+  [style.background-color]="backgroundColor()"
+  [style.border-color]="borderColor()"
+  [style.font-size.px]="fontSize()"
+  [class.minimized]="isMinimized()"
+>
+
+  <!-- HEADER -->
+  <div class="sidebar-header">
+    @if (!isMinimized()) {
+      <mat-icon>storage</mat-icon>
+      <span class="sidebar-title">Entidades</span>
+    }
+    @if (isMinimized()) {
+      <span class="sidebar-title-mini">📂</span>
+    }
+    
+    <div class="header-actions">
+      @if (!isMinimized()) {
+        <button class="btn-config" (click)="toggleConfig()" title="Configurar sidebar">
+          <mat-icon>settings</mat-icon>
+        </button>
+      }
+      <button class="btn-minimize" (click)="toggleMinimize()" [title]="isMinimized() ? 'Expandir' : 'Minimizar'">
+        <mat-icon>{{ isMinimized() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- CONFIG PANEL -->
+  @if (showConfig() && !isMinimized()) {
+    <div class="config-panel">
+      <h4>⚙️ Configuración</h4>
+      
+      <div class="config-group">
+        <label>Ancho: {{ sidebarWidth() }}px</label>
+        <input type="range" [min]="120" [max]="400" [step]="10" 
+               [value]="sidebarWidth()" 
+               (input)="onWidthChange($any($event.target).valueAsNumber)" />
+      </div>
+
+      <div class="config-group">
+        <label>Altura:</label>
+        <select [value]="sidebarHeight()" (change)="onHeightChange($any($event.target).value)">
+          <option value="100%">100%</option>
+          <option value="100vh">100vh</option>
+          <option value="calc(100vh - 64px)">Header - 64px</option>
+          <option value="calc(100vh - 80px)">Header - 80px</option>
+        </select>
+      </div>
+
+      <div class="config-group">
+        <label>Tamaño texto: {{ fontSize() }}px</label>
+        <input type="range" [min]="10" [max]="20" [step]="1" 
+               [value]="fontSize()" 
+               (input)="onFontSizeChange($any($event.target).valueAsNumber)" />
+      </div>
+
+      <div class="config-group">
+        <label>Color fondo:</label>
+        <input type="color" [value]="backgroundColor()" 
+               (input)="onColorChange('bg', $any($event.target).value)" />
+      </div>
+
+      <div class="config-group">
+        <label>Color borde:</label>
+        <input type="color" [value]="borderColor()" 
+               (input)="onColorChange('border', $any($event.target).value)" />
+      </div>
+
+      <div class="config-group checkbox-group">
+        <label>
+          <input type="checkbox" [checked]="showIcons()" (change)="toggleIcons()" />
+          Mostrar iconos
+        </label>
+      </div>
+
+      <div class="config-group checkbox-group">
+        <label>
+          <input type="checkbox" [checked]="scrollable()" (change)="toggleScroll()" />
+          Scroll vertical
+        </label>
+      </div>
+
+      <button class="btn-reset" (click)="resetConfig()">🔄 Restablecer</button>
+      <button class="btn-close-config" (click)="toggleConfig()">✕ Cerrar</button>
+    </div>
+  }
+
+  <!-- NAV -->
+  <nav 
+    class="entity-nav"
+    [style.overflow-y]="scrollable() ? 'auto' : 'visible'"
+    [style.padding-bottom]="bottomPadding"
+  >
+    @for (entity of entityList(); track entity.value) {
+      <a
+        class="nav-item"
+        [class.active]="selectedEntity() === entity.value"
+        (click)="selectEntity(entity.value)"
+        [class.no-icon]="!showIcons()"
+      >
+        @if (showIcons() && !isMinimized()) {
+          <span class="nav-icon">{{ entity.icon || '📄' }}</span>
+        }
+        @if (!isMinimized()) {
+          <span class="nav-label">{{ entity.label }}</span>
+        }
+        @if (isMinimized()) {
+          <span class="nav-label-mini">{{ entity.icon || '📄' }}</span>
+        }
+        @if (selectedEntity() === entity.value && !isMinimized()) {
+          <span class="nav-indicator"></span>
+        }
+      </a>
+    }
+  </nav>
+</aside>

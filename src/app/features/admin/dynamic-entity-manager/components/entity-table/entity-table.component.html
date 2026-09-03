@@ -1,0 +1,80 @@
+<!-- src/app/features/admin/dynamic-entity-manager/components/entity-table/entity-table.component.html -->
+
+<!-- Toolbar -->
+<div class="table-toolbar">
+  @if (config()?.tableSettings?.showSearch !== false) {
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar...</mat-label>
+      <input 
+        matInput 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchInput()" 
+        placeholder="Buscar..."
+      >
+      <mat-icon matPrefix>search</mat-icon>
+      @if (searchTerm()) {
+        <button mat-icon-button matSuffix (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  }
+  <span class="record-count">{{ total() }} registros</span>
+</div>
+
+<!-- Table -->
+<div class="table-container">
+  @if (loading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Cargando...</p>
+    </div>
+  } @else {
+    <mat-table [dataSource]="data()">
+      <!-- Columnas dinámicas -->
+      @for (field of visibleFields(); track field.key) {
+        <ng-container [matColumnDef]="field.key">
+          <mat-header-cell *matHeaderCellDef>{{ field.label }}</mat-header-cell>
+          <mat-cell *matCellDef="let item">
+            {{ item[field.key] | entityValue:field.type }}
+          </mat-cell>
+        </ng-container>
+      }
+
+      <!-- Columna de acciones -->
+      @if (showActions() && config()?.tableSettings?.showActions !== false) {
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
+          <mat-cell *matCellDef="let item">
+            <button mat-icon-button (click)="onEdit.emit(item.id)" matTooltip="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button (click)="onDelete.emit(item.id)" matTooltip="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+      }
+
+      <mat-header-row *matHeaderRowDef="displayedColumns()"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns();"></mat-row>
+    </mat-table>
+
+    @if (data().length === 0) {
+      <div class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <p>No hay {{ config()?.displayName | lowercase }}</p>
+      </div>
+    }
+  }
+</div>
+
+<!-- Paginador -->
+<mat-paginator
+  [length]="total()"
+  [pageSize]="pageSize()"
+  [pageIndex]="pageIndex()"
+  [pageSizeOptions]="config()?.tableSettings?.pageSizeOptions || [5, 10, 25, 50, 100]"
+  (page)="onPageChangeEvent($event)"
+  showFirstLastButtons>
+</mat-paginator>

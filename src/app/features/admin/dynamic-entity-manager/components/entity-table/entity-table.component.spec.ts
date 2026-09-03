@@ -1,0 +1,22 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { EntityTableComponent } from './entity-table.component';
+
+describe('EntityTableComponent', () => {
+  let component: EntityTableComponent;
+  let fixture: ComponentFixture<EntityTableComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [EntityTableComponent]
+    })
+      .compileComponents();
+
+    fixture = TestBed.createComponent(EntityTableComponent);
+    component = fixture.componentInstance;
+    await fixture.whenStable();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
