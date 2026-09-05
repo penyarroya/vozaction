@@ -1,0 +1,179 @@
+<!-- <app-transparent-toolbar
+  [config]="toolbarConfig()"
+  [greeting]="greeting"
+  [userNameDisplay]="userName"
+  [userEmailDisplay]="userEmail"
+  [currentTimeDisplay]="formattedCurrentTime"
+  [showUserGreeting]="true"
+  (search)="onSearch($event)"
+  (help)="showHelp()"
+  (login)="goToLogin()">
+</app-transparent-toolbar>
+
+<div class="maintenance-layout">
+  
+  <app-entity-sidebar
+    [selectedEntity]="selectedEntity()?.name || ''"
+    (onSelect)="onSelectEntityByName($event)">
+  </app-entity-sidebar>
+
+  <main class="maintenance-main">
+    
+    @if (selectedEntity(); as currentEntity) {
+      <header class="maintenance-toolbar">
+        <div class="toolbar-title">
+          <h1>{{ currentEntity.label }}</h1>
+          <span class="badge">{{ items().length }} registros</span>
+        </div>
+
+        <div class="toolbar-actions">
+          <div class="search-box">
+            <mat-icon>search</mat-icon>
+            <input 
+                type="text" 
+                placeholder="Buscar en {{ currentEntity.label }}..." 
+                (input)="onSearch($any($event.target).value)" 
+                [value]="searchTerm()"
+                />
+          </div>
+          
+          <button class="btn-refresh" (click)="loadEntityData(currentEntity)" title="Recargar datos">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+      </header>
+
+      <div class="content-body">
+        @if (isLoading()) {
+          <div class="loading-state">
+            <mat-icon class="spin">sync</mat-icon>
+            <p>Cargando registros de {{ currentEntity.label }}...</p>
+          </div>
+        } @else {
+          <div class="table-container">
+            @if (filteredItems().length > 0) {
+              <table>
+                <thead>
+                  <tr>
+                    @for (col of getColumns(); track col) {
+                      <th>{{ col }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of filteredItems(); track item.id || $index) {
+                    <tr>
+                      @for (col of getColumns(); track col) {
+                        <td>{{ item[col] ?? '-' }}</td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <div class="empty-state">
+                <mat-icon>inbox</mat-icon>
+                <p>No se encontraron registros para esta entidad.</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="welcome-placeholder">
+        <div class="placeholder-content">
+          <mat-icon class="large-icon">dns</mat-icon>
+          <h2>Panel de Mantenimiento de Base de Datos</h2>
+          <p>Selecciona una entidad en el menú lateral izquierdo para comenzar a ver y gestionar sus registros.</p>
+        </div>
+      </div>
+    }
+
+  </main>
+</div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Barra de navegación superior reutilizable -->
+<app-transparent-toolbar
+  [config]="toolbarConfig()"
+  [greeting]="greeting"
+  [userNameDisplay]="userName"
+  [userEmailDisplay]="userEmail"
+  [currentTimeDisplay]="formattedCurrentTime"
+  [showUserGreeting]="true"
+  (search)="onSearch($event)"
+  (help)="showHelp()"
+  (login)="goToLogin()">
+</app-transparent-toolbar>
+
+<div class="maintenance-layout">
+  
+  <!-- SIDEBAR REUTILIZABLE -->
+  <app-entity-sidebar
+    [selectedEntity]="selectedEntity()?.name || ''"
+    (onSelect)="onSelectEntityByName($event)">
+  </app-entity-sidebar>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="maintenance-main">
+    
+    @if (selectedEntity(); as currentEntity) {
+      
+      <!-- TOOLBAR SUPERIOR CON TÍTULO DE LA ENTIDAD -->
+      <header class="maintenance-toolbar">
+        <div class="toolbar-title">
+          <h1>{{ currentEntity.label }}</h1>
+        </div>
+      </header>
+
+      <!-- ÁREA DE DATOS AUTÓNOMA (Gestionada por tu componente entity-table) -->
+      <div class="content-body">
+    @if (!showForm()) {
+        <!-- Vista de la Tabla con el evento de creación añadido -->
+        <app-entity-table
+        [config]="selectedEntityConfig()"
+        [showActions]="true"
+        (onCrear)="openCreateForm()"
+        (onEdit)="editEntityItem($event)"
+        (onDelete)="deleteEntityItem($event)">
+        </app-entity-table>
+    } @else {
+        <!-- Vista del Formulario Dinámico -->
+        <app-entity-form
+        [entity]="selectedEntity()?.name || ''"
+        [data]="currentData()"
+        [isEditing]="isEditing()"
+        [loading]="loading()"
+        (onSave)="handleSave($event)"
+        (onCancel)="closeForm()">
+        </app-entity-form>
+    }
+    </div>
+
+    } @else {
+      <!-- ESTADO VACÍO INICIAL (Cuando ninguna entidad ha sido seleccionada) -->
+      <div class="welcome-placeholder">
+        <div class="placeholder-content">
+          <mat-icon class="large-icon">dns</mat-icon>
+          <h2>Panel de Mantenimiento de Base de Datos</h2>
+          <p>Selecciona una entidad en el menú lateral izquierdo para comenzar a ver y gestionar sus registros.</p>
+        </div>
+      </div>
+    }
+
+  </main>
+</div>

@@ -94,15 +94,13 @@
 
 // src/app/features/admin/dynamic-entity-manager/dynamic-entity-manager.component.ts
 
-import { Component, inject, signal, computed, effect, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { EntityFormComponent } from './components/entity-form/entity-form.component';
-import { EntityListComponent } from './components/entity-list/entity-list.component';
-import { EntitySidebarComponent } from './components/entity-sidebar/entity-sidebar.component';
-import { getEntityConfig, ENTITY_REGISTRY } from './constants/entity-registry';
-import { EntityConfig } from './models/entity-config';
-import { EntityCrudService } from './services/entity-crud.service';
+import { getEntityConfig } from '../../../shared/constants/entity-registry';
+import { EntityConfig } from '../../admin/models/entity-config';
+import { EntityCrudService } from '../../../shared/services/sidebar/entity-crud.service';
+import { EntitySidebarComponent } from '../../../shared/components/entity-sidebar/entity-sidebar.component';
 
 @Component({
   selector: 'app-dynamic-entity-manager',

@@ -1,0 +1,158 @@
+{
+  "version": "1.0.1",
+  "metadata": {
+    "title": "Gestión de Entidades",
+    "description": "Configuración del sidebar para el dashboard",
+    "lastUpdated": "2026-09-04T10:00:00Z",
+    "author": "Admin",
+    "environment": "development"
+  },
+  "sidebar": {
+    "defaultWidth": 260,
+    "minWidth": 60,
+    "maxWidth": 400,
+    "defaultFontSize": 14,
+    "defaultOpen": true,
+    "breakpoints": {
+      "mobile": {
+        "width": 280,
+        "position": "overlay",
+        "defaultOpen": false
+      },
+      "tablet": {
+        "width": 240,
+        "position": "push",
+        "defaultOpen": true
+      },
+      "desktop": {
+        "width": 260,
+        "position": "fixed",
+        "defaultOpen": true
+      }
+    },
+    "theming": {
+      "colors": {
+        "background": "var(--surface-container)",
+        "hover": "var(--surface-container-hover)",
+        "active": "var(--primary-container)",
+        "text": "var(--on-surface)",
+        "textActive": "var(--on-primary-container)",
+        "border": "var(--outline-variant)"
+      },
+      "sizes": {
+        "padding": "16px",
+        "gap": "4px",
+        "borderRadius": "12px",
+        "iconSize": "22px"
+      }
+    }
+  },
+  "groups": [
+    {
+      "id": "main",
+      "label": "Principal",
+      "order": 1,
+      "icon": "home",
+      "items": ["dashboard", "UserEntity"]
+    },
+    {
+      "id": "administration",
+      "label": "Administración",
+      "order": 2,
+      "icon": "admin_panel_settings",
+      "roles": ["ADMIN", "SUPER_ADMIN"],
+      "items": ["entity-manager", "ProductEntity", "OrderEntity"]
+    }
+  ],
+  "items": [
+    {
+      "id": "dashboard",
+      "label": "Panel Principal",
+      "icon": "dashboard",
+      "iconType": "material",
+      "route": "/dashboard",
+      "roles": ["USER", "ADMIN", "SUPER_ADMIN"],
+      "order": 1,
+      "active": true,
+      "badge": null,
+      "tooltip": "Ir al panel principal"
+    },
+    {
+      "id": "UserEntity",
+      "label": "Usuarios",
+      "icon": "people",
+      "iconType": "material",
+      "route": "/admin/entities",
+      "roles": ["ADMIN", "SUPER_ADMIN"],
+      "order": 2,
+      "active": true,
+      "badge": {
+        "value": 3,
+        "color": "#f59e0b",
+        "type": "pending"
+      },
+      "tooltip": "Gestionar usuarios del sistema"
+    },
+    {
+      "id": "entity-manager",
+      "label": "Gestión de Entidades",
+      "icon": "settings_applications",
+      "iconType": "material",
+      "route": "/admin/entities",
+      "roles": ["SUPER_ADMIN", "ADMIN"],
+      "order": 3,
+      "active": true,
+      "badge": null,
+      "tooltip": "Configuración de entidades del sistema"
+    },
+    {
+      "id": "ProductEntity",
+      "label": "Productos",
+      "icon": "inventory",
+      "iconType": "material",
+      "route": "/admin/entities/ProductEntity",
+      "roles": ["ADMIN", "SUPER_ADMIN"],
+      "order": 4,
+      "active": true,
+      "badge": {
+        "value": 5,
+        "color": "#10b981",
+        "type": "new"
+      },
+      "tooltip": "Gestionar productos del sistema"
+    },
+    {
+      "id": "OrderEntity",
+      "label": "Pedidos",
+      "icon": "shopping_cart",
+      "iconType": "material",
+      "route": "/admin/entities/OrderEntity",
+      "roles": ["ADMIN", "SUPER_ADMIN"],
+      "order": 5,
+      "active": true,
+      "badge": {
+        "value": 12,
+        "color": "#ef4444",
+        "type": "urgent"
+      },
+      "tooltip": "Gestionar pedidos del sistema"
+    }
+  ],
+  "footerItems": [
+    {
+      "id": "settings",
+      "label": "Configuración",
+      "icon": "settings",
+      "route": "/settings",
+      "roles": ["USER", "ADMIN", "SUPER_ADMIN"]
+    },
+    {
+      "id": "logout",
+      "label": "Cerrar Sesión",
+      "icon": "logout",
+      "action": "logout",
+      "roles": ["USER", "ADMIN", "SUPER_ADMIN"],
+      "danger": true
+    }
+  ]
+}

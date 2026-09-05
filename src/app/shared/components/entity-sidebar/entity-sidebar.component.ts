@@ -1,38 +1,30 @@
-// import { Component } from '@angular/core';
+// // src/app/features/admin/dynamic-entity-manager/components/entity-sidebar/entity-sidebar.component.ts
 
-// @Component({
-//   imports: [],
-//   selector: 'app-entity-sidebar',
-//   styleUrl: './entity-sidebar.component.scss',
-//   templateUrl: './entity-sidebar.component.html',
-// })
-// export class EntitySidebarComponent {
-// }
-
-
-
-// import { Component, input, output, inject, computed, signal, effect, Input } from '@angular/core';
+// import { Component, input, output, inject, computed, signal, Input } from '@angular/core';
 // import { CommonModule } from '@angular/common';
 // import { MatIconModule } from '@angular/material/icon';
-// import { MatSliderModule } from '@angular/material/slider';
-// import { FormsModule } from '@angular/forms';
-// import { EntityConfigService } from '../../services/entity-config.service';
+// import { EntityConfigService } from '../../services/sidebar/entity-config.service';
 
 // @Component({
 //   selector: 'app-entity-sidebar',
 //   standalone: true,
-//   imports: [CommonModule, MatIconModule, MatSliderModule, FormsModule],
+//   imports: [CommonModule, MatIconModule],
 //   templateUrl: './entity-sidebar.component.html',
 //   styleUrls: ['./entity-sidebar.component.scss']
 // })
 // export class EntitySidebarComponent {
 //   private configService = inject(EntityConfigService);
 
-//   // Inputs
+//   // ============================================================
+//   // INPUTS / OUTPUTS
+//   // ============================================================
 //   selectedEntity = input<string>('');
 //   onSelect = output<string>();
+//   @Input() bottomPadding: string = '20px';
 
-//   // 👇 CONFIGURACIÓN DEL USUARIO (persistente)
+//   // ============================================================
+//   // ESTADO DEL SIDEBAR (persistente en localStorage)
+//   // ============================================================
 //   sidebarWidth = signal<number>(this.loadConfig('sidebarWidth', 240));
 //   sidebarHeight = signal<string>(this.loadConfig('sidebarHeight', '100%'));
 //   backgroundColor = signal<string>(this.loadConfig('backgroundColor', '#f8fafc'));
@@ -43,9 +35,9 @@
 //   isMinimized = signal<boolean>(this.loadConfig('isMinimized', false));
 //   showConfig = signal<boolean>(false);
 
-//   // 👇 NUEVO: Espacio final configurable
-//   @Input() bottomPadding: string = '20px';
-
+//   // ============================================================
+//   // COMPUTED
+//   // ============================================================
 //   entityList = computed(() => {
 //     return this.configService.getConfigs().map(config => ({
 //       label: config.displayName,
@@ -55,35 +47,33 @@
 //     }));
 //   });
 
-//   // Computed para el ancho cuando está minimizado
+//   // 
+//   isActive = computed(() => {
+//     return (entityName: string) => this.selectedEntity() === entityName;
+//   });
+
 //   currentWidth = computed(() => {
 //     return this.isMinimized() ? 60 : this.sidebarWidth();
 //   });
 
+//   // ============================================================
+//   // MÉTODOS PÚBLICOS
+//   // ============================================================
 //   selectEntity(entityName: string) {
 //     if (entityName !== this.selectedEntity()) {
 //       this.onSelect.emit(entityName);
 //     }
 //   }
 
-//   // 👇 Guardar configuración del usuario
-//   private loadConfig(key: string, defaultValue: any): any {
-//     const saved = localStorage.getItem(`sidebar_${key}`);
-//     if (saved !== null) {
-//       try {
-//         return JSON.parse(saved);
-//       } catch {
-//         return defaultValue;
-//       }
-//     }
-//     return defaultValue;
+//   toggleMinimize(): void {
+//     this.isMinimized.set(!this.isMinimized());
+//     this.saveConfig('isMinimized', this.isMinimized());
 //   }
 
-//   saveConfig(key: string, value: any): void {
-//     localStorage.setItem(`sidebar_${key}`, JSON.stringify(value));
+//   toggleConfig(): void {
+//     this.showConfig.set(!this.showConfig());
 //   }
 
-//   // Guardar cuando cambia cualquier valor
 //   onWidthChange(value: number): void {
 //     this.sidebarWidth.set(value);
 //     this.saveConfig('sidebarWidth', value);
@@ -119,15 +109,6 @@
 //     this.saveConfig('scrollable', this.scrollable());
 //   }
 
-//   toggleMinimize(): void {
-//     this.isMinimized.set(!this.isMinimized());
-//     this.saveConfig('isMinimized', this.isMinimized());
-//   }
-
-//   toggleConfig(): void {
-//     this.showConfig.set(!this.showConfig());
-//   }
-
 //   resetConfig(): void {
 //     this.sidebarWidth.set(240);
 //     this.sidebarHeight.set('100%');
@@ -138,12 +119,34 @@
 //     this.scrollable.set(true);
 //     this.isMinimized.set(false);
     
-//     // Limpiar localStorage
 //     ['sidebarWidth', 'sidebarHeight', 'backgroundColor', 'borderColor', 'fontSize', 'showIcons', 'scrollable', 'isMinimized'].forEach(key => {
 //       localStorage.removeItem(`sidebar_${key}`);
 //     });
 //   }
+
+//   // ============================================================
+//   // MÉTODOS PRIVADOS
+//   // ============================================================
+//   private loadConfig(key: string, defaultValue: any): any {
+//     const saved = localStorage.getItem(`sidebar_${key}`);
+//     if (saved !== null) {
+//       try {
+//         return JSON.parse(saved);
+//       } catch {
+//         return defaultValue;
+//       }
+//     }
+//     return defaultValue;
+//   }
+
+//   private saveConfig(key: string, value: any): void {
+//     localStorage.setItem(`sidebar_${key}`, JSON.stringify(value));
+//   }
 // }
+
+
+
+
 
 
 
@@ -154,7 +157,14 @@
 import { Component, input, output, inject, computed, signal, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { EntityConfigService } from '../../services/entity-config.service';
+import { EntityConfigService } from '../../services/sidebar/entity-config.service';
+
+interface EntityItem {
+  label: string;
+  value: string;
+  icon: string;
+  module: string;
+}
 
 @Component({
   selector: 'app-entity-sidebar',
@@ -189,8 +199,9 @@ export class EntitySidebarComponent {
   // ============================================================
   // COMPUTED
   // ============================================================
-  entityList = computed(() => {
-    return this.configService.getConfigs().map(config => ({
+  entityList = computed<EntityItem[]>(() => {
+    const configs = (this.configService.getConfigs() as any[]) || [];
+    return configs.map(config => ({
       label: config.displayName,
       value: config.entityName,
       icon: config.icon || '📄',
@@ -198,31 +209,26 @@ export class EntitySidebarComponent {
     }));
   });
 
-  // 
-  isActive = computed(() => {
-    return (entityName: string) => this.selectedEntity() === entityName;
-  });
-
-  currentWidth = computed(() => {
+  currentWidth = computed<number>(() => {
     return this.isMinimized() ? 60 : this.sidebarWidth();
   });
 
   // ============================================================
   // MÉTODOS PÚBLICOS
   // ============================================================
-  selectEntity(entityName: string) {
+  selectEntity(entityName: string): void {
     if (entityName !== this.selectedEntity()) {
       this.onSelect.emit(entityName);
     }
   }
 
   toggleMinimize(): void {
-    this.isMinimized.set(!this.isMinimized());
+    this.isMinimized.update(val => !val);
     this.saveConfig('isMinimized', this.isMinimized());
   }
 
   toggleConfig(): void {
-    this.showConfig.set(!this.showConfig());
+    this.showConfig.update(val => !val);
   }
 
   onWidthChange(value: number): void {
@@ -235,7 +241,7 @@ export class EntitySidebarComponent {
     this.saveConfig('sidebarHeight', value);
   }
 
-  onColorChange(key: string, value: string): void {
+  onColorChange(key: 'bg' | 'border', value: string): void {
     if (key === 'bg') {
       this.backgroundColor.set(value);
       this.saveConfig('backgroundColor', value);
@@ -251,12 +257,12 @@ export class EntitySidebarComponent {
   }
 
   toggleIcons(): void {
-    this.showIcons.set(!this.showIcons());
+    this.showIcons.update(val => !val);
     this.saveConfig('showIcons', this.showIcons());
   }
 
   toggleScroll(): void {
-    this.scrollable.set(!this.scrollable());
+    this.scrollable.update(val => !val);
     this.saveConfig('scrollable', this.scrollable());
   }
 
@@ -270,19 +276,18 @@ export class EntitySidebarComponent {
     this.scrollable.set(true);
     this.isMinimized.set(false);
     
-    ['sidebarWidth', 'sidebarHeight', 'backgroundColor', 'borderColor', 'fontSize', 'showIcons', 'scrollable', 'isMinimized'].forEach(key => {
-      localStorage.removeItem(`sidebar_${key}`);
-    });
+    const keys = ['sidebarWidth', 'sidebarHeight', 'backgroundColor', 'borderColor', 'fontSize', 'showIcons', 'scrollable', 'isMinimized'];
+    keys.forEach(key => localStorage.removeItem(`sidebar_${key}`));
   }
 
   // ============================================================
   // MÉTODOS PRIVADOS
   // ============================================================
-  private loadConfig(key: string, defaultValue: any): any {
+  private loadConfig<T>(key: string, defaultValue: T): T {
     const saved = localStorage.getItem(`sidebar_${key}`);
     if (saved !== null) {
       try {
-        return JSON.parse(saved);
+        return JSON.parse(saved) as T;
       } catch {
         return defaultValue;
       }
@@ -290,7 +295,7 @@ export class EntitySidebarComponent {
     return defaultValue;
   }
 
-  private saveConfig(key: string, value: any): void {
+  private saveConfig(key: string, value: unknown): void {
     localStorage.setItem(`sidebar_${key}`, JSON.stringify(value));
   }
 }

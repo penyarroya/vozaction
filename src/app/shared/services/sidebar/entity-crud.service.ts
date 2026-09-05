@@ -4,7 +4,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';  // 👈 NUEVO IMPORT
-import { EntityConfig } from '../models/entity-config';
+import { EntityConfig } from '../../../features/admin/models/entity-config';
 
 @Injectable({ providedIn: 'root' })
 export class EntityCrudService {

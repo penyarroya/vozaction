@@ -1,0 +1,315 @@
+// // src/app/features/admin/dynamic-entity-manager/components/entity-table/entity-table.component.scss
+
+// .table-toolbar {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   padding: 8px 0 16px;
+//   gap: 12px;
+//   flex-wrap: wrap;
+//   flex-shrink: 0;
+// }
+
+// .search-field {
+//   flex: 1;
+//   min-width: 180px;
+//   max-width: 350px;
+// }
+
+// .record-count {
+//   font-size: 0.85rem;
+//   font-weight: 500;
+//   color: var(--text-secondary, #4a5568);
+//   padding: 4px 16px;
+//   background: var(--bg-secondary, #f7fafc);
+//   border-radius: 20px;
+//   white-space: nowrap;
+// }
+
+// .table-container {
+//   flex: 1;
+//   overflow: auto;
+//   min-height: 200px;
+//   position: relative;
+// }
+
+// mat-table {
+//   width: 100%;
+//   min-width: 800px;
+// }
+
+// mat-cell, mat-header-cell {
+//   padding: 8px 12px;
+// }
+
+// .loading-state {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: center;
+//   padding: 40px;
+//   gap: 12px;
+// }
+
+// .empty-state {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: center;
+//   padding: 40px 20px;
+//   background: var(--bg-secondary, #f7fafc);
+//   border-radius: 12px;
+//   border: 1px dashed var(--border-color, rgba(0,0,0,0.1));
+// }
+
+// .empty-state mat-icon {
+//   font-size: 3.5rem;
+//   width: 3.5rem;
+//   height: 3.5rem;
+//   color: var(--text-muted, #a0aec0);
+// }
+
+// .empty-state p {
+//   font-weight: 600;
+//   color: var(--text-primary, #1a202c);
+//   margin: 12px 0 4px;
+// }
+
+// mat-paginator {
+//   flex-shrink: 0;
+//   margin-top: 8px;
+// }
+
+
+
+
+
+/* src/app/features/admin/dynamic-entity-manager/components/entity-table/entity-table.component.scss */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--border-color, #e2e8f0);
+  overflow: hidden;
+  padding: 16px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  margin-bottom: 12px;
+
+  .toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    button[mat-flat-button] {
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0 20px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent, #f59e0b) !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--accent-dark, #d97706) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+
+.search-field {
+  flex: 1;
+  min-width: 220px;
+  max-width: 400px;
+  
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    height: 44px;
+    background-color: var(--card-bg, #f8fafc);
+    border-radius: 8px !important;
+  }
+
+  ::ng-deep .mat-mdc-form-field-flex {
+    height: 44px;
+    align-items: center;
+  }
+}
+
+.record-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent, #f59e0b);
+  padding: 6px 14px;
+  background: var(--accent-bg, #fef3c7);
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  border: 1px solid var(--border-color, #fcd34d);
+}
+
+.table-container {
+  flex: 1;
+  overflow: auto;
+  min-height: 250px;
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+mat-table {
+  width: 100%;
+  min-width: 900px;
+  background: transparent;
+}
+
+mat-header-row {
+  background-color: var(--card-bg, #f8fafc);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+mat-header-cell {
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+}
+
+mat-cell {
+  padding: 12px 16px;
+  color: var(--text-primary, #0f172a);
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+
+  .btn-edit {
+    color: var(--accent, #f59e0b) !important;
+    
+    mat-icon {
+      color: var(--accent, #f59e0b) !important;
+    }
+
+    &:hover {
+      background-color: var(--accent-bg, rgba(254, 243, 199, 0.4)) !important;
+      transform: scale(1.1);
+    }
+  }
+
+  .btn-delete {
+    color: #ef4444 !important;
+    
+    mat-icon {
+      color: #ef4444 !important;
+    }
+
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.1) !important;
+      transform: scale(1.1);
+    }
+  }
+
+  button[mat-icon-button] {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+}
+
+mat-row {
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--accent-bg, rgba(254, 243, 199, 0.4));
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+  color: var(--text-secondary, #64748b);
+  font-weight: 500;
+
+  mat-spinner {
+    ::ng-deep circle {
+      stroke: var(--accent, #f59e0b);
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: transparent;
+  
+  mat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    color: var(--accent, #f59e0b);
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+
+  p {
+    font-weight: 500;
+    color: var(--text-secondary, #64748b);
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+mat-paginator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 16px;
+  background: transparent !important;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-secondary, #475569);
+
+  ::ng-deep .mat-mdc-paginator-container {
+    justify-content: center;
+    padding: 0 16px;
+  }
+}

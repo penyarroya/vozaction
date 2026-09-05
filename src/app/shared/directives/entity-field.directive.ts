@@ -10,7 +10,7 @@
 // src/app/features/admin/dynamic-entity-manager/directives/entity-field.directive.ts
 
 import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
-import { EntityField } from '../models/entity-config';
+import { EntityField } from '../../features/admin/models/entity-config';
 
 @Directive({
   selector: '[appEntityField]',

@@ -222,7 +222,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { NotFoundComponent } from './features/pages/staticas/not-found/not-found.component';
-import { DynamicEntityManagerComponent } from './features/admin/dynamic-entity-manager/dynamic-entity-manager.component';
+import { DatabaseMaintenanceComponent } from './features/admin/database-maintenance/database-maintenance.component';
 
 export const routes: Routes = [
   // =========================================================================
@@ -284,47 +284,17 @@ export const routes: Routes = [
   },
 
   // =========================================================================
-  // ENTITY MANAGER - Versión simple (legado)
-  // =========================================================================
-  // {
-  //   path: 'entity',
-  //   loadComponent: () => import('./features/admin/entity-manager/entity-manager.component').then(m => m.EntityManagerComponent),
-  //   canActivate: [authGuard],
-  //   title: 'Gestión de Entidades - VozAcction',
-  //   data: { showTheme: false }
-  // },
-
- // =========================================================================
-  // ENTITY MANAGER - RUTAS SEPARADAS (FUNCIONAN)
+  // DATABASE-MAINTENANCE
   // =========================================================================
   {
-    path: 'admin/entities/:entity',
-    loadComponent: () => import('./features/admin/dynamic-entity-manager/dynamic-entity-manager.component')
-      .then(m => m.DynamicEntityManagerComponent),
-    canActivate: [authGuard],
-    data: { showTheme: false },
-    children: [
-      {
-        path: '',
-        loadComponent: () => import('./features/admin/dynamic-entity-manager/components/entity-list/entity-list.component')
-          .then(m => m.EntityListComponent),
-        title: 'Gestión de Entidades - VozAcction'
-      },
-      {
-        path: 'create',
-        loadComponent: () => import('./features/admin/dynamic-entity-manager/components/entity-form/entity-form.component')
-          .then(m => m.EntityFormComponent),
-        title: 'Crear Entidad - VozAcction'
-      },
-      {
-        path: 'edit/:id',
-        loadComponent: () => import('./features/admin/dynamic-entity-manager/components/entity-form/entity-form.component')
-          .then(m => m.EntityFormComponent),
-        title: 'Editar Entidad - VozAcction'
-      }
-    ]
+    path: 'admin/database-maintenance',
+    component: DatabaseMaintenanceComponent,
+    //canActivate: [authGuard],
+    title: 'Mantenimiento de Base de Datos - VozAcction',
+    data: { showTheme: false }
   },
-    // =========================================================================
+
+  // =========================================================================
   // REDIRECCIONES Y ERRORES
   // =========================================================================
   {

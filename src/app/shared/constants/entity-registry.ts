@@ -1,5 +1,7 @@
 // // src/app/features/admin/dynamic-entity-manager/constants/entity-registry.ts
 
+
+
 // import { EntityConfig } from '../models/entity-config';
 // import { environment } from '../../../../../environments/environment';
 
@@ -193,12 +195,11 @@
 
 
 
-
-
 // src/app/features/admin/dynamic-entity-manager/constants/entity-registry.ts
 
-import { EntityConfig } from '../models/entity-config';
-import { environment } from '../../../../../environments/environment';
+import { environment } from "../../../environments/environment.development";
+import { EntityConfig } from "../../features/admin/models/entity-config";
+
 
 const API = `${environment.apiGateway}${environment.apiV1}`;
 
@@ -319,56 +320,13 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
     formSettings: { columns: 2, layout: 'grid' }
   },
 
-  UserSession: {
-    entityName: 'UserSession',
-    apiPath: `${API}/sessions`,
-    displayName: 'Sesiones',
-    displayField: 'sessionToken',
-    icon: '🔄',
-    module: 'users',
-    roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
-    fields: [
-      { key: 'id', label: 'ID', type: 'number', hidden: true },
-      { key: 'userId', label: 'ID Usuario', type: 'number', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'sessionToken', label: 'Token', type: 'text', readonly: true, showInTable: true },
-      { key: 'active', label: 'Activa', type: 'boolean', showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'ipAddress', label: 'IP', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'deviceInfo', label: 'Dispositivo', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'expiresAt', label: 'Expira', type: 'date', readonly: true, showInTable: false },
-      { key: 'createdAt', label: 'Creada', type: 'date', readonly: true, showInTable: false },
-    ],
-    tableSettings: { pageSizeOptions: [5, 10, 25, 50], defaultPageSize: 10, showSearch: true, showActions: true },
-    formSettings: { columns: 2, layout: 'grid' }
-  },
-
-  RefreshTokenEntity: {
-    entityName: 'RefreshTokenEntity',
-    apiPath: `${API}/refresh-tokens`,
-    displayName: 'Refresh Tokens',
-    displayField: 'token',
-    icon: '🔑',
-    module: 'users',
-    roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
-    fields: [
-      { key: 'id', label: 'ID', type: 'number', hidden: true },
-      { key: 'userId', label: 'ID Usuario', type: 'number', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'token', label: 'Token', type: 'text', readonly: true, showInTable: true },
-      { key: 'expiresAt', label: 'Expira', type: 'date', readonly: true, showInTable: false },
-      { key: 'revoked', label: 'Revocado', type: 'boolean', readonly: true, showInTable: true },
-      { key: 'expired', label: 'Expirado', type: 'boolean', readonly: true, showInTable: true },
-      { key: 'used', label: 'Usado', type: 'boolean', readonly: true, showInTable: true },
-    ],
-    tableSettings: { pageSizeOptions: [5, 10, 25, 50], defaultPageSize: 10, showSearch: true, showActions: true },
-    formSettings: { columns: 2, layout: 'grid' }
-  },
-
   // ============================================================
   // MÓDULO UNIVERSILAB (16 entidades)
   // ============================================================
 
   InstitutionEntity: {
     entityName: 'InstitutionEntity',
-    apiPath: '/api/universilab/institutions',
+    apiPath: `${API}/universilab/institutions`,
     displayName: 'Instituciones',
     displayField: 'name',
     icon: '🏛️',
@@ -390,7 +348,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   CourseEntity: {
     entityName: 'CourseEntity',
-    apiPath: `${API}/courses`,
+    apiPath: `${API}/universilab/courses`,
     displayName: 'Cursos',
     displayField: 'title',
     icon: '📚',
@@ -411,7 +369,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   CollectionEntity: {
     entityName: 'CollectionEntity',
-    apiPath: `${API}/collections`,
+    apiPath: `${API}/universilab/collections`,
     displayName: 'Colecciones',
     displayField: 'name',
     icon: '📁',
@@ -432,7 +390,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   TopicEntity: {
     entityName: 'TopicEntity',
-    apiPath: `${API}/topics`,
+    apiPath: `${API}/universilab/topics`,
     displayName: 'Temas',
     displayField: 'title',
     icon: '📖',
@@ -453,7 +411,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   SubtopicEntity: {
     entityName: 'SubtopicEntity',
-    apiPath: `${API}/subtopics`,
+    apiPath: `${API}/universilab/subtopics`,
     displayName: 'Subtemas',
     displayField: 'title',
     icon: '📄',
@@ -474,7 +432,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   PageEntity: {
     entityName: 'PageEntity',
-    apiPath: `${API}/pages`,
+    apiPath: `${API}/universilab/pages`,
     displayName: 'Páginas',
     displayField: 'title',
     icon: '📝',
@@ -495,7 +453,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   ResourceEntity: {
     entityName: 'ResourceEntity',
-    apiPath: `${API}/resources`,
+    apiPath: `${API}/universilab/resources`,
     displayName: 'Recursos',
     displayField: 'title',
     icon: '📎',
@@ -522,7 +480,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   CommentEntity: {
     entityName: 'CommentEntity',
-    apiPath: `${API}/comments`,
+    apiPath: `${API}/universilab/comments`,
     displayName: 'Comentarios',
     displayField: 'content',
     icon: '💬',
@@ -543,7 +501,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   ContributionEntity: {
     entityName: 'ContributionEntity',
-    apiPath: `${API}/contributions`,
+    apiPath: `${API}/universilab/contributions`,
     displayName: 'Contribuciones',
     displayField: 'title',
     icon: '🤝',
@@ -568,7 +526,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   EnrollmentEntity: {
     entityName: 'EnrollmentEntity',
-    apiPath: `${API}/enrollments`,
+    apiPath: `${API}/universilab/enrollments`,
     displayName: 'Inscripciones',
     displayField: 'id',
     icon: '📋',
@@ -592,7 +550,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   BadgeEntity: {
     entityName: 'BadgeEntity',
-    apiPath: `${API}/badges`,
+    apiPath: `${API}/universilab/badges`,
     displayName: 'Insignias',
     displayField: 'name',
     icon: '🏅',
@@ -613,7 +571,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   UserBadgeEntity: {
     entityName: 'UserBadgeEntity',
-    apiPath: `${API}/user-badges`,
+    apiPath: `${API}/universilab/user-badges`,
     displayName: 'Insignias Usuario',
     displayField: 'id',
     icon: '⭐',
@@ -632,7 +590,7 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
 
   UserProgressEntity: {
     entityName: 'UserProgressEntity',
-    apiPath: `${API}/user-progress`,
+    apiPath: `${API}/universilab/user-progress`,
     displayName: 'Progreso Usuario',
     displayField: 'id',
     icon: '📊',
@@ -645,71 +603,6 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
       { key: 'completed', label: 'Completado', type: 'boolean', showInTable: true, showOnCreate: true, showOnEdit: true },
       { key: 'timeSpent', label: 'Tiempo (min)', type: 'number', min: 0, showInTable: true, showOnCreate: true, showOnEdit: true },
       { key: 'lastAccessed', label: 'Último Acceso', type: 'date', readonly: true, showInTable: false },
-    ],
-    tableSettings: { pageSizeOptions: [5, 10, 25, 50], defaultPageSize: 10, showSearch: true, showActions: true },
-    formSettings: { columns: 2, layout: 'grid' }
-  },
-
-  AudioCacheEntity: {
-    entityName: 'AudioCacheEntity',
-    apiPath: `${API}/audio-cache`,
-    displayName: 'Caché Audio',
-    displayField: 'id',
-    icon: '🎵',
-    module: 'universilab',
-    roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
-    fields: [
-      { key: 'id', label: 'ID', type: 'number', hidden: true },
-      { key: 'text', label: 'Texto', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'voice', label: 'Voz', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'speed', label: 'Velocidad', type: 'number', min: 0.5, max: 2, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'language', label: 'Idioma', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'audioUrl', label: 'URL Audio', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'createdAt', label: 'Creado', type: 'date', readonly: true, showInTable: false },
-    ],
-    tableSettings: { pageSizeOptions: [5, 10, 25, 50], defaultPageSize: 10, showSearch: true, showActions: true },
-    formSettings: { columns: 2, layout: 'grid' }
-  },
-
-  PendingSpellingCorrection: {
-    entityName: 'PendingSpellingCorrection',
-    apiPath: `${API}/pending-corrections`,
-    displayName: 'Correcciones Pendientes',
-    displayField: 'wrongWord',
-    icon: '⏳',
-    module: 'universilab',
-    roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
-    fields: [
-      { key: 'id', label: 'ID', type: 'number', hidden: true },
-      { key: 'wrongWord', label: 'Palabra Incorrecta', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'suggestions', label: 'Sugerencias', type: 'json', showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'userId', label: 'Usuario', type: 'number', showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'status', label: 'Estado', type: 'select', options: [
-        { label: 'Pendiente', value: 'PENDING' },
-        { label: 'Aprobado', value: 'APPROVED' },
-        { label: 'Rechazado', value: 'REJECTED' }
-      ], showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'createdAt', label: 'Creado', type: 'date', readonly: true, showInTable: false },
-    ],
-    tableSettings: { pageSizeOptions: [5, 10, 25, 50], defaultPageSize: 10, showSearch: true, showActions: true },
-    formSettings: { columns: 2, layout: 'grid' }
-  },
-
-  SpellingCorrection: {
-    entityName: 'SpellingCorrection',
-    apiPath: `${API}/spelling-corrections`,
-    displayName: 'Correcciones Ortográficas',
-    displayField: 'wrongWord',
-    icon: '✏️',
-    module: 'universilab',
-    roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
-    fields: [
-      { key: 'id', label: 'ID', type: 'number', hidden: true },
-      { key: 'wrongWord', label: 'Palabra Incorrecta', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'correctWord', label: 'Palabra Correcta', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'userId', label: 'Usuario', type: 'number', showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'approved', label: 'Aprobada', type: 'boolean', showOnCreate: false, showOnEdit: true, showInTable: true },
-      { key: 'createdAt', label: 'Creado', type: 'date', readonly: true, showInTable: false },
     ],
     tableSettings: { pageSizeOptions: [5, 10, 25, 50], defaultPageSize: 10, showSearch: true, showActions: true },
     formSettings: { columns: 2, layout: 'grid' }
