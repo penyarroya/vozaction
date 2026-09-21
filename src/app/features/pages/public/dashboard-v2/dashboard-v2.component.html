@@ -30,7 +30,7 @@
 
         <mat-divider></mat-divider>
 
-        <nav class="sidebar-nav">
+        <!-- <nav class="sidebar-nav">
           <a class="nav-item" [class.active]="activeSection === 'dashboard'" (click)="activeSection = 'dashboard'">
             <mat-icon>dashboard</mat-icon>
             <span>Panel Principal</span>
@@ -43,7 +43,17 @@
             <mat-icon>settings</mat-icon>
             <span>Configuración</span>
           </a>
+        </nav> -->
+
+        <nav class="sidebar-nav">
+          @for (item of sidebarItems; track item.id) {
+            <a class="nav-item" [class.active]="activeSection === item.id" (click)="onSidebarItemClick(item)">
+              <mat-icon>{{ item.icon }}</mat-icon>
+              <span>{{ item.label }}</span>
+            </a>
+          }
         </nav>
+
 
         <mat-divider></mat-divider>
 

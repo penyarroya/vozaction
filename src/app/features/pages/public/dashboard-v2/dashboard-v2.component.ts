@@ -650,6 +650,7 @@ interface SidebarItem {
   id: string;
   label: string;
   icon: string;
+  route?: string;
   roles?: string[];
 }
 
@@ -872,6 +873,22 @@ export class DashboardV2Component implements OnInit, OnDestroy {
     return [
       { id: 'dashboard', label: 'Panel Principal', icon: 'dashboard', roles: ['USER'] }
     ];
+  }
+
+  /**
+   * ✅ Manejar clic en elemento del sidebar (navegación o sección interna)
+  */
+  onSidebarItemClick(item: SidebarItem): void {
+    if (item.route) {
+      this.router.navigate([item.route]);
+    } else {
+      this.setActiveSection(item.id);
+    }
+    
+    // Si es móvil, cerrar sidebar automáticamente
+    if (window.innerWidth < 768) {
+      this.isSidebarOpen = false;
+    }
   }
 
   // ============================================================

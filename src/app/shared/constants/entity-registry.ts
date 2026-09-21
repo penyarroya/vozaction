@@ -218,16 +218,68 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
     roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
     fields: [
       { key: 'id', label: 'ID', type: 'number', hidden: true },
-      { key: 'username', label: 'Usuario', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'email', label: 'Email', type: 'email', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
-      { key: 'password', label: 'Contraseña', type: 'password', required: true, showOnCreate: true, showOnEdit: false, showInTable: false },
-      { key: 'firstName', label: 'Nombre', type: 'text', required: true, showOnCreate: true, showOnEdit: true, showInTable: true },
-      { key: 'lastName', label: 'Apellidos', type: 'text', required: true, showOnCreate: true, showOnEdit: true, showInTable: true },
-      { key: 'activo', label: 'Activo', type: 'boolean', showOnCreate: false, showOnEdit: true, showInTable: true },
-      { key: 'emailVerified', label: 'Email Verificado', type: 'boolean', readonly: true, showInTable: false },
-      { key: 'roles', label: 'Roles', type: 'text', readonly: true, showInTable: false },
-      { key: 'fechaAlta', label: 'Fecha Alta', type: 'date', readonly: true, showInTable: false },
-      { key: 'fechaActualizacion', label: 'Últ. Actualización', type: 'date', readonly: true, showInTable: false },
+      { key: 'username', label: 'Usuario', type: 'text', required: true, 
+        showInTable: true, 
+        showOnCreate: true, 
+        showOnEdit: true,
+        readonlyOnEdit: true 
+      },
+      { key: 'email', label: 'Email', type: 'email', required: true, 
+        showInTable: true, 
+        showOnCreate: true, 
+        showOnEdit: true 
+      },
+      { key: 'password', label: 'Contraseña', type: 'password', required: true, 
+        showOnCreate: true, 
+        showOnEdit: false, 
+        showInTable: false 
+      },
+      { key: 'roles', label: 'Roles', type: 'multiselect', 
+        options: [
+          { label: 'Super Admin', value: 'SUPER_ADMIN' },
+          { label: 'Admin', value: 'ADMIN' },
+          { label: 'Moderator', value: 'MODERATOR' },
+          { label: 'Manager', value: 'MANAGER' },
+          { label: 'User', value: 'USER' }
+        ],
+        showOnCreate: true, 
+        showOnEdit: true, 
+        showInTable: true 
+      },
+      { key: 'firstName', label: 'Nombre', type: 'text', required: true, 
+        showOnCreate: true, 
+        showOnEdit: true, 
+        showInTable: false,
+        readonlyOnEdit: true  
+      },
+      { key: 'lastName', label: 'Apellidos', type: 'text', required: true, 
+        showOnCreate: true, 
+        showOnEdit: true, 
+        showInTable: false,
+        readonlyOnEdit: true  
+      },
+      { key: 'activo', label: 'Activo', type: 'boolean', 
+        showOnCreate: false, 
+        showOnEdit: true, 
+        showInTable: true 
+      },
+      { key: 'emailVerified', label: 'Email Verificado', type: 'boolean', readonly: true, 
+        showOnCreate: false,
+        showOnEdit: false, 
+        showInTable: false  
+      },
+      { key: 'fechaAlta', label: 'Fecha Alta', type: 'date', readonly: true, 
+        showInTable: true,
+        showOnCreate: false, 
+        showOnEdit: true,
+        readonlyOnEdit: true   
+      },
+      { key: 'fechaActualizacion', label: 'Últ. Actualización', type: 'date', readonly: true, 
+        showInTable: false,
+         showOnCreate: false, 
+        showOnEdit: true,
+        readonlyOnEdit: true    
+      },
     ],
     tableSettings: { pageSizeOptions: [5, 10, 25, 50, 100], defaultPageSize: 10, showSearch: true, showActions: true },
     formSettings: { columns: 2, layout: 'grid' }
@@ -272,22 +324,48 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
     formSettings: { columns: 2, layout: 'grid' }
   },
 
+  // UserProfile: {
+  //   entityName: 'UserProfile',
+  //   apiPath: `${API}/profiles`,
+  //   displayName: 'Perfiles de Usuario',
+  //   displayField: 'fullName',
+  //   icon: '📋',
+  //   module: 'users',
+  //   roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
+  //   fields: [
+  //     { key: 'id', label: 'ID', type: 'number', hidden: true },
+  //     { key: 'userId', label: 'ID Usuario', type: 'number', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'firstName', label: 'Nombre', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'lastName', label: 'Apellidos', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'phone', label: 'Teléfono', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'bio', label: 'Biografía', type: 'textarea', showInTable: false, showOnCreate: true, showOnEdit: true },
+  //     { key: 'avatar', label: 'Avatar', type: 'text', showInTable: false, showOnCreate: true, showOnEdit: true },
+  //     { key: 'birthDate', label: 'Fecha Nacimiento', type: 'date', showInTable: false, showOnCreate: true, showOnEdit: true },
+  //     { key: 'createdAt', label: 'Creado', type: 'date', readonly: true, showInTable: false },
+  //   ],
+  //   tableSettings: { pageSizeOptions: [5, 10, 25, 50], defaultPageSize: 10, showSearch: true, showActions: true },
+  //   formSettings: { columns: 2, layout: 'grid' }
+  // },
+
+
   UserProfile: {
     entityName: 'UserProfile',
-    apiPath: `${API}/profiles`,
+    apiPath: `${API}/profiles`, // O `${API}/users` si tu backend los anida
+    apiListPath: `${API}/profiles/all`, // O `${API}/users/profiles/all` según tu controlador backend
+    apiDetailPath: (userId: number) => `${API}/profiles/${userId}`, // Ruta exacta que espera tu backend para buscar/editar por ID
     displayName: 'Perfiles de Usuario',
-    displayField: 'fullName',
+    displayField: 'firstName',
     icon: '📋',
     module: 'users',
     roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
     fields: [
-      { key: 'id', label: 'ID', type: 'number', hidden: true },
-      { key: 'userId', label: 'ID Usuario', type: 'number', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
+      // ⚠️ CRUCIAL: El ID real de la entidad es userId, NO 'id'
+      { key: 'userId', label: 'ID Usuario', type: 'number', required: true, isPrimaryKey: true, showInTable: true, showOnCreate: true, showOnEdit: true, readonlyOnEdit: true },
       { key: 'firstName', label: 'Nombre', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
       { key: 'lastName', label: 'Apellidos', type: 'text', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
       { key: 'phone', label: 'Teléfono', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
       { key: 'bio', label: 'Biografía', type: 'textarea', showInTable: false, showOnCreate: true, showOnEdit: true },
-      { key: 'avatar', label: 'Avatar', type: 'text', showInTable: false, showOnCreate: true, showOnEdit: true },
+      { key: 'avatarUrl', label: 'Avatar', type: 'text', showInTable: false, showOnCreate: true, showOnEdit: true }, // Coincide con el modelo Java (avatarUrl)
       { key: 'birthDate', label: 'Fecha Nacimiento', type: 'date', showInTable: false, showOnCreate: true, showOnEdit: true },
       { key: 'createdAt', label: 'Creado', type: 'date', readonly: true, showInTable: false },
     ],
@@ -295,16 +373,43 @@ export const ENTITY_REGISTRY: Record<string, EntityConfig> = {
     formSettings: { columns: 2, layout: 'grid' }
   },
 
+  // UserPreference: {
+  //   entityName: 'UserPreference',
+  //   apiPath: `${API}/users/preferences/all`,
+  //   displayName: 'Preferencias',
+  //   displayField: 'userId',
+  //   icon: '⚙️',
+  //   module: 'users',
+  //   roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
+  //   fields: [
+  //     { key: 'userId', label: 'ID Usuario', type: 'number', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'theme', label: 'Tema', type: 'select', options: [
+  //       { label: 'Claro', value: 'LIGHT' },
+  //       { label: 'Oscuro', value: 'DARK' },
+  //       { label: 'Sistema', value: 'SYSTEM' }
+  //     ], showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'lastPage', label: 'Última Página', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'defaultVoice', label: 'Voz', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'defaultSpeed', label: 'Velocidad', type: 'number', min: 0.5, max: 2, showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'defaultLanguage', label: 'Idioma', type: 'text', showInTable: true, showOnCreate: true, showOnEdit: true },
+  //     { key: 'createdAt', label: 'Creado', type: 'date', readonly: true, showInTable: false },
+  //   ],
+  //   tableSettings: { pageSizeOptions: [5, 10, 25, 50], defaultPageSize: 10, showSearch: true, showActions: true },
+  //   formSettings: { columns: 2, layout: 'grid' }
+  // },
+
   UserPreference: {
     entityName: 'UserPreference',
-    apiPath: `${API}/users/preferences/all`,
+    apiPath: `${API}/profiles`,
+    apiListPath: `${API}/users/preferences/all`, // Ruta específica para listar todo (Admin)
+    apiDetailPath: (userId: number) => `${API}/profiles/user/${userId}`, // Ruta anidada exacta del backend
     displayName: 'Preferencias',
     displayField: 'userId',
     icon: '⚙️',
     module: 'users',
     roles: ['SUPER_ADMIN', 'ADMIN', 'USER'],
     fields: [
-      { key: 'userId', label: 'ID Usuario', type: 'number', required: true, showInTable: true, showOnCreate: true, showOnEdit: true },
+      { key: 'userId', label: 'ID Usuario', type: 'number', required: true, isPrimaryKey: true, showInTable: true, showOnCreate: true, showOnEdit: true, readonlyOnEdit: true },
       { key: 'theme', label: 'Tema', type: 'select', options: [
         { label: 'Claro', value: 'LIGHT' },
         { label: 'Oscuro', value: 'DARK' },
@@ -629,4 +734,30 @@ export function getEntityList(roles?: string[]): { label: string; value: string;
       value: config.entityName,
       icon: config.icon || '📄'
     }));
+}
+
+
+
+export function getEntityListGrouped(roles?: string[]): Record<string, { label: string; value: string; icon: string }[]> {
+  const groups: Record<string, { label: string; value: string; icon: string }[]> = {};
+
+  Object.values(ENTITY_REGISTRY)
+    .filter(config => {
+      if (!roles || roles.length === 0) return true;
+      if (!config.roles || config.roles.length === 0) return true;
+      return config.roles.some((role: string) => roles.includes(role));
+    })
+    .forEach(config => {
+      const moduleName = config.module || 'general';
+      if (!groups[moduleName]) {
+        groups[moduleName] = [];
+      }
+      groups[moduleName].push({
+        label: config.displayName,
+        value: config.entityName,
+        icon: config.icon || '📄'
+      });
+    });
+
+  return groups;
 }

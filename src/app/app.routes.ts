@@ -222,7 +222,6 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { NotFoundComponent } from './features/pages/staticas/not-found/not-found.component';
-import { DatabaseMaintenanceComponent } from './features/admin/database-maintenance/database-maintenance.component';
 
 export const routes: Routes = [
   // =========================================================================
@@ -287,13 +286,12 @@ export const routes: Routes = [
   // DATABASE-MAINTENANCE
   // =========================================================================
   {
-    path: 'admin/database-maintenance',
-    component: DatabaseMaintenanceComponent,
+  path: 'admin/database-maintenance',
+    loadComponent: () => import('./features/admin/database-maintenance/database-maintenance.component').then(m => m.DatabaseMaintenanceComponent),
     //canActivate: [authGuard],
     title: 'Mantenimiento de Base de Datos - VozAcction',
     data: { showTheme: false }
   },
-
   // =========================================================================
   // REDIRECCIONES Y ERRORES
   // =========================================================================
