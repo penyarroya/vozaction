@@ -3,7 +3,8 @@
 import { Injectable, inject } from '@angular/core';
 import { EntityConfig } from '../../../features/admin/models/entity-config';
 import { AuthService } from '../../../core/services/auth.service';
-import { getEntityListGrouped } from '../../../features/admin/entity-manager/constants/entity-registry';
+import { getEntityListGrouped } from '../../../shared/constants/entity-registry';
+// import { getEntityListGrouped } from '../../../features/admin/entity-manager/constants/entity-registry-OLD';
 import { getEntityConfig, ENTITY_REGISTRY, getEntityList } from '../../../shared/constants/entity-registry';
 
 @Injectable({

@@ -1,6 +1,43 @@
 <!-- src/app/features/admin/dynamic-entity-manager/components/entity-table/entity-table.component.html -->
 
 <!-- Toolbar -->
+<!-- <div class="table-toolbar">
+  @if (config()?.tableSettings?.showSearch !== false) {
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar...</mat-label>
+      <input 
+        matInput 
+        [(ngModel)]="searchTerm" 
+        (input)="onSearchInput()" 
+        placeholder="Buscar..."
+      >
+      <mat-icon matPrefix>search</mat-icon>
+      @if (searchTerm()) {
+        <button mat-icon-button matSuffix (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  }
+
+  <div class="toolbar-actions" style="display: flex; align-items: center; gap: 16px;">
+
+    <button mat-stroked-button (click)="onBack.emit()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </button>
+
+    <button mat-flat-button color="primary" (click)="onCrear.emit()">
+      <mat-icon>add</mat-icon>
+      Nuevo {{ config()?.displayName }}
+    </button>
+    <span class="record-count">{{ total() }} registros</span>
+  </div>
+</div> -->
+
+
+
+
 <div class="table-toolbar">
   @if (config()?.tableSettings?.showSearch !== false) {
     <mat-form-field appearance="outline" class="search-field">
@@ -21,6 +58,12 @@
   }
 
   <div class="toolbar-actions" style="display: flex; align-items: center; gap: 16px;">
+    <!-- Botón de Volver estilizado -->
+    <button mat-stroked-button class="btn-volver" (click)="onBack.emit()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </button>
+
     <button mat-flat-button color="primary" (click)="onCrear.emit()">
       <mat-icon>add</mat-icon>
       Nuevo {{ config()?.displayName }}
@@ -49,7 +92,7 @@
       }
 
       <!-- Columna de acciones -->
-      @if (showActions() && config()?.tableSettings?.showActions !== false) {
+      <!-- @if (showActions() && config()?.tableSettings?.showActions !== false) {
         <ng-container matColumnDef="actions">
           <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
           <mat-cell *matCellDef="let item">
@@ -57,6 +100,22 @@
               <mat-icon>edit</mat-icon>
             </button>
             <button mat-icon-button class="btn-delete" (click)="onDelete.emit(item.id)" matTooltip="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+      } -->
+
+
+      <!-- Columna de acciones -->
+      @if (showActions() && config()?.tableSettings?.showActions !== false) {
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef>Acciones</mat-header-cell>
+          <mat-cell *matCellDef="let item">
+            <button mat-icon-button class="btn-edit" (click)="handleEdit(item)" matTooltip="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button class="btn-delete" (click)="handleDelete(item)" matTooltip="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
           </mat-cell>

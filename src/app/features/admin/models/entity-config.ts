@@ -3,9 +3,11 @@
 export interface EntityField {
   key: string;
   label: string;
-  type: 'text' | 'email' | 'password' | 'number' | 'boolean' | 'date' | 'textarea' | 'select' | 'json';
+  type: 'text' | 'email' | 'password' | 'number' | 'boolean' | 'date' | 'textarea' | 'select' | 'multiselect' |'json';
+  isPrimaryKey?: boolean;
   required?: boolean;
   readonly?: boolean;
+  readonlyOnEdit?: boolean;
   hidden?: boolean;
   options?: { label: string; value: any }[];
   placeholder?: string;
@@ -13,16 +15,16 @@ export interface EntityField {
   maxLength?: number;
   min?: number;
   max?: number;
-  // ✅ Control de visibilidad por modo
   showOnCreate?: boolean;
   showOnEdit?: boolean;
-  // ✅ Para la tabla
   showInTable?: boolean;
 }
 
 export interface EntityConfig {
   entityName: string;
   apiPath: string;
+  apiListPath?: string; 
+  apiDetailPath?: (id: any) => string;
   displayName: string;
   displayField: string;
   icon?: string;

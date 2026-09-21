@@ -105,7 +105,6 @@
 
 
 
-
 // src/app/features/admin/dynamic-entity-manager/components/entity-table/entity-table.component.ts
 
 import { Component, input, output, computed, model, inject, effect, signal } from '@angular/core';
@@ -185,9 +184,11 @@ export class EntityTableComponent {
   searchTerm = model('');
 
   // Outputs basados en Signals (utilizando la nueva API moderna de Angular)
-  onEdit = output<number>();
-  onDelete = output<number>();
+  onEdit = output<any>();
+  onDelete = output<any>();
+  
   onCrear = output<void>();
+  onBack = output<void>();
 
   constructor() {
     effect(() => {
@@ -221,11 +222,35 @@ export class EntityTableComponent {
     });
   }
 
-  // Computed
+  // Computed corregido para respetar showInTable y hidden
   visibleFields = computed(() => {
     const config = this.config();
     if (!config) return [];
-    return config.fields.filter(f => !f.hidden);
+    
+    return config.fields.filter(f => {
+      // Si está marcado explícitamente como hidden: true, se oculta
+      if (f.hidden) return false;
+      
+      // Si tiene definida la propiedad showInTable, debe ser true para mostrarse
+      if (f.showInTable === false) return false;
+
+      return true;
+    });
+  });
+
+  editableFields = computed(() => {
+    const config = this.config();
+    if (!config) return [];
+    
+    return config.fields.filter(f => {
+      // Si el campo es de tipo ID o es readonly global, lo saltamos
+      if (f.key === 'id' || f.readonly) return false;
+      
+      // Si estamos editando y showOnEdit es false, lo ocultamos
+      if (f.showOnEdit === false) return false;
+
+      return true;
+    });
   });
 
   displayedColumns = computed(() => {
@@ -256,5 +281,21 @@ export class EntityTableComponent {
     if (cfg) {
       this.fetchData(cfg.apiPath, this.pageIndex(), this.pageSize(), this.searchTerm());
     }
+  }
+
+  // Métodos requeridos por la plantilla HTML
+  handleDelete(row: any): void {
+    console.log('🗑️ [EntityTable] handleDelete llamado con:', row);
+    this.onDelete.emit(row);
+  }
+
+  handleEdit(row: any): void {
+    console.log('✏️ [EntityTable] handleEdit llamado con:', row);
+    this.onEdit.emit(row);
+  }
+
+  // Método usando el historial del navegador directamente
+  goBack(): void {
+    window.history.back();
   }
 }

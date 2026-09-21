@@ -361,7 +361,7 @@
 
 import { Component, input, output, inject, computed, signal, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -374,7 +374,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EntityConfigService } from '../../../../shared/services/sidebar/entity-config.service';
 import { EntityCrudService } from '../../../../shared/services/sidebar/entity-crud.service';
-import { EntityConfig } from '../../../admin/models/entity-config';
+import { EntityConfig } from '../../models/entity-config';
+import { RoleService } from '../../../services/role/role.service';
 
 @Component({
   selector: 'app-entity-form',
@@ -403,6 +404,7 @@ export class EntityFormComponent implements OnInit, AfterViewInit {
   private router = inject(Router);
   private configService = inject(EntityConfigService);
   private crudService = inject(EntityCrudService);
+  private roleService= inject(RoleService);
 
   // Referencia al primer campo para el foco automático
   @ViewChild('firstInput') firstInput!: ElementRef;
@@ -427,10 +429,30 @@ export class EntityFormComponent implements OnInit, AfterViewInit {
     return this.configService.getConfig(this.entityName()) || null;
   });
 
+  // editableFields = computed(() => {
+  //   const config = this.config();
+  //   if (!config) return [];
+  //   return config.fields.filter(f => !f.hidden);
+  // });
+
+
   editableFields = computed(() => {
     const config = this.config();
     if (!config) return [];
-    return config.fields.filter(f => !f.hidden);
+    
+    const editing = this.isEditing();
+    return config.fields.filter(f => {
+      if (f.hidden) return false;
+      if (f.key === 'id') return false;
+      
+      // Si estamos editando y showOnEdit se definió explícitamente como false
+      if (editing && f.showOnEdit === false) return false;
+      
+      // Si estamos creando y showOnCreate se definió explícitamente como false
+      if (!editing && f.showOnCreate === false) return false;
+
+      return true;
+    });
   });
 
   gridColumns = computed(() => {
@@ -445,7 +467,53 @@ export class EntityFormComponent implements OnInit, AfterViewInit {
   // ============================================================
   // CICLO DE VIDA
   // ============================================================
+  // ngOnInit() {
+  //   // 1. Verificar si se le pasa la configuración mediante inputs (modo componente hijo / modal)
+  //   if (this.entityInput()) {
+  //     this.entityName.set(this.entityInput()!);
+  //     const editingMode = this.isEditingInput() ?? false;
+  //     this.isEditing.set(editingMode);
+      
+  //     this.initForm();
+
+  //     if (this.dataInput() && editingMode && this.form) {
+  //       this.form.patchValue(this.dataInput());
+  //     }
+  //     return;
+  //   }
+
+  //   // 2. Si no hay inputs directos, recurrir a la ruta activa (modo página)
+  //   this.route.params.subscribe(params => {
+  //     this.entityName.set(params['entity']);
+      
+  //     const id = params['id'];
+  //     if (id) {
+  //       this.isEditing.set(true);
+  //       this.editingId.set(parseInt(id));
+  //       this.loadItem(parseInt(id));
+  //     }
+      
+  //     this.initForm();
+  //   });
+  // }
+
+  // ngAfterViewInit() {
+  //   setTimeout(() => {
+  //     if (this.firstInput) {
+  //       this.firstInput.nativeElement.focus();
+  //     }
+  //   }, 150);
+  // }
+
+
+
+  // Declara esta propiedad al inicio de tu clase TypeScript
+  availableRoles: any[] = [];
+
   ngOnInit() {
+    // Cargamos los roles disponibles desde el backend para tener sus IDs reales
+    this.loadRoles();
+
     // 1. Verificar si se le pasa la configuración mediante inputs (modo componente hijo / modal)
     if (this.entityInput()) {
       this.entityName.set(this.entityInput()!);
@@ -475,6 +543,33 @@ export class EntityFormComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // Método para obtener los roles y sus IDs desde tu API de roles
+  // loadRoles() {
+  //   // Asegúrate de tener inyectado tu servicio de roles (ej. roleService)
+  //   this.roleService.getAllRoles().subscribe({
+  //     next: (roles) => {
+  //       this.availableRoles = roles; // Guarda los objetos [{ id: 1, name: 'SUPER_ADMIN' }, ...]
+  //     },
+  //     error: (err) => {
+  //       console.error('No se pudieron cargar los roles', err);
+  //     }
+  //   });
+  // }
+
+
+  loadRoles() {
+    this.roleService.getAllRoles().subscribe({
+      next: (roles: any[]) => { // 👈 Añadido el tipo (any[] o tu interfaz RoleResponseDTO[])
+        this.availableRoles = roles; 
+      },
+      error: (err) => {
+        console.error('No se pudieron cargar los roles', err);
+      }
+    });
+  }
+
+
+
   ngAfterViewInit() {
     setTimeout(() => {
       if (this.firstInput) {
@@ -482,6 +577,8 @@ export class EntityFormComponent implements OnInit, AfterViewInit {
       }
     }, 150);
   }
+
+
 
   // ============================================================
   // MÉTODOS
@@ -502,58 +599,143 @@ export class EntityFormComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // initForm() {
+  //   const config = this.config();
+  //   if (!config) return;
+
+  //   const group: any = {};
+  //   const editing = this.isEditing();
+
+  //   config.fields.forEach(field => {
+  //     if (field.hidden) return;
+
+  //     const validators = [];
+  //     if (field.required && !(editing && field.key === 'password')) {
+  //       validators.push(Validators.required);
+  //     }
+  //     if (field.type === 'email') validators.push(Validators.email);
+  //     if (field.minLength) validators.push(Validators.minLength(field.minLength));
+  //     if (field.maxLength) validators.push(Validators.maxLength(field.maxLength));
+
+  //     let initialValue = this.getDefaultValue(field.type);
+  //     const isDisabled = editing && (field.readonly || field.key === 'password');
+
+  //     group[field.key] = [{ value: initialValue, disabled: isDisabled }, validators];
+  //   });
+
+  //   this.form = this.fb.group(group);
+  // }
+
+
   initForm() {
     const config = this.config();
     if (!config) return;
 
     const group: any = {};
     const editing = this.isEditing();
+    
+    // ✅ Obtenemos los datos actuales si tu componente los almacena en otra propiedad (por ejemplo, model, item o data)
+    // Cambia 'this.model' o 'this.item' por la propiedad real donde guardas el registro que estás editando.
+    // const currentData = (this as any).model || (this as any).item || {};
+    const currentData = this.dataInput() || {};
 
     config.fields.forEach(field => {
       if (field.hidden) return;
 
       const validators = [];
+      
+      // Validación general de requeridos
       if (field.required && !(editing && field.key === 'password')) {
         validators.push(Validators.required);
       }
+
+      // Validación específica para el multiselect de roles (mínimo 1 rol)
+      if (field.key === 'roles') {
+        validators.push(Validators.required);
+      }
+
       if (field.type === 'email') validators.push(Validators.email);
       if (field.minLength) validators.push(Validators.minLength(field.minLength));
       if (field.maxLength) validators.push(Validators.maxLength(field.maxLength));
 
       let initialValue = this.getDefaultValue(field.type);
+      
+      // ✅ Si estamos editando, buscamos el valor en los datos del registro actual
+      if (editing && currentData[field.key] !== undefined && currentData[field.key] !== null) {
+        initialValue = currentData[field.key];
+      }
+
       const isDisabled = editing && (field.readonly || field.key === 'password');
 
-      group[field.key] = [{ value: initialValue, disabled: isDisabled }, validators];
+      // Usar explícitamente new FormControl para pasar value y disabled juntos
+      group[field.key] = new FormControl(
+        { value: initialValue, disabled: isDisabled }, 
+        validators
+      );
     });
 
     this.form = this.fb.group(group);
   }
+
+
+
+
+
+
+
+
 
   private getDefaultValue(type: string): any {
     switch (type) {
       case 'boolean': return false;
       case 'number': return null;
       case 'date': return null;
+      case 'multiselect': return []; // 👈 Añadido para el campo de múltiples roles
       default: return '';
     }
   }
+
 
   // ============================================================
   // ACCIONES
   // ============================================================
   onSubmit() {
-    if (this.form.valid) {
-      const formValue = this.form.getRawValue();
+  const formValue = this.form.getRawValue();
 
-      if (this.isEditing() && !formValue.password) {
-        delete formValue.password;
-      }
+  // 💡 Comprobamos si el nombre de la entidad coincide con usuarios (independientemente de cómo venga)
+  const isUserEntity = this.entityName() === 'users' || this.entityName() === 'UserEntity';
 
-      this.onSave.emit(formValue);
-    } else {
+  // 1. Validación de roles solo si estamos en la entidad de usuarios
+  if (isUserEntity) {
+    if (!formValue.roles || !Array.isArray(formValue.roles) || formValue.roles.length === 0) {
+      this.form.get('roles')?.setErrors({ required: true });
       this.form.markAllAsTouched();
+      return;
     }
   }
+
+  if (this.form.valid) {
+    if (this.isEditing() && !formValue.password) {
+      delete formValue.password;
+    }
+
+    // 2. Transformación dinámica de nombres de roles a IDs numéricos
+    if (isUserEntity && formValue.roles) {
+      formValue.roleIds = formValue.roles.map((roleName: string) => {
+        const foundRole = this.availableRoles.find(r => r.name === roleName);
+        return foundRole ? foundRole.id : null;
+      }).filter((id: number | null) => id !== null);
+
+      // 3. Eliminamos el campo 'roles' de texto y dejamos solo 'roleIds' para Java
+      delete formValue.roles;
+    }
+
+    this.onSave.emit(formValue);
+  } else {
+    this.form.markAllAsTouched();
+  }
+}
+
 
   cancelar() {
     console.log('❌ Cancelando formulario');

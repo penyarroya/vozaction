@@ -1,26 +1,47 @@
 <!-- src/app/features/admin/dynamic-entity-manager/components/entity-form/entity-form.component.html -->
 <!-- 
-@if (visible()) {
-  <div class="form-panel">
-    <div class="form-header">
-      <h3>
-        <mat-icon>edit</mat-icon>
-        {{ isEditing() ? 'Editar' : 'Nuevo' }} {{ config()?.displayName }}
-      </h3>
-      <button mat-icon-button (click)="onCancel.emit()">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
+<div class="form-panel">
+  <div class="form-header">
+    <h3>
+      <mat-icon>edit</mat-icon>
+      {{ isEditing() ? 'Editar' : 'Nuevo' }} {{ config()?.displayName }}
+    </h3>
+    <button mat-icon-button (click)="cancelar()" class="btn-close" matTooltip="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="form-grid" [style.grid-template-columns]="gridColumns()">
-        @for (field of editableFields(); track field.key) {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="form-grid" [style.grid-template-columns]="gridColumns()">
+      @for (field of editableFields(); track field.key) {
+        
+        @if (field.type === 'boolean') {
+          <div class="form-field-checkbox">
+            <mat-checkbox [formControlName]="field.key">
+              {{ field.label }}
+            </mat-checkbox>
+            @if (form.get(field.key)?.errors && form.get(field.key)?.touched) {
+              <mat-error>
+                @if (form.get(field.key)?.errors?.['required']) {
+                  {{ field.label }} es obligatorio
+                }
+              </mat-error>
+            }
+          </div>
+        }
+
+        @if (field.type !== 'boolean') {
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>{{ field.label }}</mat-label>
 
             @switch (field.type) {
               @case ('textarea') {
-                <textarea matInput [formControlName]="field.key" rows="3"></textarea>
+                <textarea 
+                  matInput 
+                  #firstInput
+                  [formControlName]="field.key" 
+                  rows="3"
+                ></textarea>
               }
               @case ('select') {
                 <mat-select [formControlName]="field.key">
@@ -29,13 +50,21 @@
                   }
                 </mat-select>
               }
-              @case ('boolean') {
-                <mat-checkbox [formControlName]="field.key">{{ field.label }}</mat-checkbox>
+              @case ('multiselect') {
+                <mat-select [formControlName]="field.key" multiple>
+                  @for (option of field.options || []; track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-select>
               }
               @case ('date') {
-
                 <ng-container>
-                  <input matInput [matDatepicker]="picker" [formControlName]="field.key">
+                  <input 
+                    matInput 
+                    #firstInput
+                    [matDatepicker]="picker" 
+                    [formControlName]="field.key"
+                  >
                   <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                   <mat-datepicker #picker></mat-datepicker>
                 </ng-container>
@@ -43,6 +72,7 @@
               @default {
                 <input 
                   matInput 
+                  #firstInput
                   [formControlName]="field.key"
                   [type]="field.type === 'password' ? 'password' : 'text'"
                   [placeholder]="field.placeholder || ''"
@@ -68,25 +98,30 @@
             }
           </mat-form-field>
         }
-      </div>
+      }
+    </div>
 
-      <div class="form-actions">
-        <button type="button" (click)="onCancel.emit()">Cancelar</button>
-        <button type="submit" [disabled]="form.invalid || loading()">
-          @if (loading()) {
-            <mat-spinner diameter="20"></mat-spinner>
-          } @else {
-            <ng-container>
-              <mat-icon>save</mat-icon>
-              {{ isEditing() ? 'Actualizar' : 'Crear' }}
-            </ng-container>
-          }
-        </button>
-      </div>
-    </form>
-  </div>
-}
- -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="cancelar()">
+        <mat-icon>close</mat-icon>
+        Cancelar
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="form.invalid || loading()">
+        @if (loading()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <ng-container>
+            <mat-icon>save</mat-icon>
+            {{ isEditing() ? 'Actualizar' : 'Crear' }}
+          </ng-container>
+        }
+      </button>
+    </div>
+  </form>
+</div> -->
+
+
+
 
 
 
@@ -118,7 +153,7 @@
         <!-- ✅ BOOLEAN: FUERA del mat-form-field -->
         @if (field.type === 'boolean') {
           <div class="form-field-checkbox">
-            <mat-checkbox [formControlName]="field.key">
+            <mat-checkbox [formControlName]="field.key" [disabled]="!!(isEditing() && field.readonlyOnEdit)">
               {{ field.label }}
             </mat-checkbox>
             @if (form.get(field.key)?.errors && form.get(field.key)?.touched) {
@@ -138,16 +173,23 @@
 
             @switch (field.type) {
               @case ('textarea') {
-                <!-- 👇 AÑADE #firstInput AQUÍ -->
                 <textarea 
                   matInput 
                   #firstInput
                   [formControlName]="field.key" 
+                  [readonly]="!!(isEditing() && field.readonlyOnEdit)"
                   rows="3"
                 ></textarea>
               }
               @case ('select') {
-                <mat-select [formControlName]="field.key">
+                <mat-select [formControlName]="field.key" [disabled]="!!(isEditing() && field.readonlyOnEdit)">
+                  @for (option of field.options || []; track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-select>
+              }
+              @case ('multiselect') {
+                <mat-select [formControlName]="field.key" multiple [disabled]="!!(isEditing() && field.readonlyOnEdit)">
                   @for (option of field.options || []; track option.value) {
                     <mat-option [value]="option.value">{{ option.label }}</mat-option>
                   }
@@ -155,25 +197,25 @@
               }
               @case ('date') {
                 <ng-container>
-                  <!-- 👇 O AQUÍ SI ES DATE -->
                   <input 
                     matInput 
                     #firstInput
                     [matDatepicker]="picker" 
                     [formControlName]="field.key"
+                    [readonly]="!!(isEditing() && field.readonlyOnEdit)"
                   >
-                  <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker-toggle matSuffix [for]="picker" [disabled]="!!(isEditing() && field.readonlyOnEdit)"></mat-datepicker-toggle>
                   <mat-datepicker #picker></mat-datepicker>
                 </ng-container>
               }
               @default {
-                <!-- 👇 O AQUÍ SI ES INPUT NORMAL -->
                 <input 
                   matInput 
                   #firstInput
                   [formControlName]="field.key"
                   [type]="field.type === 'password' ? 'password' : 'text'"
                   [placeholder]="field.placeholder || ''"
+                  [readonly]="!!(isEditing() && field.readonlyOnEdit)"
                 >
               }
             }
