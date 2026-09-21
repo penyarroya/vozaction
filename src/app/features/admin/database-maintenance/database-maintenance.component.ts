@@ -795,6 +795,7 @@ export class DatabaseMaintenanceComponent implements OnInit, OnDestroy {
   isEditing = signal(false);
   currentData = signal<any>(null);
   loading = signal(false);
+  isMobileSidebarOpen = signal(false);
 
   // Mapa de acciones para el menú de usuario de la toolbar
   private actionMap: { [key: string]: () => void } = {
@@ -858,6 +859,7 @@ export class DatabaseMaintenanceComponent implements OnInit, OnDestroy {
     ]
   };
 
+
   // ============================================================
   // GETTERS REQUERIDOS POR LA TOOLBAR
   // ============================================================
@@ -914,10 +916,17 @@ export class DatabaseMaintenanceComponent implements OnInit, OnDestroy {
     console.log('🧹 DatabaseMaintenanceComponent destruido');
   }
 
+  //
+  toggleMobileSidebar() {
+    this.isMobileSidebarOpen.update(value => !value);
+  }
+
+  //
   onSelectEntityByName(entityName: string): void {
     const foundEntity = this.entities().find(e => e.name === entityName);
     if (foundEntity) {
       this.selectEntity(foundEntity);
+      this.isMobileSidebarOpen.set(false); // Cierra el sidebar flotante en móvil automáticamente
     }
   }
 
@@ -933,15 +942,62 @@ export class DatabaseMaintenanceComponent implements OnInit, OnDestroy {
     this.showForm.set(false); // Regresar a la tabla al cambiar de entidad
   }
 
-  openCreateForm(): void {
-    this.isEditing.set(false);
-    this.currentData.set(null);
-    this.showForm.set(true);
-  }
+  // openCreateForm(): void {
+  //   this.isEditing.set(false);
+  //   this.currentData.set(null);
+  //   this.showForm.set(true);
+  // }
 
-  editEntityItem(id: number): void {
+  // editEntityItem(id: number): void {
+  //   const config = this.selectedEntityConfig();
+  //   if (!config) return;
+
+  //   this.loading.set(true);
+  //   this.crudService.getById(config, id).subscribe({
+  //     next: (data) => {
+  //       this.currentData.set(data);
+  //       this.isEditing.set(true);
+  //       this.showForm.set(true);
+  //       this.loading.set(false);
+  //     },
+  //     error: (err) => {
+  //       console.error('Error al cargar registro para editar:', err);
+  //       this.loading.set(false);
+  //     }
+  //   });
+  // }
+
+
+
+  editEntityItem(rowOrId: any): void {
     const config = this.selectedEntityConfig();
     if (!config) return;
+
+    console.log('🔍 [editEntityItem] Objeto recibido de la tabla:', rowOrId);
+    console.log('🔍 [editEntityItem] Configuración de campos:', config.fields);
+
+    let id: any = null;
+
+    if (typeof rowOrId === 'object' && rowOrId !== null) {
+      // 1. Intentar buscar por el campo marcado como isPrimaryKey
+      const primaryField = config.fields.find(f => f.isPrimaryKey)?.key;
+      if (primaryField && rowOrId[primaryField] !== undefined) {
+        id = rowOrId[primaryField];
+      } 
+      // 2. Fallbacks automáticos comunes si el registro usa userId o id
+      else if (rowOrId['userId'] !== undefined) {
+        id = rowOrId['userId'];
+      } else if (rowOrId['id'] !== undefined) {
+        id = rowOrId['id'];
+      }
+    } else {
+      id = rowOrId;
+    }
+
+    if (id === undefined || id === null || id === '') {
+      console.error('🚨 [editEntityItem] No se pudo identificar la clave primaria. Estructura de la fila:', rowOrId);
+      return;
+    }
 
     this.loading.set(true);
     this.crudService.getById(config, id).subscribe({
@@ -958,9 +1014,14 @@ export class DatabaseMaintenanceComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteEntityItem(id: number): void {
+
+
+  deleteEntityItem(rowOrId: any): void {
     const config = this.selectedEntityConfig();
     if (!config) return;
+
+    const primaryKeyField = config.fields.find(f => f.isPrimaryKey)?.key || 'id';
+    const id = typeof rowOrId === 'object' && rowOrId !== null ? rowOrId[primaryKeyField] : rowOrId;
 
     if (confirm('¿Estás seguro de que deseas eliminar este registro?')) {
       this.loading.set(true);
@@ -979,36 +1040,146 @@ export class DatabaseMaintenanceComponent implements OnInit, OnDestroy {
     }
   }
 
-  handleSave(formValue: any): void {
+  // handleSave(formValue: any): void {
+  //   const config = this.selectedEntityConfig();
+  //   if (!config) return;
+
+  //   this.loading.set(true);
+
+  //   const primaryKeyField = config.fields.find(f => f.isPrimaryKey)?.key || 'id';
+  //   const recordId = this.currentData()?.[primaryKeyField];
+
+  //   const request$ = this.isEditing()
+  //     ? this.crudService.update(config, recordId, formValue)
+  //     : this.crudService.create(config, formValue);
+
+  //   request$.subscribe({
+  //     next: () => {
+  //       this.loading.set(false);
+  //       this.closeForm();
+  //       if (this.tableComponent) {
+  //         this.tableComponent.reload();
+  //       }
+  //     },
+  //     error: (err) => {
+  //       console.error('Error al guardar el registro:', err);
+  //       this.loading.set(false);
+  //     }
+  //   });
+  // }
+
+
+
+
+
+  // Estado para controlar la carga del formulario y la visibilidad
+  // loading = signal<boolean>(false);
+  // showForm = signal<boolean>(false);
+  // isEditing = signal<boolean>(false);
+  // currentData = signal<any>(null);
+
+  // Abre el formulario en modo creación
+  // openCreateForm() {
+  //   this.isEditing.set(false);
+  //   this.currentData.set(null);
+  //   this.showForm.set(true);
+  // }
+
+  // 🚀 Método que maneja el guardado (Crear o Actualizar)
+  // Abre el formulario en modo creación
+  openCreateForm() {
+    this.isEditing.set(false);
+    this.currentData.set(null);
+    this.showForm.set(true);
+  }
+
+  // Cierra el formulario y resetea estados
+  closeForm() {
+    this.showForm.set(false);
+    this.currentData.set(null);
+    this.loading.set(false);
+  }
+
+  // 🚀 Método que maneja el guardado (Crear o Actualizar)
+  handleSave(formData: any) {
     const config = this.selectedEntityConfig();
     if (!config) return;
 
     this.loading.set(true);
 
     const request$ = this.isEditing()
-      ? this.crudService.update(config, this.currentData().id, formValue)
-      : this.crudService.create(config, formValue);
+      ? this.crudService.update(config, this.currentData()?.id || this.currentData()?._id || this.currentData()?.userId, formData)
+      : this.crudService.create(config, formData);
 
     request$.subscribe({
       next: () => {
         this.loading.set(false);
         this.closeForm();
         if (this.tableComponent) {
-          this.tableComponent.reload();
+          this.tableComponent.reload(); // ✅ Recarga los datos utilizando tu ViewChild existente
         }
       },
       error: (err) => {
-        console.error('Error al guardar el registro:', err);
         this.loading.set(false);
+        console.error('Error al guardar el registro:', err);
       }
     });
   }
 
-  closeForm(): void {
-    this.showForm.set(false);
-    this.currentData.set(null);
-    this.isEditing.set(false);
-  }
+
+
+
+  // deleteEntityItem(id: number): void {
+  //   const config = this.selectedEntityConfig();
+  //   if (!config) return;
+
+  //   if (confirm('¿Estás seguro de que deseas eliminar este registro?')) {
+  //     this.loading.set(true);
+  //     this.crudService.delete(config, id).subscribe({
+  //       next: () => {
+  //         this.loading.set(false);
+  //         if (this.tableComponent) {
+  //           this.tableComponent.reload();
+  //         }
+  //       },
+  //       error: (err) => {
+  //         console.error('Error al eliminar registro:', err);
+  //         this.loading.set(false);
+  //       }
+  //     });
+  //   }
+  // }
+
+  // handleSave(formValue: any): void {
+  //   const config = this.selectedEntityConfig();
+  //   if (!config) return;
+
+  //   this.loading.set(true);
+
+  //   const request$ = this.isEditing()
+  //     ? this.crudService.update(config, this.currentData().id, formValue)
+  //     : this.crudService.create(config, formValue);
+
+  //   request$.subscribe({
+  //     next: () => {
+  //       this.loading.set(false);
+  //       this.closeForm();
+  //       if (this.tableComponent) {
+  //         this.tableComponent.reload();
+  //       }
+  //     },
+  //     error: (err) => {
+  //       console.error('Error al guardar el registro:', err);
+  //       this.loading.set(false);
+  //     }
+  //   });
+  // }
+
+  // closeForm(): void {
+  //   this.showForm.set(false);
+  //   this.currentData.set(null);
+  //   this.isEditing.set(false);
+  // }
 
   // ============================================================
   // MÉTODOS AUXILIARES DE ADAPTACIÓN (REGISTRO CENTRAL)
@@ -1093,5 +1264,10 @@ export class DatabaseMaintenanceComponent implements OnInit, OnDestroy {
 
   goToLogin(): void {
     this.router.navigate(['/login']);
+  }
+
+  volverAtras(): void {
+    this.selectedEntity.set(null); // ✅ Esto deselecciona la entidad y regresa al estado raíz / bienvenida
+    this.closeForm();              // Asegura que también se cierre el formulario si estaba abierto
   }
 }
