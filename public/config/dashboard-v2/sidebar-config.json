@@ -1,5 +1,30 @@
 {
   "sidebarItems": [
-    { "id": "dashboard", "label": "Panel Principal", "icon": "dashboard", "roles": ["USER"] }
+    {
+      "id": "dashboard",
+      "label": "Panel Principal",
+      "icon": "dashboard",
+      "roles": []
+    },
+    {
+      "id": "courses",
+      "label": "Guías",
+      "icon": "menu_book",
+      "roles": []
+    },
+    {
+      "id": "profile",
+      "label": "Mi Perfil",
+      "icon": "person",
+      "route": "/profile",
+      "roles": ["ADMIN"]
+    },
+    {
+      "id": "settings",
+      "label": "Mantenimiento",
+      "icon": "settings",
+      "route": "/admin/database-maintenance",
+      "roles": ["SUPER_ADMIN"]
+    }
   ]
 }

@@ -9,12 +9,12 @@
   "showNotifications": false,
   "unreadNotifications": 0,
   "navLinks": [
-    { "label": "Dashboard", "route": "/dashboard-v2", "icon": "dashboard", "roles": ["USER"] }
+    { "label": "Dashboard", "route": "/dashboard-v2", "icon": "dashboard"}
   ],
   "userMenuItems": [
-    { "label": "Mi Perfil", "icon": "person", "route": "/profile", "roles": ["USER"] },
-    { "label": "Configuración", "icon": "settings", "route": "/settings", "roles": ["USER"] },
-    { "label": "Configuración de Voz", "icon": "settings_voice", "route": "/voice-settings", "roles": ["USER"] },
+    { "label": "Mi Perfil", "icon": "person", "route": "/profile"},
+    { "label": "Configuración", "icon": "settings", "route": "/settings" },
+    { "label": "Configuración de Voz", "icon": "settings_voice", "route": "/voice-settings", "roles": ["SUPER_ADMIN"] },
     { "isDivider": true },
     { "label": "Cerrar Sesión", "icon": "logout", "class": "logout-item", "actionId": "logout" }
   ]
