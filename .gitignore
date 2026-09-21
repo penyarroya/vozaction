@@ -230,3 +230,6 @@ models/*.onnx
 ### Reports ###
 reports/
 test-reports/
+### Backups locales (no subir) ###
+OLD/
+old/
